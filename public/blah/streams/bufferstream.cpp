@@ -4,10 +4,10 @@
 using namespace Blah;
 
 BufferStream::BufferStream()
-	: m_capacity(0), m_length(0), m_position(0) {}
+	: m_buffer(nullptr), m_capacity(0), m_length(0), m_position(0) {}
 
 BufferStream::BufferStream(int capacity)
-	: m_capacity(0), m_length(0), m_position(0)
+	: m_buffer(nullptr), m_capacity(0), m_length(0), m_position(0)
 {
 	if (capacity > 0)
 	{
