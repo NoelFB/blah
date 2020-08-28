@@ -3,6 +3,7 @@
 // Error / Abort
 #ifdef DEBUG
 
+	#include <stdlib.h>
 	#define BLAH_ERROR(message) \
 		do { Log::error(message "\n\tin file: %s:%d", __FILE__, __LINE__); abort(); } while(0)
 
