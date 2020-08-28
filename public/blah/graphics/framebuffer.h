@@ -13,10 +13,10 @@ namespace Blah
 	public:
 		virtual ~FrameBuffer() = default;
 
-		// Gets an Attachment from the FrameBuffer
+		// Gets the list of Attachments from the FrameBuffer
 		virtual Attachments& attachments() = 0;
 
-		// Gets an Attachment from the FrameBuffer
+		// Gets the list of Attachments from the FrameBuffer
 		virtual const Attachments& attachments() const = 0;
 
 		// Gets the width of the FrameBuffer
