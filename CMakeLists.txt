@@ -22,6 +22,7 @@ add_library(blah
 	public/blah/graphics/texture.h
 	public/blah/graphics/framebuffer.h
 	public/blah/graphics/shader.h
+	public/blah/graphics/mesh.cpp
 	public/blah/graphics/mesh.h
 	public/blah/graphics/material.h
 	public/blah/graphics/material.cpp

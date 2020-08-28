@@ -29,12 +29,12 @@ using namespace Internal;
 
 namespace
 {
-	SDL_Window*			window = nullptr;
-	SDL_Joystick*		joysticks[BLAH_MAX_CONTROLLERS];
-	SDL_GameController* gamepads[BLAH_MAX_CONTROLLERS];
-	char*				basePath = nullptr;
-	char*				userPath = nullptr;
-	bool				displayed = false;
+	SDL_Window*	window = nullptr;
+	SDL_Joystick* joysticks[BLAH_MAX_CONTROLLERS];
+	SDL_GameController*	gamepads[BLAH_MAX_CONTROLLERS];
+	char* basePath = nullptr;
+	char* userPath = nullptr;
+	bool displayed = false;
 
 	void sdl_log(void* userdata, int category, SDL_LogPriority priority, const char* message)
 	{

@@ -1028,7 +1028,7 @@ namespace Blah
 				return m_id;
 			}
 
-			virtual void vertex_format(const VertexAttribute* attributes, int attribute_count, int stride = -1) override
+			virtual void vertex_format_internal(const VertexAttribute* attributes, int attribute_count, int stride = -1) override
 			{
 				gl.BindVertexArray(m_id);
 				{
@@ -1040,7 +1040,7 @@ namespace Blah
 				gl.BindVertexArray(0);
 			}
 
-			virtual void instance_format(const VertexAttribute* attributes, int attribute_count, int stride = -1) override
+			virtual void instance_format_internal(const VertexAttribute* attributes, int attribute_count, int stride = -1) override
 			{
 				gl.BindVertexArray(m_id);
 				{

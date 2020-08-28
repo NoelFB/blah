@@ -11,10 +11,10 @@ namespace Blah
 		virtual ~Mesh() = default;
 
 		// Sets the Vertex Format of the Mesh
-		virtual void vertex_format(const VertexAttribute* attributes, int attribute_count, int stride = -1) = 0;
+		void vertex_format(const VertexAttribute* attributes, int attribute_count, int stride = -1);
 
 		// Sets the Instance Format of the Mesh
-		virtual void instance_format(const VertexAttribute* attributes, int attribute_count, int stride = -1) = 0;
+		void instance_format(const VertexAttribute* attributes, int attribute_count, int stride = -1);
 
 		// Uploads the given index buffer to the Mesh
 		virtual void index_data(const void* indices, int64_t count) = 0;
@@ -41,6 +41,10 @@ namespace Blah
 
 		// Destroys the given Mesh
 		virtual void dispose() = 0;
+
+	protected:
+		virtual void vertex_format_internal(const VertexAttribute* attributes, int count, int stride) = 0;
+		virtual void instance_format_internal(const VertexAttribute* attributes, int count, int stride) = 0;
 	};
 
 	typedef std::shared_ptr<Mesh> MeshRef;
