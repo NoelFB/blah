@@ -14,6 +14,7 @@ this will likely see breaking changes.
  - There's no Shader abstraction, so the [Sprite Batcher](https://github.com/NoelFB/blah/blob/master/public/blah/drawing/batch.h) has hard-coded GLSL. This will need to change.
  - The rendering layer may be replaced with [FNA3D](https://github.com/FNA-XNA/FNA3D), [BGFX](https://github.com/bkaradzic/bgfx), [Sokol](https://github.com/floooh/sokol), or something else.
  - There's no Audio layer implementation yet.
+ - No threaded rendering so the OpenGL implementation will explode if you try that
 
 
 #### a sample application
