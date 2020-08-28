@@ -28,22 +28,22 @@ namespace Blah
 			For previews go here: https://easings.net/
 		*/
 
-		float linear(float t)
+		inline float linear(float t)
 		{
 			return t;
 		}
 
-		float quad_in(float t)
+		inline float quad_in(float t)
 		{
 			return t * t;
 		}
 
-		float quad_out(float t)
+		inline float quad_out(float t)
 		{
 			return -(t * (t - 2));
 		}
 
-		float quad_in_out(float t)
+		inline float quad_in_out(float t)
 		{
 			if (t < 0.5f)
 				return 2 * t * t;
@@ -53,18 +53,18 @@ namespace Blah
 			}
 		}
 
-		float cube_in(float t)
+		inline float cube_in(float t)
 		{
 			return t * t * t;
 		}
 
-		float cube_out(float t)
+		inline float cube_out(float t)
 		{
 			float f = (t - 1);
 			return f * f * f + 1;
 		}
 
-		float cube_in_out(float t)
+		inline float cube_in_out(float t)
 		{
 			if (t < 0.5f)
 				return 4 * t * t * t;
@@ -75,18 +75,18 @@ namespace Blah
 			}
 		}
 
-		float quart_in(float t)
+		inline float quart_in(float t)
 		{
 			return t * t * t * t;
 		}
 
-		float quart_out(float t)
+		inline float quart_out(float t)
 		{
 			float f = (t - 1);
 			return f * f * f * (1 - t) + 1;
 		}
 
-		float quart_in_out(float t)
+		inline float quart_in_out(float t)
 		{
 			if (t < 0.5f)
 				return 8 * t * t * t * t;
@@ -97,18 +97,18 @@ namespace Blah
 			}
 		}
 
-		float quint_in(float t)
+		inline float quint_in(float t)
 		{
 			return t * t * t * t * t;
 		}
 
-		float quint_out(float t)
+		inline float quint_out(float t)
 		{
 			float f = (t - 1);
 			return f * f * f * f * f + 1;
 		}
 
-		float quint_in_out(float t)
+		inline float quint_in_out(float t)
 		{
 			if (t < 0.5f)
 				return 16 * t * t * t * t * t;
@@ -119,32 +119,32 @@ namespace Blah
 			}
 		}
 
-		float sine_in(float t)
+		inline float sine_in(float t)
 		{
 			return Calc::sin((t - 1) * Calc::PI * 0.5f) + 1;
 		}
 
-		float sine_out(float t)
+		inline float sine_out(float t)
 		{
 			return Calc::sin(t * (Calc::PI * 0.5f));
 		}
 
-		float sine_in_out(float t)
+		inline float sine_in_out(float t)
 		{
 			return 0.5f * (1 - Calc::cos(t * Calc::PI));
 		}
 
-		float circ_in(float t)
+		inline float circ_in(float t)
 		{
 			return 1 - Calc::sqrt(1 - (t * t));
 		}
 
-		float circ_out(float t)
+		inline float circ_out(float t)
 		{
 			return Calc::sqrt((2 - t) * t);
 		}
 
-		float circ_in_out(float t)
+		inline float circ_in_out(float t)
 		{
 			if (t < 0.5f)
 				return 0.5f * (1 - Calc::sqrt(1 - 4 * (t * t)));
@@ -152,17 +152,17 @@ namespace Blah
 				return 0.5f * (Calc::sqrt(-((2 * t) - 3) * ((2 * t) - 1)) + 1);
 		}
 
-		float exp_in(float t)
+		inline float exp_in(float t)
 		{
 			return (t == 0) ? 0 : Calc::pow(2, 10 * (t - 1));
 		}
 
-		float exp_out(float t)
+		inline float exp_out(float t)
 		{
 			return (t == 1) ? 1 : 1 - Calc::pow(2, -10 * t);
 		}
 
-		float exp_in_out(float t)
+		inline float exp_in_out(float t)
 		{
 			if (t == 0 || t == 1)
 				return t;
@@ -173,17 +173,17 @@ namespace Blah
 				return -0.5f * Calc::pow(2, (-20 * t) + 10) + 1;
 		}
 
-		float elastic_in(float t)
+		inline float elastic_in(float t)
 		{
 			return Calc::sin(13 * (Calc::PI * 0.5f) * t) * Calc::pow(2, 10 * (t - 1));
 		}
 
-		float elastic_out(float t)
+		inline float elastic_out(float t)
 		{
 			return Calc::sin(-13 * (Calc::PI * 0.5f) * (t + 1)) * Calc::pow(2, -10 * t) + 1;
 		}
 
-		float elastic_in_out(float t)
+		inline float elastic_in_out(float t)
 		{
 			if (t < 0.5f)
 				return 0.5f * Calc::sin(13 * (Calc::PI * 0.5f) * (2 * t)) * Calc::pow(2, 10 * ((2 * t) - 1));
@@ -191,18 +191,18 @@ namespace Blah
 				return 0.5f * (Calc::sin(-13 * (Calc::PI * 0.5f) * ((2 * t - 1) + 1)) * Calc::pow(2, -10 * (2 * t - 1)) + 2);
 		}
 
-		float back_in(float t)
+		inline float back_in(float t)
 		{
 			return t * t * t - t * Calc::sin(t * Calc::PI);
 		}
 
-		float back_out(float t)
+		inline float back_out(float t)
 		{
 			float f = (1 - t);
 			return 1 - (f * f * f - f * Calc::sin(f * Calc::PI));
 		}
 
-		float back_in_out(float t)
+		inline float back_in_out(float t)
 		{
 			if (t < 0.5f)
 			{
@@ -216,7 +216,7 @@ namespace Blah
 			}
 		}
 
-		float bounce_out(float t)
+		inline float bounce_out(float t)
 		{
 			if (t < 4 / 11.0f)
 				return (121 * t * t) / 16.0f;
@@ -228,12 +228,12 @@ namespace Blah
 				return (54 / 5.0f * t * t) - (513 / 25.0f * t) + 268 / 25.0f;
 		}
 
-		float bounce_in(float t)
+		inline float bounce_in(float t)
 		{
 			return 1 - bounce_out(1 - t);
 		}
 
-		float bounce_in_out(float t)
+		inline float bounce_in_out(float t)
 		{
 			if (t < 0.5f)
 				return 0.5f * bounce_in(t * 2);
@@ -241,7 +241,7 @@ namespace Blah
 				return 0.5f * bounce_out(t * 2 - 1) + 0.5f;
 		}
 
-		Easer get(Easers e)
+		inline Easer get(Easers e)
 		{
 			switch (e)
 			{
@@ -292,7 +292,7 @@ namespace Blah
 			return nullptr;
 		}
 
-		const char* name(Easers e)
+		inline const char* name(Easers e)
 		{
 			switch (e)
 			{
