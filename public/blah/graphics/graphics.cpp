@@ -167,7 +167,7 @@ FrameBufferRef Graphics::create_framebuffer(int width, int height)
 FrameBufferRef Graphics::create_framebuffer(int width, int height, const TextureFormat* attachments, int attachment_count)
 {
 	BLAH_ASSERT(width > 0 && height > 0, "FrameBuffer width and height must be larger than 0");
-	BLAH_ASSERT(attachment_count <= BLAH_MAX_FRAMEBUFFER_ATTACHMENTS, "Exceeded maximum attachment count");
+	BLAH_ASSERT(attachment_count <= BLAH_ATTACHMENTS, "Exceeded maximum attachment count");
 	BLAH_ASSERT(attachment_count > 0, "At least one attachment must be provided");
 	for (int i = 0; i < attachment_count; i++)
 		BLAH_ASSERT((int)attachments[i] > (int)TextureFormat::None && (int)attachments[i] < (int)TextureFormat::Count, "Invalid texture format");
@@ -217,7 +217,7 @@ RenderCall::RenderCall()
 
 void Graphics::render(const RenderCall& render_call)
 {
-	BLAH_ASSERT(device != null && device->valid, "Graphics device has not been created");
+	BLAH_ASSERT(device != nullptr && device->valid, "Graphics device has not been created");
 
 	// Validate Material
 	if (!render_call.material || !render_call.material->is_valid())
@@ -335,6 +335,6 @@ void Graphics::render(const RenderCall& render_call)
 
 void Graphics::clear(const FrameBufferRef& target, uint32_t rgba)
 {
-	BLAH_ASSERT(device != null && device->valid, "Graphics device has not been created");
+	BLAH_ASSERT(device != nullptr && device->valid, "Graphics device has not been created");
 	device->clear(target, rgba);
 }
