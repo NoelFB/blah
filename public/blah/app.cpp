@@ -94,6 +94,7 @@ bool App::run(const Config* c)
 		Internal::Platform::frame();
 
 		// update at a fixed timerate
+		// TODO: allow a non-fixed step update?
 		{
 			uint64_t time_target = (uint64_t)((1.0f / app_config.target_framerate) * 1000);
 			uint64_t time_curr = Internal::Platform::time();
