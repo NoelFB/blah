@@ -28,7 +28,11 @@ void render()
 {
 	Graphics::clear(Graphics::backbuffer, 0x00000000);
 	
-	batch.push_matrix(Mat3x2::create_transform(Vec2(App::draw_width(), App::draw_height()) / 2, Vec2::zero, Vec2::one, Time::elapsed * Calc::TAU));
+	Vec2 center = Vec2(App::draw_width(), App::draw_height()) / 2;
+	float rotation = Time::elapsed * Calc::TAU;
+	Mat3x2 transform = Mat3x2::create_transform(center, Vec2::zero, Vec2::one, rotation);
+
+	batch.push_matrix(transform);
 	batch.rect(Rect(-32, -32, 64, 64), 0xff0000);
 	batch.pop_matrix();
 	
