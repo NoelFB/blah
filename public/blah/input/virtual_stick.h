@@ -68,9 +68,9 @@ namespace Blah
 		bool m_released = false;
 
 		float m_i_deadzone;
-		float m_last_press_time = 0;
-		float m_last_release_time = 0;
-		float m_repeat_press_time = 0;
+		float m_last_press_time = -1;
+		float m_last_release_time = -1;
+		float m_repeat_press_time = -1;
 
 	public:
 		VirtualStick();

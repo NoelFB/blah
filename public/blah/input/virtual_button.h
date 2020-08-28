@@ -61,9 +61,9 @@ namespace Blah
 		bool m_down = false;
 		bool m_pressed = false;
 		bool m_released = false;
-		float m_last_press_time = 0;
-		float m_last_release_time = 0;
-		float m_repeat_press_time = 0;
+		float m_last_press_time = -1;
+		float m_last_release_time = -1;
+		float m_repeat_press_time = -1;
 
 	public:
 		VirtualButton& add_key(Key key);
