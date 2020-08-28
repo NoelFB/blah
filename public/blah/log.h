@@ -1,6 +1,6 @@
 #pragma once
 
-// Error / Abort
+// error / abort
 #ifdef DEBUG
 
 	#include <stdlib.h>
@@ -20,8 +20,9 @@
 
 #endif
 
-#ifndef BLAH_MAX_MESSAGE
-#define BLAH_MAX_MESSAGE 1024
+// maximum length of a print/warn/error message
+#ifndef BLAH_MESSAGE
+#define BLAH_MESSAGE 1024
 #endif
 
 namespace Blah
