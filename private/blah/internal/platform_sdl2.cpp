@@ -30,8 +30,8 @@ using namespace Internal;
 namespace
 {
 	SDL_Window*	window = nullptr;
-	SDL_Joystick* joysticks[BLAH_MAX_CONTROLLERS];
-	SDL_GameController*	gamepads[BLAH_MAX_CONTROLLERS];
+	SDL_Joystick* joysticks[Blah::Input::max_controllers];
+	SDL_GameController*	gamepads[Blah::Input::max_controllers];
 	char* basePath = nullptr;
 	char* userPath = nullptr;
 	bool displayed = false;

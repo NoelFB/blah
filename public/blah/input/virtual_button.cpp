@@ -7,7 +7,7 @@ using namespace Blah;
 
 VirtualButton& VirtualButton::add_key(Key key)
 {
-	if (m_keys_len >= BLAH_MAX_VIRTUAL_NODES)
+	if (m_keys_len >= Input::max_virtual_nodes)
 		BLAH_ERROR("VirtualButton Keys out of bounds!");
 	else
 	{
@@ -20,7 +20,7 @@ VirtualButton& VirtualButton::add_key(Key key)
 
 VirtualButton& VirtualButton::add_button(int gamepad_id, Button button)
 {
-	if (m_buttons_len >= BLAH_MAX_VIRTUAL_NODES)
+	if (m_buttons_len >= Input::max_virtual_nodes)
 		BLAH_ERROR("VirtualButton Buttons out of bounds!");
 	else
 	{
@@ -33,7 +33,7 @@ VirtualButton& VirtualButton::add_button(int gamepad_id, Button button)
 
 VirtualButton& VirtualButton::add_axis(int gamepad_id, Axis axis, float threshold, bool greater_than)
 {
-	if (m_axes_len >= BLAH_MAX_VIRTUAL_NODES)
+	if (m_axes_len >= Input::max_virtual_nodes)
 		BLAH_ERROR("VirtualButton Axes out of bounds!");
 	else
 	{

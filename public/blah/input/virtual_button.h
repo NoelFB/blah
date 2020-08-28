@@ -46,9 +46,9 @@ namespace Blah
 			void update();
 		};
 
-		KeyNode m_keys[BLAH_MAX_VIRTUAL_NODES];
-		ButtonNode m_buttons[BLAH_MAX_VIRTUAL_NODES];
-		AxisNode m_axes[BLAH_MAX_VIRTUAL_NODES];
+		KeyNode m_keys[Input::max_virtual_nodes];
+		ButtonNode m_buttons[Input::max_virtual_nodes];
+		AxisNode m_axes[Input::max_virtual_nodes];
 		int m_keys_len = 0;
 		int m_buttons_len = 0;
 		int m_axes_len = 0;

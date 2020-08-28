@@ -3,14 +3,7 @@
 #include <inttypes.h>
 #include <blah/math/vec2.h>
 
-#define BLAH_MAX_CONTROLLERS 4
-#define BLAH_MAX_CONTROLLER_BUTTONS 64
-#define BLAH_MAX_CONTROLLER_AXIS 16
-#define BLAH_MAX_MOUSE_BUTTONS 16
-#define BLAH_MAX_KEYBOARD_KEYS 512
-#define BLAH_MAX_TEXT 256
-#define BLAH_MAX_VIRTUAL_NODES 32
-
+// These are generally copied from the SDL2 Scancode Keys
 #define BLAH_KEY_DEFINITIONS \
 	DEFINE_KEY(Unknown, 0) \
 	DEFINE_KEY(A, 4) \
@@ -226,8 +219,49 @@
 	DEFINE_KEY(RightAlt, 230) \
 	DEFINE_KEY(RightGui, 231)
 
+#define BLAH_BUTTON_DEFINITIONS \
+	DEFINE_BTN(None, -1) \
+	DEFINE_BTN(A, 0) \
+	DEFINE_BTN(B, 1) \
+	DEFINE_BTN(X, 2) \
+	DEFINE_BTN(Y, 3) \
+	DEFINE_BTN(Back, 4) \
+	DEFINE_BTN(Select, 5) \
+	DEFINE_BTN(Start, 6) \
+	DEFINE_BTN(LeftStick, 7) \
+	DEFINE_BTN(RightStick, 8) \
+	DEFINE_BTN(LeftShoulder, 9) \
+	DEFINE_BTN(RightShoulder, 10) \
+	DEFINE_BTN(Up, 11) \
+	DEFINE_BTN(Down, 12) \
+	DEFINE_BTN(Left, 13) \
+	DEFINE_BTN(Right, 14)
+
 namespace Blah
 {
+	namespace Input
+	{
+		// maximum number of controllers the input can handle
+		constexpr int max_controllers = 8;
+
+		// maximum number of buttons the input will track
+		constexpr int max_controller_buttons = 64;
+
+		// maximum number of controller axis the input will track
+		constexpr int max_controller_axis = 16;
+
+		// maximum number of mouse buttons the input will track
+		constexpr int max_mouse_buttons = 16;
+
+		// maximum number of keys the input will track
+		constexpr int max_keyboard_keys = 512;
+
+		// maximum length of text input that can be received per-frame
+		constexpr int max_text_input = 256;
+
+		// maximum number of nodes within a virtual input device
+		constexpr int max_virtual_nodes = 32;
+	}
 
 	struct ControllerState
 	{
@@ -247,40 +281,40 @@ namespace Blah
 		int axis_count;
 
 		// An array holding the pressed state of each button
-		bool pressed[BLAH_MAX_CONTROLLER_BUTTONS];
+		bool pressed[Input::max_controller_buttons];
 
 		// An array holding the down state of each button
-		bool down[BLAH_MAX_CONTROLLER_BUTTONS];
+		bool down[Input::max_controller_buttons];
 
 		// An array holding the released state of each button
-		bool released[BLAH_MAX_CONTROLLER_BUTTONS];
+		bool released[Input::max_controller_buttons];
 
 		// An array holding the value state of each axis
-		float axis[BLAH_MAX_CONTROLLER_AXIS];
+		float axis[Input::max_controller_axis];
 
 		// Timestamp, in milliseconds, since each button was last pressed
-		uint64_t button_timestamp[BLAH_MAX_CONTROLLER_BUTTONS];
+		uint64_t button_timestamp[Input::max_controller_buttons];
 
 		// Timestamp, in milliseconds, since each axis last had a value set 
-		uint64_t axis_timestamp[BLAH_MAX_CONTROLLER_AXIS];
+		uint64_t axis_timestamp[Input::max_controller_axis];
 
 	};
 
 	struct KeyboardState
 	{
-		bool pressed[BLAH_MAX_KEYBOARD_KEYS];
-		bool down[BLAH_MAX_KEYBOARD_KEYS];
-		bool released[BLAH_MAX_KEYBOARD_KEYS];
-		uint64_t timestamp[BLAH_MAX_KEYBOARD_KEYS];
-		char text[BLAH_MAX_TEXT];
+		bool pressed[Input::max_keyboard_keys];
+		bool down[Input::max_keyboard_keys];
+		bool released[Input::max_keyboard_keys];
+		uint64_t timestamp[Input::max_keyboard_keys];
+		char text[Input::max_text_input];
 	};
 
 	struct MouseState
 	{
-		bool pressed[BLAH_MAX_MOUSE_BUTTONS];
-		bool down[BLAH_MAX_MOUSE_BUTTONS];
-		bool released[BLAH_MAX_MOUSE_BUTTONS];
-		uint64_t timestamp[BLAH_MAX_MOUSE_BUTTONS];
+		bool pressed[Input::max_mouse_buttons];
+		bool down[Input::max_mouse_buttons];
+		bool released[Input::max_mouse_buttons];
+		uint64_t timestamp[Input::max_mouse_buttons];
 		Vec2 screen_position;
 		Vec2 draw_position;
 		Vec2 position;
@@ -292,7 +326,7 @@ namespace Blah
 	{
 		// All the Gamepads. Note that not all gamepads are necessarily connected,
 		// and each one must be checked before use.
-		ControllerState controllers[BLAH_MAX_CONTROLLERS];
+		ControllerState controllers[Input::max_controllers];
 
 		// The current Keyboard state
 		KeyboardState keyboard;
@@ -303,7 +337,6 @@ namespace Blah
 	};
 
 	// Keyboard Keys
-	// These are generally copied from the SDL2 Scancode Keys
 	enum class Key
 	{
 	#define DEFINE_KEY(name, value) name = value,
@@ -314,22 +347,9 @@ namespace Blah
 	// Game Controller Buttons
 	enum class Button
 	{
-		None = -1,
-		A = 0,
-		B = 1,
-		X = 2,
-		Y = 3,
-		Back = 4,
-		Select = 5,
-		Start = 6,
-		LeftStick= 7,
-		RightStick = 8,
-		LeftShoulder = 9,
-		RightShoulder = 10,
-		Up = 11,
-		Down = 12,
-		Left = 13,
-		Right = 14
+	#define DEFINE_BTN(name, value) name = value,
+	BLAH_BUTTON_DEFINITIONS
+	#undef DEFINE_BTN
 	};
 
 	// Game Controller Axes
@@ -427,5 +447,8 @@ namespace Blah
 
 		// returns a string name of the given key
 		const char* name_of(Key key);
+
+		// returns a string name of the given button
+		const char* name_of(Button button);
 	}
 }

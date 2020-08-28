@@ -17,7 +17,7 @@ VirtualStick::VirtualStick(float iDeadzone)
 
 VirtualStick& VirtualStick::add_keys(Key left, Key right, Key up, Key down)
 {
-	if (m_keys_len >= BLAH_MAX_VIRTUAL_NODES)
+	if (m_keys_len >= Input::max_virtual_nodes)
 		BLAH_ERROR("VirtualStick Keys out of bounds!");
 	else
 	{
@@ -30,7 +30,7 @@ VirtualStick& VirtualStick::add_keys(Key left, Key right, Key up, Key down)
 
 VirtualStick& VirtualStick::add_buttons(int gamepad_id, Button left, Button right, Button up, Button down)
 {
-	if (m_buttons_len >= BLAH_MAX_VIRTUAL_NODES)
+	if (m_buttons_len >= Input::max_virtual_nodes)
 		BLAH_ERROR("VirtualStick Buttons out of bounds!");
 	else
 	{
@@ -43,7 +43,7 @@ VirtualStick& VirtualStick::add_buttons(int gamepad_id, Button left, Button righ
 
 VirtualStick& VirtualStick::add_axes(int gamepad_id, Axis horizontal, Axis vertical, float deadzone)
 {
-	if (m_axes_len >= BLAH_MAX_VIRTUAL_NODES)
+	if (m_axes_len >= Input::max_virtual_nodes)
 		BLAH_ERROR("VirtualStick Axes out of bounds!");
 	else
 	{

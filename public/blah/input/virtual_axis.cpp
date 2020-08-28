@@ -7,7 +7,7 @@ using namespace Blah;
 
 VirtualAxis& VirtualAxis::add_keys(Key negative, Key positive)
 {
-	if (m_axes_len >= BLAH_MAX_VIRTUAL_NODES)
+	if (m_axes_len >= Input::max_virtual_nodes)
 		BLAH_ERROR("VirtualAxis Keys out of bounds!");
 	else
 	{
@@ -20,7 +20,7 @@ VirtualAxis& VirtualAxis::add_keys(Key negative, Key positive)
 
 VirtualAxis& VirtualAxis::add_buttons(int gamepad_id, Button negative, Button positive)
 {
-	if (m_axes_len >= BLAH_MAX_VIRTUAL_NODES)
+	if (m_axes_len >= Input::max_virtual_nodes)
 		BLAH_ERROR("VirtualAxis Buttons out of bounds!");
 	else
 	{
@@ -33,7 +33,7 @@ VirtualAxis& VirtualAxis::add_buttons(int gamepad_id, Button negative, Button po
 
 VirtualAxis& VirtualAxis::add_axis(int gamepad_id, Axis axis, float deadzone)
 {
-	if (m_axes_len >= BLAH_MAX_VIRTUAL_NODES)
+	if (m_axes_len >= Input::max_virtual_nodes)
 		BLAH_ERROR("VirtualAxis Axes out of bounds!");
 	else
 	{
