@@ -274,10 +274,10 @@ namespace Blah
 		// Whether this gamepad is a standard Game Controller
 		bool is_gamepad;
 
-		// The total button count for this controller, with a maximum of EX_MAX_CONTROLLER_BUTTONS
+		// The total button count for this controller
 		int button_count;
 
-		// The total axis count for this controller, with a maximum of EX_MAX_CONTROLLER_AXIS
+		// The total axis count for this controller
 		int axis_count;
 
 		// An array holding the pressed state of each button

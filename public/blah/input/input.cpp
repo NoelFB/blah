@@ -286,7 +286,7 @@ const ControllerState* Input::controller(int controllerIndex)
 {
 	if (controllerIndex >= Blah::Input::max_controllers)
 	{
-		Log::warn("Trying to access a controller at %i, outside of EX_MAX_CONTROLLERS", controllerIndex);
+		Log::warn("Trying to access a out-of-range controller at %i", controllerIndex);
 		return &g_empty_controller;
 	}
 	else if (!g_curr_state.controllers[controllerIndex].is_connected)
