@@ -273,7 +273,7 @@ namespace Blah
 	}
 
 	template<class T>
-	inline bool List<T>::contains(const T& item) const
+	bool List<T>::contains(const T& item) const
 	{
 		for (int i = 0; i < m_count; i++)
 			if (*(m_buffer + i) == item)
@@ -282,7 +282,7 @@ namespace Blah
 	}
 
 	template<class T>
-	inline int List<T>::index_of(const T& item) const
+	int List<T>::index_of(const T& item) const
 	{
 		for (int i = 0; i < m_count; i++)
 			if (*(m_buffer + i) == item)
