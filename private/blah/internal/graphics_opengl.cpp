@@ -371,8 +371,8 @@ namespace Blah
 				type == GL_DEBUG_TYPE_OTHER)
 				return;
 
-			const char* typeName;
-			const char* severityName;
+			const char* typeName = "";
+			const char* severityName = "";
 
 			switch (type)
 			{
@@ -527,6 +527,9 @@ namespace Blah
 				m_filter = filter;
 				m_format = format;
 				framebuffer_parent = false;
+				m_gl_internal_format = GL_RED;
+				m_gl_format = GL_RED;
+				m_gl_type = GL_UNSIGNED_BYTE;
 
 				if (width > maxTextureSize || height > maxTextureSize)
 				{
@@ -771,7 +774,7 @@ namespace Blah
 			Uniforms m_uniforms;
 
 		public:
-			GLint uniforms_loc[BLAH_UNIFORMS];
+			GLint uniforms_loc[BLAH_UNIFORMS] = { 0 };
 
 			OpenGL_Shader(const ShaderData* data)
 			{
