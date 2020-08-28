@@ -123,20 +123,26 @@ bool App::run(const Config* c)
 			{
 				time_accumulator -= time_target;
 
+				Time::delta = (1.0f / app_config.target_framerate);
+
+				if (Time::pause_timer > 0)
+				{
+					Time::pause_timer -= Time::delta;
+					if (Time::pause_timer <= -0.0001f)
+						Time::delta = -Time::pause_timer;
+					else
+						continue;
+				}
+
 				Time::milliseconds += time_target;
-				Time::delta = 1.0f / app_config.target_framerate;
 				Time::previous_elapsed = Time::elapsed;
 				Time::elapsed += Time::delta;
 
 				Internal::Input::frame();
 				Internal::Graphics::frame();
 
-				Time::pause_timer -= Time::delta;
-				if (Time::pause_timer <= 0)
-				{
-					if (app_config.on_update != nullptr)
-						app_config.on_update();
-				}
+				if (app_config.on_update != nullptr)
+					app_config.on_update();
 			}
 		}
 
