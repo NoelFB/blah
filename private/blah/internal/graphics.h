@@ -29,6 +29,7 @@ namespace Blah
 			bool valid = false;
 			GraphicsInfo info;
 
+			virtual ~GraphicsDevice() = default;
 			virtual void startup() = 0;
 			virtual void update() = 0;
 			virtual void shutdown() = 0;
