@@ -12,17 +12,17 @@ RectI::RectI()
 
 RectI::RectI(int rx, int ry, int rw, int rh)
 {
-	x = rx; 
-	y = ry; 
-	w = rw; 
+	x = rx;
+	y = ry;
+	w = rw;
 	h = rh;
 }
 
 RectI::RectI(Point pos, Point size)
 {
-	x = pos.x; 
-	y = pos.y; 
-	w = size.x; 
+	x = pos.x;
+	y = pos.y;
+	w = size.x;
 	h = size.y;
 }
 

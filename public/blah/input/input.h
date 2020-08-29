@@ -295,7 +295,7 @@ namespace Blah
 		// Timestamp, in milliseconds, since each button was last pressed
 		uint64_t button_timestamp[Input::max_controller_buttons];
 
-		// Timestamp, in milliseconds, since each axis last had a value set 
+		// Timestamp, in milliseconds, since each axis last had a value set
 		uint64_t axis_timestamp[Input::max_controller_axis];
 
 	};

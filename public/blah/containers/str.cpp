@@ -15,14 +15,14 @@ const uint32_t UTF8_SURROGATE_OFFSET = 0x10000u - (UTF8_LEAD_SURROGATE_MIN << 10
 
 char Str::empty_buffer[1] = { '\0' };
 
-bool Str::operator==(const Str& rhs) const 
-{ 
-	return strcmp(cstr(), rhs.cstr()) == 0; 
+bool Str::operator==(const Str& rhs) const
+{
+	return strcmp(cstr(), rhs.cstr()) == 0;
 }
 
-bool Str::operator!=(const Str& rhs) const 
-{ 
-	return strcmp(cstr(), rhs.cstr()) != 0; 
+bool Str::operator!=(const Str& rhs) const
+{
+	return strcmp(cstr(), rhs.cstr()) != 0;
 }
 
 bool Str::operator==(const char* rhs) const
@@ -43,7 +43,7 @@ void Str::reserve(int size)
 		if (m_capacity <= 0)
 			m_capacity = 16;
 
-		while (m_capacity < buffer_length) 
+		while (m_capacity < buffer_length)
 			m_capacity *= 2;
 
 		// expand from local buffer

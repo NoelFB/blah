@@ -35,7 +35,7 @@ add_library(blah
 	public/blah/input/virtual_button.h
 	public/blah/input/virtual_axis.cpp
 	public/blah/input/virtual_axis.h
-	 
+	
 	public/blah/containers/list.h
 	public/blah/containers/stacklist.h
 	public/blah/containers/str.cpp
@@ -103,7 +103,7 @@ add_library(blah
 	private/blah/internal/platform_sdl2.cpp
 )
 
-target_include_directories(blah 
+target_include_directories(blah
 	PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
 	PRIVATE

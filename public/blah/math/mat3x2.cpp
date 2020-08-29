@@ -5,7 +5,7 @@
 
 using namespace Blah;
 
-Mat3x2::Mat3x2() 
+Mat3x2::Mat3x2()
 	: m11(0), m12(0), m21(0), m22(0), m31(0), m32(0) {}
 
 Mat3x2::Mat3x2(float m11, float m12, float m21, float m22, float m31, float m32)

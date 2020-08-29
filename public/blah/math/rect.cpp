@@ -7,17 +7,17 @@
 
 using namespace Blah;
 
-Rect::Rect() 
-{ 
-	x = y = w = h = 0; 
+Rect::Rect()
+{
+	x = y = w = h = 0;
 };
 
-Rect::Rect(float rx, float ry, float rw, float rh) 
-{ 
-	x = rx; 
-	y = ry; 
-	w = rw; 
-	h = rh; 
+Rect::Rect(float rx, float ry, float rw, float rh)
+{
+	x = rx;
+	y = ry;
+	w = rw;
+	h = rh;
 }
 
 Rect::Rect(Vec2 pos, Vec2 size)
@@ -28,30 +28,30 @@ Rect::Rect(Vec2 pos, Vec2 size)
 	h = size.y;
 }
 
-Rect::Rect(RectI r) 
-{ 
-	x = (float)r.x; 
+Rect::Rect(RectI r)
+{
+	x = (float)r.x;
 	y = (float)r.y;
 	w = (float)r.w;
 	h = (float)r.h;
 }
 
 Rect Rect::scale(float s)
-{ 
-	x = (x * s); 
-	y = (y * s); 
-	w = (w * s); 
-	h = (h * s); 
-	return *this; 
+{
+	x = (x * s);
+	y = (y * s);
+	w = (w * s);
+	h = (h * s);
+	return *this;
 }
 
-Rect Rect::scale(float sx, float sy) 
-{ 
-	x = (x * sx); 
-	y = (y * sy); 
-	w = (w * sx); 
-	h = (h * sy); 
-	return *this; 
+Rect Rect::scale(float sx, float sy)
+{
+	x = (x * sx);
+	y = (y * sy);
+	w = (w * sx);
+	h = (h * sy);
+	return *this;
 }
 
 Line Rect::left_line() const { return Line(left(), top(), left(), bottom()); }
@@ -67,7 +67,7 @@ Rect& Rect::operator-=(const Vec2& rhs) { x -= rhs.x; y -= rhs.y; return *this; 
 Rect Rect::transform(const Rect& rect, const Mat3x2& matrix)
 {
 	return Rect(
-		(rect.x * matrix.m11) + (rect.y * matrix.m21) + matrix.m31, 
+		(rect.x * matrix.m11) + (rect.y * matrix.m21) + matrix.m31,
 		(rect.x * matrix.m12) + (rect.y * matrix.m22) + matrix.m32,
 		(rect.w * matrix.m11) + (rect.h * matrix.m21),
 		(rect.w * matrix.m12) + (rect.h * matrix.m22));

@@ -5,9 +5,9 @@ using namespace Blah;
 
 namespace
 {
-	float modf(float x, float m) 
-	{ 
-		return x - (int)(x / m) * m; 
+	float modf(float x, float m)
+	{
+		return x - (int)(x / m) * m;
 	}
 }
 

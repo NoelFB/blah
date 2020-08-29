@@ -409,7 +409,7 @@ void Platform::get_draw_size(int* width, int* height)
 float Platform::get_content_scale()
 {
 	// TODO:
-	// This is incorrect! but for some reason the scale 
+	// This is incorrect! but for some reason the scale
 	// is HUGE if I use the Display DPI on macOS :/
 #if __APPLE__
 	return 2.0f;

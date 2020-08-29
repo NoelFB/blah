@@ -6,7 +6,7 @@ using namespace Blah;
 char const hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 #define LT_HEX_VALUE(n) ((n >= '0' && n <= '9') ? (n - '0') : ((n >= 'A' && n <= 'F') ? (10 + n - 'A') : ((n >= 'a' && n <= 'f') ? (10 + n - 'a') : 0)))
 
-Color::Color() 
+Color::Color()
 	: r(0), g(0), b(0), a(0) {}
 
 Color::Color(int rgb) :
@@ -15,16 +15,16 @@ Color::Color(int rgb) :
 	b((uint8_t)(rgb & 0x0000FF)),
 	a(255) {}
 
-Color::Color(int rgb, float alpha) : 
+Color::Color(int rgb, float alpha) :
 	r((int)(((uint8_t)((rgb & 0xFF0000) >> 16)) * alpha)),
 	g((int)(((uint8_t)((rgb & 0x00FF00) >> 8)) * alpha)),
 	b((int)(((uint8_t)(rgb & 0x0000FF)) * alpha)),
 	a((int)(255 * alpha)) {}
 
-Color::Color(uint8_t r, uint8_t g, uint8_t b) 
+Color::Color(uint8_t r, uint8_t g, uint8_t b)
 	: r(r), g(g), b(b), a(255) {}
 
-Color::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) 
+Color::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 	: r(r), g(g), b(b), a(a) {}
 
 Color::Color(const char* value) : r(0), g(0), b(0), a(255)
@@ -59,10 +59,10 @@ void Color::premultiply()
 
 uint32_t Color::to_rgba() const
 {
-	return 
-		((uint32_t)r << 24) | 
-		((uint32_t)g << 16) | 
-		((uint32_t)b << 8) | 
+	return
+		((uint32_t)r << 24) |
+		((uint32_t)g << 16) |
+		((uint32_t)b << 8) |
 		(uint32_t)a;
 }
 
@@ -130,9 +130,9 @@ Color Color::lerp(Color a, Color b, float amount)
 Color Color::operator*(float multiply) const
 {
 	return Color(
-		(int)(r * multiply), 
-		(int)(g * multiply), 
-		(int)(b * multiply), 
+		(int)(r * multiply),
+		(int)(g * multiply),
+		(int)(b * multiply),
 		(int)(a * multiply));
 }
 

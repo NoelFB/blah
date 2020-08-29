@@ -388,8 +388,8 @@ void Batch::bezier_line(const Vec2& from, const Vec2& b, const Vec2& c, const Ve
 void Batch::tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, Color color)
 {
 	PUSH_TRIANGLE(
-		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y, 
-		0, 0, 0, 0, 0, 0, 
+		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y,
+		0, 0, 0, 0, 0, 0,
 		color, color, color,
 		0, 0, 255);
 }
@@ -397,8 +397,8 @@ void Batch::tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, Color colo
 void Batch::tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, Color col0, Color col1, Color col2)
 {
 	PUSH_TRIANGLE(
-		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y, 
-		0, 0, 0, 0, 0, 0, 
+		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y,
+		0, 0, 0, 0, 0, 0,
 		col0, col1, col2,
 		0, 0, 255);
 }
@@ -406,18 +406,18 @@ void Batch::tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, Color col0
 void Batch::tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& tex0, const Vec2& tex1, const Vec2& tex2, Color color)
 {
 	PUSH_TRIANGLE(
-		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y, 
-		tex0.x, tex0.y, tex1.x, tex1.y, tex2.x, tex2.y, 
-		color, color, color, 
+		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y,
+		tex0.x, tex0.y, tex1.x, tex1.y, tex2.x, tex2.y,
+		color, color, color,
 		m_tex_mult, m_tex_wash, 0);
 }
 
 void Batch::tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& tex0, const Vec2& tex1, const Vec2& tex2, Color col0, Color col1, Color col2)
 {
 	PUSH_TRIANGLE(
-		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y, 
-		tex0.x, tex0.y, tex1.x, tex1.y, tex2.x, tex2.y, 
-		col0, col1, col2, 
+		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y,
+		tex0.x, tex0.y, tex1.x, tex1.y, tex2.x, tex2.y,
+		col0, col1, col2,
 		m_tex_mult, m_tex_wash, 0);
 }
 
@@ -633,7 +633,7 @@ void Batch::circle_line(const Vec2 center, float radius, float t, int steps, Col
 void Batch::quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& pos3, Color color)
 {
 	PUSH_QUAD(
-		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y, pos3.x, pos3.y, 
+		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y, pos3.x, pos3.y,
 		0, 0, 0, 0, 0, 0, 0, 0,
 		color, color, color, color,
 		0, 0, 255);
@@ -642,7 +642,7 @@ void Batch::quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec
 void Batch::quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& pos3, Color col0, Color col1, Color col2, Color col3)
 {
 	PUSH_QUAD(
-		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y, pos3.x, pos3.y, 
+		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y, pos3.x, pos3.y,
 		0, 0, 0, 0, 0, 0, 0, 0,
 		col0, col1, col2, col3,
 		0, 0, 255);
@@ -699,9 +699,9 @@ void Batch::tex(const Subtexture& sub, const Vec2& pos, Color color)
 	if (!sub.texture || !sub.texture->is_valid())
 	{
 		PUSH_QUAD(
-			pos.x + sub.draw_coords[0].x, pos.y + sub.draw_coords[0].y, 
-			pos.x + sub.draw_coords[1].x, pos.y + sub.draw_coords[1].y, 
-			pos.x + sub.draw_coords[2].x, pos.y + sub.draw_coords[2].y, 
+			pos.x + sub.draw_coords[0].x, pos.y + sub.draw_coords[0].y,
+			pos.x + sub.draw_coords[1].x, pos.y + sub.draw_coords[1].y,
+			pos.x + sub.draw_coords[2].x, pos.y + sub.draw_coords[2].y,
 			pos.x + sub.draw_coords[3].x, pos.y + sub.draw_coords[3].y,
 			0, 0, 0, 0, 0, 0, 0, 0,
 			color, color, color, color,
@@ -716,9 +716,9 @@ void Batch::tex(const Subtexture& sub, const Vec2& pos, Color color)
 			pos.x + sub.draw_coords[1].x, pos.y + sub.draw_coords[1].y,
 			pos.x + sub.draw_coords[2].x, pos.y + sub.draw_coords[2].y,
 			pos.x + sub.draw_coords[3].x, pos.y + sub.draw_coords[3].y,
-			sub.tex_coords[0].x, sub.tex_coords[0].y, 
-			sub.tex_coords[1].x, sub.tex_coords[1].y, 
-			sub.tex_coords[2].x, sub.tex_coords[2].y, 
+			sub.tex_coords[0].x, sub.tex_coords[0].y,
+			sub.tex_coords[1].x, sub.tex_coords[1].y,
+			sub.tex_coords[2].x, sub.tex_coords[2].y,
 			sub.tex_coords[3].x, sub.tex_coords[3].y,
 			color, color, color, color,
 			m_tex_mult, m_tex_wash, 0);
@@ -732,9 +732,9 @@ void Batch::tex(const Subtexture& sub, const Vec2& pos, const Vec2& origin, cons
 	if (!sub.texture || !sub.texture->is_valid())
 	{
 		PUSH_QUAD(
-			sub.draw_coords[0].x, sub.draw_coords[0].y, 
-			sub.draw_coords[1].x, sub.draw_coords[1].y, 
-			sub.draw_coords[2].x, sub.draw_coords[2].y, 
+			sub.draw_coords[0].x, sub.draw_coords[0].y,
+			sub.draw_coords[1].x, sub.draw_coords[1].y,
+			sub.draw_coords[2].x, sub.draw_coords[2].y,
 			sub.draw_coords[3].x, sub.draw_coords[3].y,
 			0, 0, 0, 0, 0, 0, 0, 0,
 			color, color, color, color,
@@ -749,9 +749,9 @@ void Batch::tex(const Subtexture& sub, const Vec2& pos, const Vec2& origin, cons
 			sub.draw_coords[1].x, sub.draw_coords[1].y,
 			sub.draw_coords[2].x, sub.draw_coords[2].y,
 			sub.draw_coords[3].x, sub.draw_coords[3].y,
-			sub.tex_coords[0].x, sub.tex_coords[0].y, 
-			sub.tex_coords[1].x, sub.tex_coords[1].y, 
-			sub.tex_coords[2].x, sub.tex_coords[2].y, 
+			sub.tex_coords[0].x, sub.tex_coords[0].y,
+			sub.tex_coords[1].x, sub.tex_coords[1].y,
+			sub.tex_coords[2].x, sub.tex_coords[2].y,
 			sub.tex_coords[3].x, sub.tex_coords[3].y,
 			color, color, color, color,
 			m_tex_mult, m_tex_wash, 0);
@@ -807,7 +807,7 @@ void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, Tex
 		}
 
 		// TODO:
-		// This doesn't parse Unicode! 
+		// This doesn't parse Unicode!
 		// It will assume it's a 1-byte ASCII char which is incorrect
 		auto ch = font[text[i]];
 
@@ -818,7 +818,7 @@ void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, Tex
 			if (i > 0 && text[i - 1] != '\n')
 			{
 				// TODO:
-				// This doesn't parse Unicode! 
+				// This doesn't parse Unicode!
 				at.x += font.get_kerning(text[i], text[i - 1]);
 			}
 

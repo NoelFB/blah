@@ -4,15 +4,15 @@
 
 using namespace Blah;
 
-Point::Point() 
-{ 
-	x = y = 0; 
+Point::Point()
+{
+	x = y = 0;
 }
 
-Point::Point(int px, int py) 
-{ 
-	x = px; 
-	y = py; 
+Point::Point(int px, int py)
+{
+	x = px;
+	y = py;
 }
 
 Point Point::operator +(const Point rhs) const { return Point(x + rhs.x, y + rhs.y); }
@@ -31,14 +31,14 @@ Point& Point::operator *=(int rhs) { x *= rhs; y *= rhs; return *this; }
 bool Point::operator ==(const Point& rhs) { return x == rhs.x && y == rhs.y; }
 bool Point::operator !=(const Point& rhs) { return x != rhs.x || y != rhs.y; }
 
-float Point::length() const 
-{ 
+float Point::length() const
+{
 	return sqrtf((float)(x * x + y * y));
 }
 
-int Point::length_squared() const 
-{ 
-	return x * x + y * y; 
+int Point::length_squared() const
+{
+	return x * x + y * y;
 }
 
 const Point Point::unitX = Point(1, 0);

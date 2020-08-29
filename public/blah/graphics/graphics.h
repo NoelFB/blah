@@ -166,10 +166,10 @@ namespace Blah
 			rgba = blendColor;
 		}
 
-		inline bool operator==(const BlendMode& rhs) const { 
+		inline bool operator==(const BlendMode& rhs) const {
 			return colorOp == rhs.colorOp && colorSrc == rhs.colorSrc && colorDst == rhs.colorDst &&
 				   alphaOp == rhs.alphaOp && alphaSrc == rhs.alphaSrc && alphaDst == rhs.alphaDst &&
-				   mask == rhs.mask && rgba == rhs.rgba; 
+				   mask == rhs.mask && rgba == rhs.rgba;
 		}
 		inline bool operator!=(const BlendMode& rhs) const { return !(*this == rhs); }
 

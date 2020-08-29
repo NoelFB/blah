@@ -158,7 +158,7 @@ void Aseprite::Parse(Stream& stream)
 
 			if (old_chunk_count == 0xFFFF)
 				chunks = new_chunk_count;
-			else 
+			else
 				chunks = old_chunk_count;
 		}
 

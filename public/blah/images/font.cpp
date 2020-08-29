@@ -14,10 +14,10 @@ String GetName(stbtt_fontinfo* font, int nameId)
 	int length = 0;
 
 	// get the name
-	const uint16_t* ptr = (const uint16_t*)stbtt_GetFontNameStr(font, &length, 
-		STBTT_PLATFORM_ID_MICROSOFT, 
-		STBTT_MS_EID_UNICODE_BMP, 
-		STBTT_MS_LANG_ENGLISH, 
+	const uint16_t* ptr = (const uint16_t*)stbtt_GetFontNameStr(font, &length,
+		STBTT_PLATFORM_ID_MICROSOFT,
+		STBTT_MS_EID_UNICODE_BMP,
+		STBTT_MS_LANG_ENGLISH,
 		nameId);
 
 	// we want the size in wide chars
