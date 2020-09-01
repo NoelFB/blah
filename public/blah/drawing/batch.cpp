@@ -784,9 +784,9 @@ void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, Tex
 	if ((align & TextAlign::Top) == TextAlign::Top)
 		offset.y = font.ascent() + font.descent();
 	else if ((align & TextAlign::Bottom) == TextAlign::Bottom)
-		offset.y = font.ascent() + font.descent() - font.height_of(text);
+		offset.y = font.height() - font.height_of(text);
 	else
-		offset.y = font.ascent() + font.descent() - font.height_of(text) * 0.5f;
+		offset.y = (font.ascent() + font.descent() + font.height() - font.height_of(text)) * 0.5f;
 
 	for (int i = 0, l = text.length(); i < l; i++)
 	{
