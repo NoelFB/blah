@@ -69,7 +69,6 @@ namespace Blah
 		{
 			int layer_index = 0;
 			int linked_frame_index = 0;
-			int linked_cel_index = 0;
 			int x = 0;
 			int y = 0;
 			unsigned char alpha = 0;
@@ -132,8 +131,8 @@ namespace Blah
 		Aseprite(const char* path);
 		Aseprite(Stream& stream);
 		Aseprite(const Aseprite& src);
-		Aseprite& operator=(const Aseprite& src);
 		Aseprite(Aseprite&& src) noexcept;
+		Aseprite& operator=(const Aseprite& src);
 		Aseprite& operator=(Aseprite&& src) noexcept;
 		~Aseprite();
 

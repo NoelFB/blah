@@ -48,6 +48,18 @@ Aseprite::Aseprite(const Aseprite& src)
 	palette = src.palette;
 }
 
+Aseprite::Aseprite(Aseprite&& src) noexcept
+{
+	mode = src.mode;
+	width = src.width;
+	height = src.height;
+	layers = std::move(src.layers);
+	frames = std::move(src.frames);
+	tags = std::move(src.tags);
+	slices = std::move(src.slices);
+	palette = std::move(src.palette);
+}
+
 Aseprite& Aseprite::operator=(const Aseprite& src)
 {
 	mode = src.mode;
@@ -59,18 +71,6 @@ Aseprite& Aseprite::operator=(const Aseprite& src)
 	slices = src.slices;
 	palette = src.palette;
 	return *this;
-}
-
-Aseprite::Aseprite(Aseprite&& src) noexcept
-{
-	mode = src.mode;
-	width = src.width;
-	height = src.height;
-	layers = std::move(src.layers);
-	frames = std::move(src.frames);
-	tags = std::move(src.tags);
-	slices = std::move(src.slices);
-	palette = std::move(src.palette);
 }
 
 Aseprite& Aseprite::operator=(Aseprite&& src) noexcept
@@ -126,17 +126,17 @@ void Aseprite::Parse(Stream& stream)
 		stream.read<uint32_t>(Endian::Little);		// Should be 0
 		stream.read<uint32_t>(Endian::Little);		// Should be 0
 		stream.read<uint8_t>(Endian::Little);		// Palette entry
-		stream.seek(stream.position() + 3);			// Ignore these bytes
+		stream.seek(stream.position() + 3);	// Ignore these bytes
 		stream.read<uint16_t>(Endian::Little);		// Number of colors (0 means 256 for old sprites)
-		stream.read<int8_t>(Endian::Little);		// Pixel width
-		stream.read<int8_t>(Endian::Little);		// Pixel height
-		stream.seek(stream.position() + 92);		// For Future
+		stream.read<int8_t>(Endian::Little);				// Pixel width
+		stream.read<int8_t>(Endian::Little);				// Pixel height
+		stream.seek(stream.position() + 92);	// For Future
 	}
 
 	frames.expand(frameCount);
 
 	// frames
-	for (int i = 0; i < frameCount; i ++)
+	for (int i = 0; i < frameCount; i++)
 	{
 		auto frameStart = stream.position();
 		auto frameEnd = frameStart + stream.read<uint32_t>(Endian::Little);
@@ -166,7 +166,7 @@ void Aseprite::Parse(Stream& stream)
 		frames[i].image = Image(width, height);
 
 		// frame chunks
-		for (unsigned int j = 0; j < chunks; j ++)
+		for (unsigned int j = 0; j < chunks; j++)
 		{
 			auto chunkStart = stream.position();
 			auto chunkEnd = chunkStart + stream.read<uint32_t>(Endian::Little);
@@ -174,13 +174,13 @@ void Aseprite::Parse(Stream& stream)
 
 			switch (chunkType)
 			{
-				case Chunks::Layer: ParseLayer(stream, i); break;
-				case Chunks::Cel: ParseCel(stream, i, (size_t)chunkEnd); break;
-				case Chunks::Palette: ParsePalette(stream, i); break;
-				case Chunks::UserData: ParseUserData(stream, i); break;
-				case Chunks::FrameTags: ParseTag(stream, i); break;
-				case Chunks::Slice: ParseSlice(stream, i); break;
-				default: break;
+			case Chunks::Layer: ParseLayer(stream, i); break;
+			case Chunks::Cel: ParseCel(stream, i, chunkEnd); break;
+			case Chunks::Palette: ParsePalette(stream, i); break;
+			case Chunks::UserData: ParseUserData(stream, i); break;
+			case Chunks::FrameTags: ParseTag(stream, i); break;
+			case Chunks::Slice: ParseSlice(stream, i); break;
+			default: break;
 			}
 
 			stream.seek(chunkEnd);
@@ -221,7 +221,6 @@ void Aseprite::ParseCel(Stream& stream, int frameIndex, size_t maxPosition)
 	cel->y = stream.read<uint16_t>(Endian::Little);
 	cel->alpha = stream.read<uint8_t>(Endian::Little);
 	cel->linked_frame_index = -1;
-	cel->linked_cel_index = -1;
 
 	auto celType = stream.read<uint16_t>(Endian::Little);
 	stream.seek(stream.position() + 7);
@@ -248,8 +247,6 @@ void Aseprite::ParseCel(Stream& stream, int frameIndex, size_t maxPosition)
 			auto size = maxPosition - stream.position();
 			if (size > INT32_MAX)
 				size = INT32_MAX;
-			if (size < 0)
-				size = 0;
 
 			char* buffer = new char[size];
 			stream.read(buffer, size);
@@ -272,14 +269,14 @@ void Aseprite::ParseCel(Stream& stream, int frameIndex, size_t maxPosition)
 		{
 			auto src = (unsigned char*)cel->image.pixels;
 			auto dst = cel->image.pixels;
-			for (int d = width * height - 1, s = (width * height - 1) * 2; d >= 0; d --, s -= 2)
+			for (int d = width * height - 1, s = (width * height - 1) * 2; d >= 0; d--, s -= 2)
 				dst[d] = Color(src[s], src[s], src[s], src[s + 1]);
 		}
 		else if (mode == Modes::Indexed)
 		{
 			auto src = (unsigned char*)cel->image.pixels;
 			auto dst = cel->image.pixels;
-			for (int i = width * height - 1; i >= 0; i --)
+			for (int i = width * height - 1; i >= 0; i--)
 				dst[i] = palette[src[i]];
 		}
 
@@ -289,7 +286,6 @@ void Aseprite::ParseCel(Stream& stream, int frameIndex, size_t maxPosition)
 	else if (celType == 1)
 	{
 		cel->linked_frame_index = stream.read<uint16_t>(Endian::Little);
-		cel->linked_cel_index = static_cast<int>(frame.cels.count() - 1);
 	}
 
 	// draw to frame if visible
@@ -323,7 +319,7 @@ void Aseprite::ParsePalette(Stream& stream, int frame)
 			int len = stream.read<uint16_t>(Endian::Little);
 			stream.seek(stream.position() + len);
 		}
-	}	
+	}
 }
 
 void Aseprite::ParseUserData(Stream& stream, int frame)
@@ -362,7 +358,7 @@ void Aseprite::ParseTag(Stream& stream, int frame)
 		stream.seek(stream.position() + 1);
 
 		tag->name.set_length(stream.read<uint16_t>(Endian::Little));
-		stream.read(tag->name .cstr(), tag->name.length());
+		stream.read(tag->name.cstr(), tag->name.length());
 	}
 }
 
@@ -385,7 +381,7 @@ void Aseprite::ParseSlice(Stream& stream, int frame)
 		slice->origin.y = stream.read<int32_t>(Endian::Little);
 		slice->width = stream.read<uint32_t>(Endian::Little);
 		slice->height = stream.read<uint32_t>(Endian::Little);
-		
+
 		// 9 slice (ignored atm)
 		if (flags & (1 << 0))
 		{
@@ -413,10 +409,18 @@ void Aseprite::ParseSlice(Stream& stream, int frame)
 void Aseprite::RenderCel(Cel* cel, Frame* frame)
 {
 	Layer& layer = layers[cel->layer_index];
-	
+
 	while (cel->linked_frame_index >= 0)
-		cel = &(frames[cel->linked_frame_index].cels[cel->linked_cel_index]);
-	
+	{
+		auto& frame = frames[cel->linked_frame_index];
+		for (auto& it : frame.cels)
+			if (it.layer_index == cel->layer_index)
+			{
+				cel = &it;
+				break;
+			}
+	}
+
 	int t;
 	unsigned char opacity = MUL_UN8(cel->alpha, layer.alpha, t);
 	if (opacity <= 0)
@@ -456,7 +460,7 @@ void Aseprite::RenderCel(Cel* cel, Frame* frame)
 					dstColor->b = (unsigned char)(dstColor->b + (srcColor->b - dstColor->b) * sa / ra);
 					dstColor->a = (unsigned char)ra;
 				}
-			}	
+			}
 		}
 	}
 	else
