@@ -32,12 +32,12 @@ namespace Blah
 			float m41, float m42, float m43, float m44);
 
 
-		static const Mat4x4 Identity;
+		static const Mat4x4 identity;
 
-		static Mat4x4 CreateOrthographic(float width, float height, float zNearPlane, float zFarPlane);
-		static Mat4x4 CreateOrthographicOffCenter(float left, float right, float bottom, float top, float zNearPlane, float zFarPlane);
-		static Mat4x4 CreateTranslation(float xPosition, float yPosition, float zPosition);
-		static Mat4x4 CreateScale(float xScale, float yScale, float zScale);
+		static Mat4x4 create_ortho(float width, float height, float z_near_plane, float z_far_plane);
+		static Mat4x4 create_ortho_offcenter(float left, float right, float bottom, float top, float z_near_plane, float z_far_plane);
+		static Mat4x4 create_translation(float x, float y, float z);
+		static Mat4x4 create_scale(float x, float y, float z);
 
 		Mat4x4 operator* (const Mat4x4& rhs);
 	};

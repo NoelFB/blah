@@ -226,7 +226,7 @@ void Batch::render(const FrameBufferRef& target)
 	else
 		size = Point(target->width(), target->height());
 
-	render(target, Mat4x4::CreateOrthographicOffCenter(0, (float)size.x, (float)size.y, 0, 0.01f, 1000.0f));
+	render(target, Mat4x4::create_ortho_offcenter(0, (float)size.x, (float)size.y, 0, 0.01f, 1000.0f));
 }
 
 void Batch::render(const FrameBufferRef& target, const Mat4x4& matrix)

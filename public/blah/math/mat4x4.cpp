@@ -18,65 +18,65 @@ Mat4x4::Mat4x4(
 	m31(m31), m32(m32), m33(m33), m34(m34),
 	m41(m41), m42(m42), m43(m43), m44(m44) {}
 
-const Mat4x4 Mat4x4::Identity = Mat4x4(
+const Mat4x4 Mat4x4::identity = Mat4x4(
 	1.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 1.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 1.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 1.0f);
 
-Mat4x4 Mat4x4::CreateOrthographic(float width, float height, float zNearPlane, float zFarPlane)
+Mat4x4 Mat4x4::create_ortho(float width, float height, float z_near_plane, float z_far_plane)
 {
-	Mat4x4 result = Identity;
+	Mat4x4 result = identity;
 
 	result.m11 = 2.0f / width;
 	result.m12 = result.m13 = result.m14 = 0.0f;
 	result.m22 = -2.0f / height;
 	result.m21 = result.m23 = result.m24 = 0.0f;
-	result.m33 = 1.0f / (zNearPlane - zFarPlane);
+	result.m33 = 1.0f / (z_near_plane - z_far_plane);
 	result.m31 = result.m32 = result.m34 = 0.0f;
 	result.m41 = result.m42 = 0.0f;
-	result.m43 = zNearPlane / (zNearPlane - zFarPlane);
+	result.m43 = z_near_plane / (z_near_plane - z_far_plane);
 	result.m44 = 1.0f;
 
 	return result;
 }
 
-Mat4x4 Mat4x4::CreateOrthographicOffCenter(float left, float right, float bottom, float top, float zNearPlane, float zFarPlane)
+Mat4x4 Mat4x4::create_ortho_offcenter(float left, float right, float bottom, float top, float z_near_plane, float z_far_plane)
 {
-	Mat4x4 result = Identity;
+	Mat4x4 result = identity;
 
 	result.m11 = 2.0f / (right - left);
 	result.m12 = result.m13 = result.m14 = 0.0f;
 	result.m22 = 2.0f / (top - bottom);
 	result.m21 = result.m23 = result.m24 = 0.0f;
-	result.m33 = 1.0f / (zNearPlane - zFarPlane);
+	result.m33 = 1.0f / (z_near_plane - z_far_plane);
 	result.m31 = result.m32 = result.m34 = 0.0f;
 	result.m41 = (left + right) / (left - right);
 	result.m42 = (top + bottom) / (bottom - top);
-	result.m43 = zNearPlane / (zNearPlane - zFarPlane);
+	result.m43 = z_near_plane / (z_near_plane - z_far_plane);
 	result.m44 = 1.0f;
 
 	return result;
 }
 
-Mat4x4 Mat4x4::CreateTranslation(float xPosition, float yPosition, float zPosition)
+Mat4x4 Mat4x4::create_translation(float x, float y, float z)
 {
-	Mat4x4 result = Identity;
+	Mat4x4 result = identity;
 
-	result.m41 = xPosition;
-	result.m42 = yPosition;
-	result.m43 = zPosition;
+	result.m41 = x;
+	result.m42 = y;
+	result.m43 = z;
 
 	return result;
 }
 
-Mat4x4 Mat4x4::CreateScale(float xScale, float yScale, float zScale)
+Mat4x4 Mat4x4::create_scale(float x, float y, float z)
 {
-	Mat4x4 result = Identity;
+	Mat4x4 result = identity;
 
-	result.m11 = xScale;
-	result.m22 = yScale;
-	result.m33 = zScale;
+	result.m11 = x;
+	result.m22 = y;
+	result.m33 = z;
 
 	return result;
 }
