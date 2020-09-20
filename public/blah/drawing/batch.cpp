@@ -811,7 +811,7 @@ void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, Tex
 		// It will assume it's a 1-byte ASCII char which is incorrect
 		auto ch = font[text[i]];
 
-		if (!ch.subtexture.texture || !ch.subtexture.texture->is_valid())
+		if (ch.subtexture.texture && ch.subtexture.texture->is_valid())
 		{
 			Vec2 at = offset + ch.offset;
 
