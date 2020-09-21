@@ -762,47 +762,37 @@ void Batch::tex(const Subtexture& sub, const Vec2& pos, const Vec2& origin, cons
 
 void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, Color color)
 {
-	str(font, text, pos, TextAlign::TopLeft, font.size(), color);
+	str(font, text, pos, TextAlign::TopLeft, font.size, color);
 }
 
 void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, TextAlign align, float size, Color color)
 {
 	push_matrix(
-		Mat3x2::create_scale(size / font.size()) *
+		Mat3x2::create_scale(size / font.size) *
 		Mat3x2::create_translation(pos)
 		);
 
 	Vec2 offset;
-
 	if ((align & TextAlign::Left) == TextAlign::Left)
 		offset.x = 0;
 	else if ((align & TextAlign::Right) == TextAlign::Right)
 		offset.x -= font.width_of_line(text);
 	else
-		offset.x -= font.width_of_line(text) * 0.5f;
-
+		offset.x -= (int)(font.width_of_line(text) * 0.5f);
 	if ((align & TextAlign::Top) == TextAlign::Top)
-		offset.y = font.ascent() + font.descent();
+		offset.y = font.ascent + font.descent;
 	else if ((align & TextAlign::Bottom) == TextAlign::Bottom)
-		offset.y = font.height() - font.height_of(text);
+		offset.y = font.ascent + font.descent - font.height_of(text);
 	else
-		offset.y = (font.ascent() + font.descent() + font.height() - font.height_of(text)) * 0.5f;
+		offset.y = font.ascent + font.descent - (int)(font.height_of(text) * 0.5f);
 
+	Vec2 at;
 	for (int i = 0, l = text.length(); i < l; i++)
 	{
 		if (text[i] == '\n')
 		{
-			// increment y
-			offset.y += font.line_height();
-
-			// re-align X for this line
-			if ((align & TextAlign::Left) == TextAlign::Left)
-				offset.x = 0;
-			else if ((align & TextAlign::Right) == TextAlign::Right)
-				offset.x = -font.width_of_line(text, i + 1);
-			else
-				offset.x = -font.width_of_line(text, i + 1) * 0.5f;
-
+			at.x = 0;
+			at.y += font.line_height();
 			continue;
 		}
 
@@ -813,19 +803,17 @@ void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, Tex
 
 		if (ch.subtexture.texture && ch.subtexture.texture->is_valid())
 		{
-			Vec2 at = offset + ch.offset;
-
-			if (i > 0 && text[i - 1] != '\n')
+			if (i > 0)
 			{
 				// TODO:
 				// This doesn't parse Unicode!
-				at.x += font.get_kerning(text[i], text[i - 1]);
+				at.x += font.get_kerning(text[i - 1], text[i]);
 			}
 
-			tex(ch.subtexture, at, color);
+			tex(ch.subtexture, at + offset + ch.offset, color);
 		}
 
-		offset.x += ch.advance;
+		at.x += ch.advance;
 	}
 
 	pop_matrix();

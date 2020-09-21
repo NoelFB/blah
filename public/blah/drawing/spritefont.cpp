@@ -6,10 +6,10 @@ using namespace Blah;
 
 SpriteFont::SpriteFont()
 {
-	m_size = 0;
-	m_ascent = 0;
-	m_descent = 0;
-	m_line_gap = 0;
+	size = 0;
+	ascent = 0;
+	descent = 0;
+	line_gap = 0;
 }
 
 const uint32_t ascii[]{ 32, 128, 0 };
@@ -37,11 +37,11 @@ SpriteFont::SpriteFont(const Font& font, float size, const uint32_t* charset)
 
 SpriteFont::SpriteFont(SpriteFont&& src) noexcept
 {
-	m_name = src.m_name;
-	m_size = src.m_size;
-	m_ascent = src.m_ascent;
-	m_descent = src.m_descent;
-	m_line_gap = src.m_line_gap;
+	name = src.name;
+	size = src.size;
+	ascent = src.ascent;
+	descent = src.descent;
+	line_gap = src.line_gap;
 	m_characters = std::move(src.m_characters);
 	m_kerning = std::move(src.m_kerning);
 	m_atlas = std::move(src.m_atlas);
@@ -57,16 +57,16 @@ void SpriteFont::dispose()
 	m_atlas.dispose();
 	m_characters.clear();
 	m_kerning.clear();
-	m_name.dispose();
+	name.dispose();
 }
 
 SpriteFont& SpriteFont::operator=(SpriteFont && src) noexcept
 {
-	m_name = src.m_name;
-	m_size = src.m_size;
-	m_ascent = src.m_ascent;
-	m_descent = src.m_descent;
-	m_line_gap = src.m_line_gap;
+	name = src.name;
+	size = src.size;
+	ascent = src.ascent;
+	descent = src.descent;
+	line_gap = src.line_gap;
 	m_characters = std::move(src.m_characters);
 	m_kerning = std::move(src.m_kerning);
 	m_atlas = std::move(src.m_atlas);
@@ -125,7 +125,7 @@ float SpriteFont::height_of(const String& text) const
 			height += line_height();
 	}
 
-	return height - m_line_gap;
+	return height - line_gap;
 }
 
 void SpriteFont::build(const char* file, float sz, const uint32_t* charset)
@@ -143,11 +143,11 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 
 	float scale = font.GetScale(size);
 
-	m_name = font.FamilyName();
-	m_ascent = font.Ascent() * scale;
-	m_descent = font.Descent() * scale;
-	m_line_gap = font.LineGap() * scale;
-	m_size = size;
+	name = font.FamilyName();
+	ascent = font.Ascent() * scale;
+	descent = font.Descent() * scale;
+	line_gap = font.LineGap() * scale;
+	size = size;
 
 	Packer packer;
 	packer.spacing = 0;

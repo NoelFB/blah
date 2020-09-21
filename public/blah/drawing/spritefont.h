@@ -20,21 +20,13 @@ namespace Blah
 			Vec2 offset;
 		};
 	private:
-
-		// properties
-		String m_name;
-		float m_size;
-		float m_ascent;
-		float m_descent;
-		float m_line_gap;
-
 		// tuple between two characters
 		struct Tuple { uint32_t first; uint32_t second; };
 		struct TupleCompare
 		{
 			bool operator() (const Tuple& lhs, const Tuple& rhs) const
 			{
-				return lhs.first < rhs.first && lhs.second < rhs.second;
+				return ((uint64_t)(lhs.first) | ((uint64_t)lhs.second << 32)) < ((uint64_t)(rhs.first) | ((uint64_t)rhs.second << 32));
 			}
 		};
 
@@ -47,6 +39,12 @@ namespace Blah
 
 	public:
 		static const uint32_t* ASCII;
+
+		String name;
+		float size;
+		float ascent;
+		float descent;
+		float line_gap;
 
 		// Note:
 		// charset is a list of range pairs, until a 0 terminator (ex. 32,128,0)
@@ -65,13 +63,8 @@ namespace Blah
 		SpriteFont& operator=(const SpriteFont&) = delete;
 		SpriteFont& operator=(SpriteFont&& src) noexcept;
 
-		const String& name() const { return m_name; }
-		float size() const { return m_size; }
-		float ascent() const { return m_ascent; }
-		float descent() const { return m_descent; }
-		float line_gap() const { return m_line_gap; }
-		float height() const { return m_ascent - m_descent; }
-		float line_height() const { return m_ascent - m_descent + m_line_gap; }
+		float height() const { return ascent - descent; }
+		float line_height() const { return ascent - descent + line_gap; }
 
 		List<TextureRef>& textures() { return m_atlas; }
 
