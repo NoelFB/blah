@@ -54,6 +54,19 @@ const VertexAttribute attributes[4] = {
 	{ 3, VertexSemantics::Texcoord1, VertexAttributeType::Byte, 3, true },
 };
 
+namespace
+{
+	static Vec2 batch_shape_intersection(const Vec2& p0, const Vec2& p1, const Vec2& q0, const Vec2& q1)
+	{
+		const auto aa = p1 - p0;
+		const auto bb = q0 - q1;
+		const auto cc = q0 - p0;
+		const auto t = (bb.x * cc.y - bb.y * cc.x) / (aa.y * bb.x - aa.x * bb.y);
+
+		return Vec2(p0.x + t * (p1.x - p0.x), p0.y + t * (p1.y - p0.y));
+	}
+}
+
 #define MAKE_VERTEX(vert, mat, px, py, tx, ty, c, m, w, f) \
 	(vert)->pos.x = ((px) * mat.m11) + ((py) * mat.m21) + mat.m31; \
 	(vert)->pos.y = ((px) * mat.m12) + ((py) * mat.m22) + mat.m32; \
@@ -418,7 +431,25 @@ void Batch::tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2
 
 void Batch::tri_line(const Vec2& a, const Vec2& b, const Vec2& c, float t, Color color)
 {
-	BLAH_ASSERT(false, "Method 'tri_line' Not Implemented");
+	// TODO:
+	// Detect if the thickness of the line fills the entire shape
+	// (in which case, draw a triangle instead)
+
+	const float len_ab = (a - b).length();
+	const float len_bc = (b - c).length();
+	const float len_ca = (c - a).length();
+
+	const auto off_ab = ((b - a) / len_ab).turn_left() * t;
+	const auto off_bc = ((c - b) / len_bc).turn_left() * t;
+	const auto off_ca = ((a - c) / len_ca).turn_left() * t;
+
+	const auto aa = batch_shape_intersection(a + off_ca, a + off_ca, a + off_ab, b + off_ab);
+	const auto bb = batch_shape_intersection(a + off_ab, b + off_ab, b + off_bc, c + off_bc);
+	const auto cc = batch_shape_intersection(b + off_bc, c + off_bc, c + off_ca, a + off_ca);
+
+	quad(aa, a, b, bb, color);
+	quad(bb, b, c, cc, color);
+	quad(cc, c, a, aa, color);
 }
 
 void Batch::rect(const Rect& rect, Color color)
@@ -684,19 +715,6 @@ void Batch::quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec
 		m_tex_mult, m_tex_wash, 0);
 }
 
-namespace
-{
-	static Vec2 batch_quad_intersection(const Vec2& p0, const Vec2& p1, const Vec2& q0, const Vec2& q1)
-	{
-		const auto aa = p1 - p0;
-		const auto bb = q0 - q1;
-		const auto cc = q0 - p0;
-		const auto t = (bb.x * cc.y - bb.y * cc.x) / (aa.y * bb.x - aa.x * bb.y);
-
-		return Vec2(p0.x + t * (p1.x - p0.x), p0.y + t * (p1.y - p0.y));
-	}
-}
-
 void Batch::quad_line(const Vec2& a, const Vec2& b, const Vec2& c, const Vec2& d, float t, Color color)
 {
 	// TODO:
@@ -713,10 +731,10 @@ void Batch::quad_line(const Vec2& a, const Vec2& b, const Vec2& c, const Vec2& d
 	const auto off_cd = ((d - c) / len_cd).turn_left() * t;
 	const auto off_da = ((a - d) / len_da).turn_left() * t;
 
-	const auto aa = batch_quad_intersection(d + off_da, a + off_da, a + off_ab, b + off_ab);
-	const auto bb = batch_quad_intersection(a + off_ab, b + off_ab, b + off_bc, c + off_bc);
-	const auto cc = batch_quad_intersection(b + off_bc, c + off_bc, c + off_cd, d + off_cd);
-	const auto dd = batch_quad_intersection(c + off_cd, d + off_cd, d + off_da, a + off_da);
+	const auto aa = batch_shape_intersection(d + off_da, a + off_da, a + off_ab, b + off_ab);
+	const auto bb = batch_shape_intersection(a + off_ab, b + off_ab, b + off_bc, c + off_bc);
+	const auto cc = batch_shape_intersection(b + off_bc, c + off_bc, c + off_cd, d + off_cd);
+	const auto dd = batch_shape_intersection(c + off_cd, d + off_cd, d + off_da, a + off_da);
 
 	quad(aa, a, b, bb, color);
 	quad(bb, b, c, cc, color);
