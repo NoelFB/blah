@@ -9,12 +9,7 @@
 using namespace Blah;
 
 // TODO:
-// the line drawings methods aren't consistent
-// ex. some draw outside the shape, some draw within it, etc.
-// -> make them all draw within the provided shape
-
-// TODO:
-// This needs to be graphics API agnostic
+// This shader needs to be graphics API agnostic
 
 const ShaderData data = {
 	// vertex shader
@@ -423,7 +418,7 @@ void Batch::tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2
 
 void Batch::tri_line(const Vec2& a, const Vec2& b, const Vec2& c, float t, Color color)
 {
-	
+	BLAH_ASSERT(false, "Method 'tri_line' Not Implemented");
 }
 
 void Batch::rect(const Rect& rect, Color color)
@@ -440,41 +435,48 @@ void Batch::rect(const Rect& rect, Color color)
 
 void Batch::rect_line(const Rect& rect, float t, Color color)
 {
-	PUSH_QUAD(
-		rect.x, rect.y,
-		rect.x + rect.w - t, rect.y,
-		rect.x + rect.w - t, rect.y + t,
-		rect.x, rect.y + t,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		color, color, color, color,
-		0, 0, 255);
+	if (t >= rect.w || t >= rect.h)
+	{
+		this->rect(rect, color);
+	}
+	else
+	{
+		PUSH_QUAD(
+			rect.x, rect.y,
+			rect.x + rect.w - t, rect.y,
+			rect.x + rect.w - t, rect.y + t,
+			rect.x, rect.y + t,
+			0, 0, 0, 0, 0, 0, 0, 0,
+			color, color, color, color,
+			0, 0, 255);
 
-	PUSH_QUAD(
-		rect.x + rect.w - t, rect.y,
-		rect.x + rect.w, rect.y,
-		rect.x + rect.w, rect.y + rect.h - t,
-		rect.x + rect.w - t, rect.y + rect.h - t,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		color, color, color, color,
-		0, 0, 255);
+		PUSH_QUAD(
+			rect.x + rect.w - t, rect.y,
+			rect.x + rect.w, rect.y,
+			rect.x + rect.w, rect.y + rect.h - t,
+			rect.x + rect.w - t, rect.y + rect.h - t,
+			0, 0, 0, 0, 0, 0, 0, 0,
+			color, color, color, color,
+			0, 0, 255);
 
-	PUSH_QUAD(
-		rect.x + t, rect.y + rect.h - t,
-		rect.x + rect.w, rect.y + rect.h - t,
-		rect.x + rect.w, rect.y + rect.h,
-		rect.x, rect.y + rect.h,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		color, color, color, color,
-		0, 0, 255);
+		PUSH_QUAD(
+			rect.x + t, rect.y + rect.h - t,
+			rect.x + rect.w, rect.y + rect.h - t,
+			rect.x + rect.w, rect.y + rect.h,
+			rect.x, rect.y + rect.h,
+			0, 0, 0, 0, 0, 0, 0, 0,
+			color, color, color, color,
+			0, 0, 255);
 
-	PUSH_QUAD(
-		rect.x, rect.y + t,
-		rect.x + t, rect.y + t,
-		rect.x + t, rect.y + rect.h,
-		rect.x, rect.y + rect.h,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		color, color, color, color,
-		0, 0, 255);
+		PUSH_QUAD(
+			rect.x, rect.y + t,
+			rect.x + t, rect.y + t,
+			rect.x + t, rect.y + rect.h - t,
+			rect.x, rect.y + rect.h,
+			0, 0, 0, 0, 0, 0, 0, 0,
+			color, color, color, color,
+			0, 0, 255);
+	}
 }
 
 void Batch::rect_rounded(const Rect& rect, float radius, int steps, Color color)
@@ -524,33 +526,27 @@ void Batch::rect_rounded_line(const Rect & rect, float radius, int steps, float 
 
 void Batch::rect_rounded_line(const Rect& rect, float rtl, int rtl_steps, float rtr, int rtr_steps, float rbr, int rbr_steps, float rbl, int rbl_steps, float t, Color color)
 {
-	Rect r = rect;
-	r.x += t * 0.5f;
-	r.y += t * 0.5f;
-	r.w -= t;
-	r.h -= t;
-
 	// clamp
-	rtl = Calc::min(Calc::min(Calc::max(0.0f, rtl), r.w / 2.0f), r.h / 2.0f);
-	rtr = Calc::min(Calc::min(Calc::max(0.0f, rtr), r.w / 2.0f), r.h / 2.0f);
-	rbr = Calc::min(Calc::min(Calc::max(0.0f, rbr), r.w / 2.0f), r.h / 2.0f);
-	rbl = Calc::min(Calc::min(Calc::max(0.0f, rbl), r.w / 2.0f), r.h / 2.0f);
+	rtl = Calc::min(Calc::min(Calc::max(0.0f, rtl), rect.w / 2.0f), rect.h / 2.0f);
+	rtr = Calc::min(Calc::min(Calc::max(0.0f, rtr), rect.w / 2.0f), rect.h / 2.0f);
+	rbr = Calc::min(Calc::min(Calc::max(0.0f, rbr), rect.w / 2.0f), rect.h / 2.0f);
+	rbl = Calc::min(Calc::min(Calc::max(0.0f, rbl), rect.w / 2.0f), rect.h / 2.0f);
 
 	if (rtl <= 0 && rtr <= 0 && rbr <= 0 && rbl <= 0)
 	{
-		this->rect_line(r, t, color);
+		this->rect_line(rect, t, color);
 	}
 	else
 	{
 		// get corners
-		Rect tl = Rect(r.top_left(), Vec2(rtl, rtl));
-		Rect tr = Rect(r.top_right() + Vec2(-rtr, 0), Vec2(rtr, rtr));
-		Rect bl = Rect(r.bottom_left() + Vec2(0, -rbl), Vec2(rbl, rbl));
-		Rect br = Rect(r.bottom_right() + Vec2(-rbr, -rbr), Vec2(rbr, rbr));
+		Rect tl = Rect(rect.top_left(), Vec2(rtl, rtl));
+		Rect tr = Rect(rect.top_right() + Vec2(-rtr, 0), Vec2(rtr, rtr));
+		Rect bl = Rect(rect.bottom_left() + Vec2(0, -rbl), Vec2(rbl, rbl));
+		Rect br = Rect(rect.bottom_right() + Vec2(-rbr, -rbr), Vec2(rbr, rbr));
 
 		// rounded corners
 		semi_circle_line(tl.bottom_right(), Calc::UP, Calc::LEFT, rtl, rtl_steps, t, color);
-		semi_circle_line(tr.bottom_left(), Calc::UP, Calc::RIGHT, rtr, rtr_steps, t, color);
+		semi_circle_line(tr.bottom_left(), Calc::UP, Calc::UP + Calc::TAU * 0.25f, rtr, rtr_steps, t, color);
 		semi_circle_line(bl.top_right(), Calc::DOWN, Calc::LEFT, rbl, rbl_steps, t, color);
 		semi_circle_line(br.top_left(), Calc::DOWN, Calc::RIGHT, rbr, rbr_steps, t, color);
 
@@ -586,47 +582,69 @@ void Batch::semi_circle(Vec2 center, float start_radians, float end_radians, flo
 
 void Batch::semi_circle_line(Vec2 center, float start_radians, float end_radians, float radius, int steps, float t, Color color)
 {
-	float add = Calc::angle_diff(start_radians, end_radians);
-
-	Vec2 last_inner = Vec2::from_angle(start_radians, radius - t / 2);
-	Vec2 last_outer = Vec2::from_angle(start_radians, radius + t / 2);
-
-	for (int i = 1; i <= steps; i++)
+	if (t >= radius)
 	{
-		Vec2 next_inner = Vec2::from_angle(start_radians + add * (i / (float)steps), radius - t / 2);
-		Vec2 next_outer = Vec2::from_angle(start_radians + add * (i / (float)steps), radius + t / 2);
+		semi_circle(center, start_radians, end_radians, radius, steps, color, color);
+	}
+	else
+	{
+		const auto add = Calc::angle_diff(start_radians, end_radians);
 
-		quad(center + last_inner, center + last_outer, center + next_outer, center + next_inner, color);
+		Vec2 last_inner = Vec2::from_angle(start_radians, radius - t);
+		Vec2 last_outer = Vec2::from_angle(start_radians, radius);
 
-		last_inner = next_inner;
-		last_outer = next_outer;
+		for (int i = 1; i <= steps; i++)
+		{
+			const auto next_inner = Vec2::from_angle(start_radians + add * (i / (float)steps), radius - t);
+			const auto next_outer = Vec2::from_angle(start_radians + add * (i / (float)steps), radius);
+
+			quad(center + last_inner, center + last_outer, center + next_outer, center + next_inner, color);
+
+			last_inner = next_inner;
+			last_outer = next_outer;
+		}
 	}
 }
 
 void Batch::circle(const Vec2 center, float radius, int steps, Color color)
 {
-	Vec2 last = Vec2(radius, 0);
+	Vec2 last = Vec2(center.x + radius, center.y);
 
 	for (int i = 1; i <= steps; i++)
 	{
-		float radians = (i / (float)steps) * Calc::TAU;
-		Vec2 next = Vec2::from_angle(radians, radius);
-		tri(center + last, center + next, center, color);
+		const auto radians = (i / (float)steps) * Calc::TAU;
+		const auto next = Vec2(center.x + Calc::cos(radians) * radius, center.y + Calc::sin(radians) * radius);
+
+		tri(last, next, center, color);
+
 		last = next;
 	}
 }
 
 void Batch::circle_line(const Vec2 center, float radius, float t, int steps, Color color)
 {
-	radius -= t * 0.5f;
-	Vec2 last = Vec2(radius, 0);
-
-	for (int i = 1; i <= steps; i++)
+	if (t >= radius)
 	{
-		float radians = (i / (float)steps) * Calc::TAU;
-		Vec2 next = Vec2(Calc::cos(radians), Calc::sin(radians)) * radius;
-		line(center + last, center + next, t, color);
-		last = next;
+		circle(center, radius, steps, color);
+	}
+	else
+	{
+		Vec2 last_inner = Vec2(center.x + radius - t, center.y);
+		Vec2 last_outer = Vec2(center.x + radius, center.y);
+
+		for (int i = 1; i <= steps; i++)
+		{
+			const auto radians = (i / (float)steps) * Calc::TAU;
+			const auto normal = Vec2(Calc::cos(radians), Calc::sin(radians));
+
+			const auto next_inner = Vec2(center.x + normal.x * (radius - t), center.y + normal.y * (radius - t));
+			const auto next_outer = Vec2(center.x + normal.x * radius, center.y + normal.y * radius);
+
+			quad(last_inner, last_outer, next_outer, next_inner, color);
+
+			last_outer = next_outer;
+			last_inner = next_inner;
+		}
 	}
 }
 
@@ -666,12 +684,44 @@ void Batch::quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec
 		m_tex_mult, m_tex_wash, 0);
 }
 
+namespace
+{
+	static Vec2 batch_quad_intersection(const Vec2& p0, const Vec2& p1, const Vec2& q0, const Vec2& q1)
+	{
+		const auto aa = p1 - p0;
+		const auto bb = q0 - q1;
+		const auto cc = q0 - p0;
+		const auto t = (bb.x * cc.y - bb.y * cc.x) / (aa.y * bb.x - aa.x * bb.y);
+
+		return Vec2(p0.x + t * (p1.x - p0.x), p0.y + t * (p1.y - p0.y));
+	}
+}
+
 void Batch::quad_line(const Vec2& a, const Vec2& b, const Vec2& c, const Vec2& d, float t, Color color)
 {
-	line(a, b, t, color);
-	line(b, c, t, color);
-	line(c, d, t, color);
-	line(d, a, t, color);
+	// TODO:
+	// Detect if the thickness of the line fills the entire shape
+	// (in which case, draw a quad instead)
+
+	const float len_ab = (a - b).length();
+	const float len_bc = (b - c).length();
+	const float len_cd = (c - d).length();
+	const float len_da = (d - a).length();
+	
+	const auto off_ab = ((b - a) / len_ab).turn_left() * t;
+	const auto off_bc = ((c - b) / len_bc).turn_left() * t;
+	const auto off_cd = ((d - c) / len_cd).turn_left() * t;
+	const auto off_da = ((a - d) / len_da).turn_left() * t;
+
+	const auto aa = batch_quad_intersection(d + off_da, a + off_da, a + off_ab, b + off_ab);
+	const auto bb = batch_quad_intersection(a + off_ab, b + off_ab, b + off_bc, c + off_bc);
+	const auto cc = batch_quad_intersection(b + off_bc, c + off_bc, c + off_cd, d + off_cd);
+	const auto dd = batch_quad_intersection(c + off_cd, d + off_cd, d + off_da, a + off_da);
+
+	quad(aa, a, b, bb, color);
+	quad(bb, b, c, cc, color);
+	quad(cc, c, d, dd, color);
+	quad(dd, d, a, aa, color);
 }
 
 void Batch::arrow_head(const Vec2& point_pos, float radians, float side_len, Color color)
