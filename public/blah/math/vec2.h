@@ -35,6 +35,8 @@ namespace Blah
 		bool operator !=(const Vec2& rhs);
 		
 		Vec2 normal() const;
+		Vec2 turn_right() const;
+		Vec2 turn_left() const;
 		float length() const;
 		float length_squared() const;
 		Vec2 perpendicular() const;

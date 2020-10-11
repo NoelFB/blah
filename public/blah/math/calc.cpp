@@ -119,6 +119,12 @@ float Calc::angle_diff(float radians_a, float radians_b)
 	return mod((radians_b - radians_a) + PI, TAU) - PI;
 }
 
+float Calc::angle_lerp(float radians_a, float radians_b, float p)
+{
+	const auto shortest_angle = mod(mod(radians_b - radians_a, TAU) + (TAU + PI), TAU) - PI;
+	return radians_a + mod(shortest_angle * p, TAU);
+}
+
 float Calc::lerp(float a, float b, float t)
 {
 	return a + (b - a) * t;

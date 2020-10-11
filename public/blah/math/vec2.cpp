@@ -35,6 +35,17 @@ Vec2 Vec2::normal() const
 	float length = this->length();
 	return Vec2(x / length, y / length);
 }
+
+Vec2 Vec2::turn_right() const
+{
+	return Vec2(y, -x);
+}
+
+Vec2 Vec2::turn_left() const
+{
+	return Vec2(-y, x);
+}
+
 float Vec2::length() const { return sqrtf(x * x + y * y); }
 float Vec2::length_squared() const { return x * x + y * y; }
 

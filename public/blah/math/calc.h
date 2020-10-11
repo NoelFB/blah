@@ -61,6 +61,8 @@ namespace Blah
 		float snap(float val, float interval);
 
 		float angle_diff(float radians_a, float radians_b);
+		
+		float angle_lerp(float radians_a, float radians_b, float p);
 
 		float lerp(float a, float b, float t);
 
