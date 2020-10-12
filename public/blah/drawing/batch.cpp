@@ -555,41 +555,35 @@ void Batch::rect_rounded_line(const Rect & rect, float radius, int steps, float 
 	rect_rounded_line(rect, radius, steps, radius, steps, radius, steps, radius, steps, t, color);
 }
 
-void Batch::rect_rounded_line(const Rect& rect, float rtl, int rtl_steps, float rtr, int rtr_steps, float rbr, int rbr_steps, float rbl, int rbl_steps, float t, Color color)
+void Batch::rect_rounded_line(const Rect& r, float rtl, int rtl_steps, float rtr, int rtr_steps, float rbr, int rbr_steps, float rbl, int rbl_steps, float t, Color color)
 {
 	// clamp
-	rtl = Calc::min(Calc::min(Calc::max(0.0f, rtl), rect.w / 2.0f), rect.h / 2.0f);
-	rtr = Calc::min(Calc::min(Calc::max(0.0f, rtr), rect.w / 2.0f), rect.h / 2.0f);
-	rbr = Calc::min(Calc::min(Calc::max(0.0f, rbr), rect.w / 2.0f), rect.h / 2.0f);
-	rbl = Calc::min(Calc::min(Calc::max(0.0f, rbl), rect.w / 2.0f), rect.h / 2.0f);
+	rtl = Calc::min(Calc::min(Calc::max(0.0f, rtl), r.w / 2.0f), r.h / 2.0f);
+	rtr = Calc::min(Calc::min(Calc::max(0.0f, rtr), r.w / 2.0f), r.h / 2.0f);
+	rbr = Calc::min(Calc::min(Calc::max(0.0f, rbr), r.w / 2.0f), r.h / 2.0f);
+	rbl = Calc::min(Calc::min(Calc::max(0.0f, rbl), r.w / 2.0f), r.h / 2.0f);
 
 	if (rtl <= 0 && rtr <= 0 && rbr <= 0 && rbl <= 0)
 	{
-		this->rect_line(rect, t, color);
+		rect_line(r, t, color);
 	}
 	else
 	{
-		// get corners
-		Rect tl = Rect(rect.top_left(), Vec2(rtl, rtl));
-		Rect tr = Rect(rect.top_right() + Vec2(-rtr, 0), Vec2(rtr, rtr));
-		Rect bl = Rect(rect.bottom_left() + Vec2(0, -rbl), Vec2(rbl, rbl));
-		Rect br = Rect(rect.bottom_right() + Vec2(-rbr, -rbr), Vec2(rbr, rbr));
-
 		// rounded corners
-		semi_circle_line(tl.bottom_right(), Calc::UP, Calc::LEFT, rtl, rtl_steps, t, color);
-		semi_circle_line(tr.bottom_left(), Calc::UP, Calc::UP + Calc::TAU * 0.25f, rtr, rtr_steps, t, color);
-		semi_circle_line(bl.top_right(), Calc::DOWN, Calc::LEFT, rbl, rbl_steps, t, color);
-		semi_circle_line(br.top_left(), Calc::DOWN, Calc::RIGHT, rbr, rbr_steps, t, color);
+		semi_circle_line(Vec2(r.x + rtl, r.y + rtl), Calc::UP, Calc::LEFT, rtl, rtl_steps, t, color);
+		semi_circle_line(Vec2(r.x + r.w - rtr, r.y + rtr), Calc::UP, Calc::UP + Calc::TAU * 0.25f, rtr, rtr_steps, t, color);
+		semi_circle_line(Vec2(r.x + rbl, r.y + r.h - rbl), Calc::DOWN, Calc::LEFT, rbl, rbl_steps, t, color);
+		semi_circle_line(Vec2(r.x + r.w - rbr, r.y + r.h - rbr), Calc::DOWN, Calc::RIGHT, rbr, rbr_steps, t, color);
 
 		// connect sides that aren't touching
-		if (tl.bottom() < bl.top())
-			line(tl.bottom_left(), bl.top_left(), t, color);
-		if (tl.right() < tr.left())
-			line(tl.top_right(), tr.top_left(), t, color);
-		if (tr.bottom() < br.top())
-			line(tr.bottom_right(), br.top_right(), t, color);
-		if (bl.right() < br.left())
-			line(bl.bottom_right(), br.bottom_left(), t, color);
+		if (r.h > rtl + rbl)
+			rect(Rect(r.x, r.y + rtl, t, r.h - rtl - rbl), color);
+		if (r.h > rtr + rbr)
+			rect(Rect(r.x + r.w - t, r.y + rtr, t, r.h - rtr - rbr), color);
+		if (r.w > rtl + rtr)
+			rect(Rect(r.x + rtl, r.y, r.w - rtl - rtr, t), color);
+		if (r.w > rbl + rbr)
+			rect(Rect(r.x + rbl, r.y + r.h - t, r.w - rbl - rbr, t), color);
 	}
 }
 
