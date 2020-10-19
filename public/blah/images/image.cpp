@@ -14,43 +14,48 @@ using namespace Blah;
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <blah/third_party/stb_image_write.h>
 
-int Engine_STBI_Read(void *user, char *data, int size)
+namespace
 {
-	int64_t read = ((Stream*)user)->read(data, size);
-	return (int)read;
-}
+	int Blah_STBI_Read(void* user, char* data, int size)
+	{
+		int64_t read = ((Stream*)user)->read(data, size);
+		return (int)read;
+	}
 
-void Engine_STBI_Skip(void *user, int n)
-{
-	((Stream*)user)->seek(((Stream*)user)->position() + n);
-}
+	void Blah_STBI_Skip(void* user, int n)
+	{
+		((Stream*)user)->seek(((Stream*)user)->position() + n);
+	}
 
-int Engine_STBI_Eof(void *user)
-{
-	int64_t position = ((Stream*)user)->position();
-	int64_t length = ((Stream*)user)->length();
+	int Blah_STBI_Eof(void* user)
+	{
+		int64_t position = ((Stream*)user)->position();
+		int64_t length = ((Stream*)user)->length();
 
-	if (position >= length)
-		return 1;
+		if (position >= length)
+			return 1;
 
-	return 0;
-}
+		return 0;
+	}
 
-void Engine_STBI_Write(void *context, void *data, int size)
-{
-	((Stream*)context)->write((char*)data, size);
+	void Blah_STBI_Write(void* context, void* data, int size)
+	{
+		((Stream*)context)->write((char*)data, size);
+	}
 }
 
 Image::Image()
 {
 	width = height = 0;
 	pixels = nullptr;
+	m_stbi_ownership = false;
 }
 
 Image::Image(Stream& stream)
 {
 	width = height = 0;
 	pixels = nullptr;
+	m_stbi_ownership = false;
 	from_stream(stream);
 }
 
@@ -58,19 +63,21 @@ Image::Image(const char* file)
 {
 	width = height = 0;
 	pixels = nullptr;
+	m_stbi_ownership = false;
 
 	FileStream fs(file, FileMode::Read);
 	if (fs.is_readable())
 		from_stream(fs);
 }
 
-Image::Image(int width, int height)
+Image::Image(int w, int h)
 {
-	BLAH_ASSERT(width >= 0 && height >= 0, "Image width and height must be larger than 0");
+	BLAH_ASSERT(w >= 0 && h >= 0, "Image width and height must be larger than 0");
 
-	this->width = width;
-	this->height = height;
+	width = w;
+	height = h;
 	pixels = new Color[width * height];
+	m_stbi_ownership = false;
 	memset(pixels, 0, (size_t)width * (size_t)height * sizeof(Color));
 }
 
@@ -78,6 +85,7 @@ Image::Image(const Image& src)
 {
 	width = src.width;
 	height = src.height;
+	m_stbi_ownership = src.m_stbi_ownership;
 	pixels = nullptr;
 
 	if (src.pixels != nullptr && width > 0 && height > 0)
@@ -91,6 +99,7 @@ Image& Image::operator=(const Image& src)
 {
 	width = src.width;
 	height = src.height;
+	m_stbi_ownership = src.m_stbi_ownership;
 	pixels = nullptr;
 
 	if (src.pixels != nullptr && width > 0 && height > 0)
@@ -107,8 +116,10 @@ Image::Image(Image&& src) noexcept
 	width = src.width;
 	height = src.height;
 	pixels = src.pixels;
+	m_stbi_ownership = src.m_stbi_ownership;
 	src.width = src.height = 0;
 	src.pixels = nullptr;
+	src.m_stbi_ownership = false;
 }
 
 Image& Image::operator=(Image&& src) noexcept
@@ -116,8 +127,10 @@ Image& Image::operator=(Image&& src) noexcept
 	width = src.width;
 	height = src.height;
 	pixels = src.pixels;
+	m_stbi_ownership = src.m_stbi_ownership;
 	src.width = src.height = 0;
 	src.pixels = nullptr;
+	src.m_stbi_ownership = false;
 	return *this;
 }
 
@@ -137,9 +150,9 @@ void Image::from_stream(Stream& stream)
 	}
 
 	stbi_io_callbacks callbacks;
-	callbacks.eof = Engine_STBI_Eof;
-	callbacks.read = Engine_STBI_Read;
-	callbacks.skip = Engine_STBI_Skip;
+	callbacks.eof = Blah_STBI_Eof;
+	callbacks.read = Blah_STBI_Read;
+	callbacks.skip = Blah_STBI_Skip;
 
 	int x, y, comps;
 	uint8_t* data = stbi_load_from_callbacks(&callbacks, &stream, &x, &y, &comps, 4);
@@ -150,17 +163,21 @@ void Image::from_stream(Stream& stream)
 		return;
 	}
 
+	m_stbi_ownership = true;
+	pixels = (Color*)data;
 	width = x;
 	height = y;
-	pixels = (Color*)data;
-
 }
 
 void Image::dispose()
 {
-	delete[] pixels;
+	if (m_stbi_ownership)
+		stbi_image_free(pixels);
+	else
+		delete[] pixels;
 	pixels = nullptr;
 	width = height = 0;
+	m_stbi_ownership = false;
 }
 
 void Image::premultiply()
@@ -202,7 +219,7 @@ bool Image::save_png(Stream& stream) const
 		stbi_write_force_png_filter = 0;
 		stbi_write_png_compression_level = 0;
 
-		if (stbi_write_png_to_func(Engine_STBI_Write, &stream, width, height, 4, pixels, width * 4) != 0)
+		if (stbi_write_png_to_func(Blah_STBI_Write, &stream, width, height, 4, pixels, width * 4) != 0)
 			return true;
 		else
 			Log::error("stbi_write_png_to_func failed");
@@ -239,7 +256,7 @@ bool Image::save_jpg(Stream& stream, int quality) const
 
 	if (stream.is_writable())
 	{
-		if (stbi_write_jpg_to_func(Engine_STBI_Write, &stream, width, height, 4, pixels, quality) != 0)
+		if (stbi_write_jpg_to_func(Blah_STBI_Write, &stream, width, height, 4, pixels, quality) != 0)
 			return true;
 		else
 			Log::error("stbi_write_jpg_to_func failed");

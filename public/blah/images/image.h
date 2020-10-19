@@ -7,8 +7,9 @@ namespace Blah
 {
 	class Stream;
 
-	struct Image
+	class Image
 	{
+	public:
 		int width = 0;
 		int height = 0;
 		Color* pixels = nullptr;
@@ -34,5 +35,8 @@ namespace Blah
 		bool save_jpg(Stream& stream, int quality) const;
 		void get_pixels(Color* dest, const Point& destPos, const Point& destSize, RectI sourceRect);
 		Image get_sub_image(const RectI& sourceRect);
+
+	private:
+		bool m_stbi_ownership;
 	};
 }
