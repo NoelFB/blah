@@ -179,7 +179,10 @@ namespace Blah
 			else
 			{
 				for (int n = 0; n < m_count; n++)
+				{
 					new (new_buffer + n) T(std::move(m_buffer[n]));
+					m_buffer[n].~T();
+				}
 			}
 
 			::operator delete (m_buffer, sizeof(T) * last_capacity);
