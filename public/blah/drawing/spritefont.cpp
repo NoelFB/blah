@@ -155,7 +155,7 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 	packer.max_size = 8192;
 	packer.power_of_two = true;
 	
-	std::map<uint32_t, int> glyphs;
+	std::unordered_map<uint32_t, int> glyphs;
 	List<Color> buffer;
 
 	auto ranges = charset;
@@ -207,14 +207,16 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 	// add kerning
 	for (auto a = glyphs.begin(); a != glyphs.end(); a++)
 		for (auto b = glyphs.begin(); b != glyphs.end(); b++)
-			set_kerning(a->first, b->first, font.GetKerning(a->second, b->second, scale));
+		{
+			auto kern = font.GetKerning(a->second, b->second, scale);
+			if (kern != 0)
+				set_kerning(a->first, b->first, kern);
+		}
 }
 
 float SpriteFont::get_kerning(uint32_t codepoint0, uint32_t codepoint1) const
 {
-	Tuple index;
-	index.first = codepoint0;
-	index.second = codepoint1;
+	uint64_t index = ((uint64_t)codepoint0 << 32) | codepoint1;
 
 	auto it = m_kerning.find(index);
 	if (it != m_kerning.end())
@@ -224,12 +226,17 @@ float SpriteFont::get_kerning(uint32_t codepoint0, uint32_t codepoint1) const
 
 void SpriteFont::set_kerning(uint32_t codepoint0, uint32_t codepoint1, float value)
 {
-	Tuple index;
-	index.first = codepoint0;
-	index.second = codepoint1;
-	m_kerning[index] = value;
-}
+	uint64_t index = ((uint64_t)codepoint0 << 32) | codepoint1;
 
+	if (value == 0)
+	{
+		m_kerning.erase(index);
+	}
+	else
+	{
+		m_kerning[index] = value;
+	}
+}
 
 const SpriteFont::Character& SpriteFont::get_character(uint32_t codepoint) const
 {

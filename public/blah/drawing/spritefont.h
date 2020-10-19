@@ -4,7 +4,7 @@
 #include <blah/containers/str.h>
 #include <blah/drawing/subtexture.h>
 #include <blah/math/vec2.h>
-#include <map>
+#include <unordered_map>
 
 namespace Blah
 {
@@ -20,19 +20,9 @@ namespace Blah
 			Vec2 offset;
 		};
 	private:
-		// tuple between two characters
-		struct Tuple { uint32_t first; uint32_t second; };
-		struct TupleCompare
-		{
-			bool operator() (const Tuple& lhs, const Tuple& rhs) const
-			{
-				return ((uint64_t)(lhs.first) | ((uint64_t)lhs.second << 32)) < ((uint64_t)(rhs.first) | ((uint64_t)rhs.second << 32));
-			}
-		};
-
 		// charset & kerning maps
-		std::map<uint32_t, Character> m_characters;
-		std::map<Tuple, float, TupleCompare> m_kerning;
+		std::unordered_map<uint32_t, Character> m_characters;
+		std::unordered_map<uint64_t, float> m_kerning;
 
 		// built texture
 		List<TextureRef> m_atlas;
