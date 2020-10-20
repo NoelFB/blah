@@ -147,7 +147,7 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 	ascent = font.Ascent() * scale;
 	descent = font.Descent() * scale;
 	line_gap = font.LineGap() * scale;
-	size = size;
+	this->size = size;
 
 	Packer packer;
 	packer.spacing = 0;
