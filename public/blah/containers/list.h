@@ -99,8 +99,8 @@ namespace Blah
 	List<T>::List(int capacity)
 	{
 		m_buffer = nullptr;
-		m_count = m_capacity = 0;
-		Reserve(m_capacity);
+		m_count = m_capacity = capacity;
+		reserve(m_capacity);
 	}
 
 	template<class T>
