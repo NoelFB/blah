@@ -1,12 +1,12 @@
 #pragma once
 #include <blah/graphics/graphics.h>
 #include <blah/graphics/texture.h>
-#include <blah/containers/stacklist.h>
+#include <blah/containers/stackvector.h>
 #include <memory>
 
 namespace Blah
 {
-	typedef StackList<TextureRef, BLAH_ATTACHMENTS> Attachments;
+	typedef StackVector<TextureRef, BLAH_ATTACHMENTS> Attachments;
 
 	class FrameBuffer
 	{

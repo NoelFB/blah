@@ -22,8 +22,8 @@ add_library(blah
 	public/blah/graphics/texture.h
 	public/blah/graphics/framebuffer.h
 	public/blah/graphics/shader.h
-	public/blah/graphics/mesh.cpp
 	public/blah/graphics/mesh.h
+	public/blah/graphics/mesh.cpp
 	public/blah/graphics/material.h
 	public/blah/graphics/material.cpp
 
@@ -35,9 +35,8 @@ add_library(blah
 	public/blah/input/virtual_button.h
 	public/blah/input/virtual_axis.cpp
 	public/blah/input/virtual_axis.h
-	
-	public/blah/containers/list.h
-	public/blah/containers/stacklist.h
+	 
+	public/blah/containers/stackvector.h
 	public/blah/containers/str.cpp
 	public/blah/containers/str.h
 	
@@ -100,8 +99,7 @@ add_library(blah
 	private/blah/internal/graphics_opengl.cpp
 	private/blah/internal/input.h
 	private/blah/internal/platform.h
-	private/blah/internal/platform_sdl2.cpp
-)
+	private/blah/internal/platform_sdl2.cpp "public/blah/containers/vector.h")
 
 target_include_directories(blah
 	PUBLIC

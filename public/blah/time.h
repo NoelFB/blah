@@ -24,21 +24,21 @@ namespace Blah
 		static void pause_for(float time);
 
 		// returns true on the given time interval
-		static bool on_interval(float interval, float offset = 0);
+		static bool on_interval(float time, float delta, float interval, float offset);
 
 		// returns true on the given time interval
 		static bool on_interval(float delta, float interval, float offset);
 
 		// returns true on the given time interval
-		static bool on_interval(float time, float delta, float interval, float offset);
+		static bool on_interval(float interval, float offset = 0);
 
 		// returns true when the given timestamp is passed
 		static bool on_time(float time, float timestamp);
 
 		// returns true between time intervals
-		static bool between_interval(float interval, float offset = 0);
+		static bool between_interval(float time, float interval, float offset);
 		
 		// returns true between time intervals
-		static bool between_interval(float time, float interval, float offset);
+		static bool between_interval(float interval, float offset = 0);
 	};
 }

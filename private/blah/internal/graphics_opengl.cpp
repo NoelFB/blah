@@ -9,11 +9,14 @@
 #include <blah/graphics/mesh.h>
 #include <blah/graphics/shader.h>
 #include <blah/graphics/material.h>
+#include <blah/containers/stackvector.h>
+#include <blah/log.h>
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #else
 #define APIENTRY
@@ -715,7 +718,7 @@ namespace Blah
 			GLuint m_id;
 			int m_width;
 			int m_height;
-			StackList<TextureRef, BLAH_ATTACHMENTS> m_attachments;
+			StackVector<TextureRef, BLAH_ATTACHMENTS> m_attachments;
 
 		public:
 
@@ -733,7 +736,7 @@ namespace Blah
 					auto gltex = ((OpenGL_Texture*)tex.get());
 
 					gltex->framebuffer_parent = true;
-					m_attachments.add(tex);
+					m_attachments.push_back(tex);
 
 					if (attachments[i] != TextureFormat::DepthStencil)
 					{
@@ -896,11 +899,11 @@ namespace Blah
 						gl.GetActiveAttrib(id, i, BLAH_ATTRIBUTE_NAME - 1, &length, &size, &type, name);
 						name[length] = '\0';
 
-						auto attr = m_attributes.expand();
-						attr->name.append(name);
-						// TOOD: set these?
-						attr->semantic_name = "";
-						attr->semantic_location = 0;
+						ShaderAttribute attr;
+						attr.name = name;
+						attr.semantic_name = "";
+						attr.semantic_location = 0;
+						m_attributes.push_back(attr);
 					}
 				}
 
@@ -935,31 +938,33 @@ namespace Blah
 								}
 							}
 
-						auto uniform = m_uniforms.expand();
-						uniform->name = name;
-						uniform->type = UniformType::None;
-						uniform->array_length = size;
+						ShaderUniform uniform;
+						uniform.name = name;
+						uniform.type = UniformType::None;
+						uniform.array_length = size;
 						uniforms_loc[i] = gl.GetUniformLocation(id, name);
 
 						if (type == GL_FLOAT)
-							uniform->type = UniformType::Float;
+							uniform.type = UniformType::Float;
 						else if (type == GL_FLOAT_VEC2)
-							uniform->type = UniformType::Float2;
+							uniform.type = UniformType::Float2;
 						else if (type == GL_FLOAT_VEC3)
-							uniform->type = UniformType::Float3;
+							uniform.type = UniformType::Float3;
 						else if (type == GL_FLOAT_VEC4)
-							uniform->type = UniformType::Float4;
+							uniform.type = UniformType::Float4;
 						else if (type == GL_FLOAT_MAT3x2)
-							uniform->type = UniformType::Mat3x2;
+							uniform.type = UniformType::Mat3x2;
 						else if (type == GL_FLOAT_MAT4)
-							uniform->type = UniformType::Mat4x4;
+							uniform.type = UniformType::Mat4x4;
 						else if (type == GL_SAMPLER_2D)
-							uniform->type = UniformType::Texture;
+							uniform.type = UniformType::Texture;
 						else
 						{
 							Log::error("Unsupported Uniform Type. Must be either FLOAT, MAT3x2, MAT4, or SAMPLER_2D");
 							break;
 						}
+
+						m_uniforms.push_back(uniform);
 					}
 				}
 			}
@@ -1041,6 +1046,8 @@ namespace Blah
 				m_instance_size = 0;
 				m_vertex_attribs_enabled = 0;
 				m_instance_attribs_enabled = 0;
+				m_vertex_attribs[0] = 0;
+				m_instance_attribs[0] = 0;
 
 				gl.GenVertexArrays(1, &m_id);
 			}
@@ -1284,7 +1291,7 @@ namespace Blah
 				GLint texture_ids[64];
 
 				auto& uniforms = shader->uniforms();
-				for (int i = 0; i < uniforms.count(); i++)
+				for (int i = 0; i < uniforms.size(); i++)
 				{
 					auto location = shader->uniforms_loc[i];
 					auto& uniform = uniforms[i];

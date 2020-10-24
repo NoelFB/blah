@@ -1,5 +1,6 @@
 #include <blah/streams/filestream.h>
 #include <blah/internal/platform.h>
+#include <blah/log.h>
 #include <string.h>
 
 using namespace Blah;

@@ -6,8 +6,8 @@
 #include <blah/log.h>
 #include <blah/time.h>
 	
-#include <blah/containers/list.h>
-#include <blah/containers/stacklist.h>
+#include <blah/containers/vector.h>
+#include <blah/containers/stackvector.h>
 #include <blah/containers/str.h>
 	
 #include <blah/drawing/batch.h>

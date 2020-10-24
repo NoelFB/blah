@@ -1,6 +1,6 @@
 #pragma once
-#include <blah/containers/list.h>
 #include <blah/containers/str.h>
+#include <blah/containers/vector.h>
 
 namespace Blah
 {
@@ -19,7 +19,7 @@ namespace Blah
 		bool create(const FilePath& path);
 		bool exists(const FilePath& path);
 		bool remove(const FilePath& path);
-		List<FilePath> enumerate(const FilePath& str, bool recursive = true);
+		Vector<FilePath> enumerate(const FilePath& str, bool recursive = true);
 		void explore(const FilePath& path);
 	}
 

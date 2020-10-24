@@ -2,7 +2,6 @@
 #include <blah/math/color.h>
 #include <blah/images/image.h>
 #include <blah/containers/str.h>
-#include <blah/containers/list.h>
 #include <blah/streams/stream.h>
 
 namespace Blah
@@ -80,7 +79,7 @@ namespace Blah
 		{
 			int duration = 0;
 			Image image;
-			List<Cel> cels;
+			Vector<Cel> cels;
 		};
 
 		struct Layer
@@ -121,11 +120,11 @@ namespace Blah
 		int width = 0;
 		int height = 0;
 
-		List<Layer> layers;
-		List<Frame> frames;
-		List<Tag> tags;
-		List<Slice> slices;
-		List<Color> palette;
+		Vector<Layer> layers;
+		Vector<Frame> frames;
+		Vector<Tag> tags;
+		Vector<Slice> slices;
+		Vector<Color> palette;
 
 		Aseprite();
 		Aseprite(const char* path);

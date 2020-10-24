@@ -1,7 +1,7 @@
 #pragma once
 #include <inttypes.h>
 #include <blah/filesystem.h>
-#include <blah/containers/list.h>
+#include <blah/containers/vector.h>
 
 namespace Blah
 {
@@ -84,7 +84,7 @@ namespace Blah
 			bool dir_delete(const char* path);
 
 			// enumerates a directory and appends each file to the given list
-			void dir_enumerate(List<FilePath>& list, const char* path, bool recursive);
+			void dir_enumerate(Vector<FilePath>& list, const char* path, bool recursive);
 
 			// opens a directory in the OS file explorer / finder
 			void dir_explore(const char* path);

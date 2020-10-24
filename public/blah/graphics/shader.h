@@ -1,12 +1,12 @@
 #pragma once
 #include <blah/graphics/graphics.h>
-#include <blah/containers/stacklist.h>
+#include <blah/containers/stackvector.h>
 #include <memory>
 
 namespace Blah
 {
-	typedef StackList<ShaderUniform, BLAH_UNIFORMS> Uniforms;
-	typedef StackList<ShaderAttribute, BLAH_ATTRIBUTES> Attributes;
+	typedef StackVector<ShaderUniform, BLAH_UNIFORMS> Uniforms;
+	typedef StackVector<ShaderAttribute, BLAH_ATTRIBUTES> Attributes;
 
 	class Shader
 	{

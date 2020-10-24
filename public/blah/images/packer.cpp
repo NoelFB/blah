@@ -1,4 +1,5 @@
 #include <blah/images/packer.h>
+#include <blah/log.h>
 #include <algorithm>
 #include <cstring>
 
@@ -59,12 +60,7 @@ void Packer::add_entry(uint64_t id, int w, int h, const Color* pixels)
 {
 	dirty = true;
 
-	Entry* entry = entries.expand(1);
-	entry->id = id;
-	entry->page = 0;
-	entry->empty = true;
-	entry->frame = RectI(0, 0, w, h);
-	entry->packed = RectI(0, 0, 0, 0);
+	Entry entry(id, RectI(0, 0, w, h));
 
 	// trim
 	int top = 0, left = 0, right = w, bottom = h;
@@ -106,28 +102,30 @@ void Packer::add_entry(uint64_t id, int w, int h, const Color* pixels)
 	// pixels actually exist in this source
 	if (right >= left && bottom >= top)
 	{
-		entry->empty = false;
+		entry.empty = false;
 
 		// store size
-		entry->frame.x = -left;
-		entry->frame.y = -top;
-		entry->packed.w = (right - left);
-		entry->packed.h = (bottom - top);
+		entry.frame.x = -left;
+		entry.frame.y = -top;
+		entry.packed.w = (right - left);
+		entry.packed.h = (bottom - top);
 
 		// create pixel data
-		entry->memoryIndex = buffer.position();
+		entry.memory_index = buffer.position();
 
 		// copy pixels over
-		if (entry->packed.w == w && entry->packed.h == h)
+		if (entry.packed.w == w && entry.packed.h == h)
 		{
 			buffer.write((char*)pixels, sizeof(Color) * w * h);
 		}
 		else
 		{
-			for (int i = 0; i < entry->packed.h; i++)
-				buffer.write((char*)(pixels + left + (top + i) * entry->frame.w), sizeof(Color) * entry->packed.w);
+			for (int i = 0; i < entry.packed.h; i++)
+				buffer.write((char*)(pixels + left + (top + i) * entry.frame.w), sizeof(Color) * entry.packed.w);
 		}
 	}
+
+	entries.push_back(entry);
 }
 
 void Packer::pack()
@@ -139,16 +137,16 @@ void Packer::pack()
 	pages.clear();
 
 	// only if we have stuff to pack
-	auto count = entries.count();
+	auto count = entries.size();
 	if (count > 0)
 	{
 		// get all the sources sorted largest -> smallest
-		List<Entry*> sources;
+		Vector<Entry*> sources;
 		{
-			sources.expand(count);
+			sources.resize(count);
 			int index = 0;
 
-			for (int i = 0; i < entries.count(); i++)
+			for (int i = 0; i < entries.size(); i++)
 				sources[index++] = &entries[i];
 
 			std::sort(sources.begin(), sources.end(), [](Packer::Entry* a, Packer::Entry* b)
@@ -166,8 +164,8 @@ void Packer::pack()
 
 		// we should never need more nodes than source images * 3
 		// if this causes problems we could change it to use push_back I suppose
-		List<Node> nodes;
-		nodes.expand(count * 4);
+		Vector<Node> nodes;
+		nodes.resize(count * 4);
 
 		int packed = 0, page = 0;
 		while (packed < count)
@@ -259,7 +257,7 @@ void Packer::pack()
 
 			// create each page
 			{
-				pages.add(Image(pageWidth, pageHeight));
+				pages.emplace_back(pageWidth, pageHeight);
 
 				// copy image data to image
 				for (int i = from; i < packed; i++)
@@ -268,7 +266,7 @@ void Packer::pack()
 					if (!sources[i]->empty)
 					{
 						RectI dst = sources[i]->packed;
-						Color* src = (Color*)(buffer.data() + sources[i]->memoryIndex);
+						Color* src = (Color*)(buffer.data() + sources[i]->memory_index);
 
 						// TODO:
 						// Optimize this?
@@ -300,8 +298,8 @@ void Packer::clear()
 
 void Packer::dispose()
 {
-	pages.dispose();
-	entries.dispose();
+	pages.clear();
+	entries.clear();
 	buffer.close();
 	max_size = 0;
 	power_of_two = 0;

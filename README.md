@@ -10,7 +10,7 @@ this will likely see breaking changes.
 
 #### notes
  - There are probably lots of small bugs as this is highly untested. Best used as a learning resource for now.
- - There's a custom "vector" class which is called List and Stacklist which may later be replaced with std::vector
+ - There's a custom "StackVector" class that tries to implement an std::vector on the stack, but it's probably bug-prone.
  - There's no Shader abstraction, so the [Sprite Batcher](https://github.com/NoelFB/blah/blob/master/public/blah/drawing/batch.h) has hard-coded GLSL. This will need to change.
  - The rendering layer may be replaced with [FNA3D](https://github.com/FNA-XNA/FNA3D), [BGFX](https://github.com/bkaradzic/bgfx), [Sokol](https://github.com/floooh/sokol), or something else.
  - There's no Audio layer implementation yet.

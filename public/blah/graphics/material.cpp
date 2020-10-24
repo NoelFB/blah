@@ -1,12 +1,13 @@
 #include <blah/graphics/material.h>
+#include <blah/log.h>
 
 using namespace Blah;
 
 namespace
 {
-	size_t calc_uniform_size(const ShaderUniform& uniform)
+	int calc_uniform_size(const ShaderUniform& uniform)
 	{
-		size_t components = 0;
+		int components = 0;
 
 		switch (uniform.type)
 		{
@@ -39,7 +40,7 @@ Material::Material(const ShaderRef& shader)
 	}
 
 	Uniforms uniforms = shader->uniforms();
-	StackList<size_t, BLAH_UNIFORMS> float_offsets;
+	StackVector<size_t, BLAH_UNIFORMS> float_offsets;
 	size_t float_size = 0;
 
 	for (auto& uniform : uniforms)
@@ -50,11 +51,11 @@ Material::Material(const ShaderRef& shader)
 		if (uniform.type == UniformType::Texture)
 		{
 			for (int i = 0; i < uniform.array_length; i ++)
-				m_textures.add(TextureRef());
+				m_textures.push_back(TextureRef());
 			continue;
 		}
 
-		float_offsets.add(float_size);
+		float_offsets.push_back(float_size);
 		float_size += calc_uniform_size(uniform);
 	}
 
@@ -62,7 +63,7 @@ Material::Material(const ShaderRef& shader)
 	memset(m_data, 0, sizeof(float) * float_size);
 
 	for (auto& it : float_offsets)
-		m_floats.add(m_data + it);
+		m_floats.push_back(m_data + it);
 }
 
 Material::~Material()
@@ -80,7 +81,7 @@ void Material::set_texture(const char* name, const TextureRef& texture, int inde
 	BLAH_ASSERT(!m_disposed, "Material has been disposed");
 	BLAH_ASSERT(m_shader && m_shader->is_valid(), "Material Shader is invalid");
 
-	if (m_textures.count() > 0)
+	if (m_textures.size() > 0)
 	{
 		int offset = 0;
 		for (auto& uniform : m_shader->uniforms())
@@ -95,7 +96,7 @@ void Material::set_texture(const char* name, const TextureRef& texture, int inde
 			}
 
 			offset += uniform.array_length;
-			if (offset + index >= m_textures.count())
+			if (offset + index >= m_textures.size())
 				break;
 		}
 	}
@@ -118,7 +119,7 @@ TextureRef Material::get_texture(const char* name, int index) const
 			return m_textures[offset + index];
 
 		offset += uniform.array_length;
-		if (offset + index >= m_textures.count())
+		if (offset + index >= m_textures.size())
 			break;
 	}
 
@@ -141,7 +142,7 @@ TextureRef Material::get_texture(int slot, int index) const
 				return m_textures[offset + index];
 
 			offset += uniform.array_length;
-			if (offset + index >= m_textures.count())
+			if (offset + index >= m_textures.size())
 				break;
 		}
 

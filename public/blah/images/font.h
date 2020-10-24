@@ -16,10 +16,10 @@ namespace Blah
 			int width = 0;
 			int height = 0;
 			float advance = 0;
-			float offsetX = 0;
-			float offsetY = 0;
+			float offset_x = 0;
+			float offset_y = 0;
 			float scale = 0;
-			bool hasGlyph = false;
+			bool has_glyph = false;
 		};
 
 		Font();
@@ -33,30 +33,30 @@ namespace Blah
 
 		void dispose();
 
-		const char* FamilyName() const;
-		const char* StyleName() const;
-		int Ascent() const;
-		int Descent() const;
-		int LineGap() const;
-		int Height() const;
-		int LineHeight() const;
+		const char* family_name() const;
+		const char* style_name() const;
+		int ascent() const;
+		int descent() const;
+		int line_gap() const;
+		int height() const;
+		int line_height() const;
 
-		int GetGlyph(Codepoint codepoint) const;
-		float GetScale(float size) const;
-		float GetKerning(int glyph1, int glyph2, float scale) const;
-		Char GetCharacter(int glyph, float scale) const;
-		bool GetBitmap(const Char& ch, Color* pixels) const;
-		bool IsValid() const;
+		int get_glyph(Codepoint codepoint) const;
+		float get_scale(float size) const;
+		float get_kerning(int glyph1, int glyph2, float scale) const;
+		Char get_character(int glyph, float scale) const;
+		bool get_image(const Char& ch, Color* pixels) const;
+		bool is_valid() const;
 
 	private:
-		void Load(Stream& stream);
-		void* font;
-		unsigned char* data;
-		String familyName;
-		String styleName;
-		int ascent;
-		int descent;
-		int lineGap;
-		bool valid;
+		void load(Stream& stream);
+		void* m_font;
+		unsigned char* m_data;
+		String m_family_name;
+		String m_style_name;
+		int m_ascent;
+		int m_descent;
+		int m_line_gap;
+		bool m_valid;
 	};
 }

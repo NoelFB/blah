@@ -1,6 +1,7 @@
 #include <blah/drawing/spritefont.h>
 #include <blah/images/font.h>
 #include <blah/images/packer.h>
+#include <blah/log.h>
 
 using namespace Blah;
 
@@ -54,7 +55,7 @@ SpriteFont::~SpriteFont()
 
 void SpriteFont::dispose()
 {
-	m_atlas.dispose();
+	m_atlas.clear();
 	m_characters.clear();
 	m_kerning.clear();
 	name.dispose();
@@ -133,7 +134,7 @@ void SpriteFont::build(const char* file, float sz, const uint32_t* charset)
 	dispose();
 
 	Font font(file);
-	if (font.IsValid())
+	if (font.is_valid())
 		build(font, sz, charset);
 }
 
@@ -141,12 +142,12 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 {
 	dispose();
 
-	float scale = font.GetScale(size);
+	float scale = font.get_scale(size);
 
-	name = font.FamilyName();
-	ascent = font.Ascent() * scale;
-	descent = font.Descent() * scale;
-	line_gap = font.LineGap() * scale;
+	name = font.family_name();
+	ascent = font.ascent() * scale;
+	descent = font.descent() * scale;
+	line_gap = font.line_gap() * scale;
 	this->size = size;
 
 	Packer packer;
@@ -156,7 +157,7 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 	packer.power_of_two = true;
 	
 	std::unordered_map<uint32_t, int> glyphs;
-	List<Color> buffer;
+	Vector<Color> buffer;
 
 	auto ranges = charset;
 	while (*ranges != 0)
@@ -168,36 +169,36 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 
 		for (auto i = from; i < to; i++)
 		{
-			auto glyph = font.GetGlyph(i);
+			auto glyph = font.get_glyph(i);
 			if (glyph <= 0)
 				continue;
 
 			glyphs[i] = glyph;
 
 			// add character
-			Font::Char ch = font.GetCharacter(glyph, scale);
+			Font::Char ch = font.get_character(glyph, scale);
 			m_characters[i].advance = ch.advance;
-			m_characters[i].offset = Vec2(ch.offsetX, ch.offsetY);
+			m_characters[i].offset = Vec2(ch.offset_x, ch.offset_y);
 
 			// pack glyph
-			if (ch.hasGlyph)
+			if (ch.has_glyph)
 			{
-				if (buffer.count() < ch.width * ch.height)
-					buffer.expand(ch.width * ch.height - buffer.count());
+				if (buffer.size() < ch.width * ch.height)
+					buffer.resize(ch.width * ch.height);
 
-				if (font.GetBitmap(ch, buffer.begin()))
-					packer.add(i, ch.width, ch.height, buffer.begin());
+				if (font.get_image(ch, buffer.data()))
+					packer.add(i, ch.width, ch.height, buffer.data());
 			}
 		}
 
 		ranges += 2;
 	}
 
-	buffer.dispose();
+	buffer.clear();
 	packer.pack();
 
 	for (auto& it : packer.pages)
-		m_atlas.add(Graphics::create_texture(it));
+		m_atlas.push_back(Graphics::create_texture(it));
 
 	// add character subtextures
 	for (auto& it : packer.entries)
@@ -208,7 +209,7 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 	for (auto a = glyphs.begin(); a != glyphs.end(); a++)
 		for (auto b = glyphs.begin(); b != glyphs.end(); b++)
 		{
-			auto kern = font.GetKerning(a->second, b->second, scale);
+			auto kern = font.get_kerning(a->second, b->second, scale);
 			if (kern != 0)
 				set_kerning(a->first, b->first, kern);
 		}

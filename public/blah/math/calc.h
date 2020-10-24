@@ -36,11 +36,11 @@ namespace Blah
 
 		float abs(float x);
 
-		template<class T>
-		T min(T a, T b) { return a < b ? a : b; }
+		template<class T, class U>
+		T min(T a, U b) { return a < b ? a : b; }
 
-		template<class T>
-		T max(T a, T b) { return a > b ? a : b; }
+		template<class T, class U>
+		T max(T a, U b) { return a > b ? a : b; }
 		
 		float floor(float x);
 

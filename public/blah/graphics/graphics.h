@@ -15,7 +15,7 @@
 namespace Blah
 {
 	class Stream;
-	struct Image;
+	class Image;
 
 	class Texture;
 	typedef std::shared_ptr<Texture> TextureRef;
@@ -34,10 +34,10 @@ namespace Blah
 
 	struct GraphicsInfo
 	{
-		GfxAPI api;
-		bool instancing;
-		bool origin_bottom_left;
-		int max_texture_size;
+		GfxAPI api = GfxAPI::Any;
+		bool instancing = false;
+		bool origin_bottom_left = false;
+		int max_texture_size = 0;
 	};
 
 	enum class TextureFilter

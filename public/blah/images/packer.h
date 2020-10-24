@@ -3,8 +3,8 @@
 #include <blah/math/color.h>
 #include <blah/math/rectI.h>
 #include <blah/math/point.h>
-#include <blah/containers/list.h>
 #include <blah/containers/str.h>
+#include <blah/containers/vector.h>
 #include <blah/streams/bufferstream.h>
 
 namespace Blah
@@ -17,13 +17,16 @@ namespace Blah
 		{
 		friend class Packer;
 		private:
-			int64_t memoryIndex = 0;
+			int64_t memory_index;
 		public:
-			int page = 0;
 			uint64_t id;
-			bool empty = true;
-			RectI packed;
+			int page;
+			bool empty;
 			RectI frame;
+			RectI packed;
+
+			Entry(uint64_t id, const RectI& frame)
+				: memory_index(0), id(id), page(0), empty(true), frame(frame), packed(0, 0, 0, 0) {}
 		};
 
 		int max_size;
@@ -31,8 +34,8 @@ namespace Blah
 		int spacing;
 		int padding;
 
-		List<Image> pages;
-		List<Entry> entries;
+		Vector<Image> pages;
+		Vector<Entry> entries;
 
 		Packer();
 		Packer(int max_size, int spacing, bool power_of_two);

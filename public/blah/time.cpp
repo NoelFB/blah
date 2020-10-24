@@ -23,9 +23,9 @@ void Time::pause_for(float time)
 		pause_timer = time;
 }
 
-bool Time::on_interval(float interval, float offset)
+bool Time::on_interval(float time, float delta, float interval, float offset)
 {
-	return Time::on_interval(Time::elapsed, Time::delta, interval, offset);
+	return floor((time - offset - delta) / interval) < floor((time - offset) / interval);
 }
 
 bool Time::on_interval(float delta, float interval, float offset)
@@ -33,9 +33,9 @@ bool Time::on_interval(float delta, float interval, float offset)
 	return Time::on_interval(Time::elapsed, delta, interval, offset);
 }
 
-bool Time::on_interval(float time, float delta, float interval, float offset)
+bool Time::on_interval(float interval, float offset)
 {
-	return floor((time - offset - delta) / interval) < floor((time - offset) / interval);
+	return Time::on_interval(Time::elapsed, Time::delta, interval, offset);
 }
 
 bool Time::on_time(float time, float timestamp)
@@ -43,12 +43,12 @@ bool Time::on_time(float time, float timestamp)
 	return time >= timestamp && time - Time::delta < timestamp;
 }
 
-bool Time::between_interval(float interval, float offset)
-{
-	return between_interval(Time::elapsed, interval, offset);
-}
-
 bool Time::between_interval(float time, float interval, float offset)
 {
 	return modf(time - offset, interval * 2) >= interval;
+}
+
+bool Time::between_interval(float interval, float offset)
+{
+	return between_interval(Time::elapsed, interval, offset);
 }

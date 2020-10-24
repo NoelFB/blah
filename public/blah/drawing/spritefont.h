@@ -1,7 +1,7 @@
 #pragma once
 #include <inttypes.h>
-#include <blah/containers/list.h>
 #include <blah/containers/str.h>
+#include <blah/containers/vector.h>
 #include <blah/drawing/subtexture.h>
 #include <blah/math/vec2.h>
 #include <unordered_map>
@@ -25,7 +25,7 @@ namespace Blah
 		std::unordered_map<uint64_t, float> m_kerning;
 
 		// built texture
-		List<TextureRef> m_atlas;
+		Vector<TextureRef> m_atlas;
 
 	public:
 		static const uint32_t* ASCII;
@@ -56,7 +56,7 @@ namespace Blah
 		float height() const { return ascent - descent; }
 		float line_height() const { return ascent - descent + line_gap; }
 
-		List<TextureRef>& textures() { return m_atlas; }
+		const Vector<TextureRef>& textures() { return m_atlas; }
 
 		float width_of(const String& text) const;
 		float width_of_line(const String& text, int start = 0) const;

@@ -314,15 +314,15 @@ int Str::last_index_of(char ch) const
 	return -1;
 }
 
-Str Str::substr(int start) const
+String Str::substr(int start) const
 {
 	if (start < 0) start = 0;
 	if (start > m_length) start = m_length;
 
-	return Str(data() + start);
+	return String(data() + start);
 }
 
-Str Str::substr(int start, int end) const
+String Str::substr(int start, int end) const
 {
 	if (start < 0)			start = 0;
 	if (start > m_length)	start = m_length;
@@ -331,6 +331,30 @@ Str Str::substr(int start, int end) const
 	if (end > m_length)		end = m_length;
 
 	return Str(data() + start, data() + end);
+}
+
+Vector<String> Str::split(char ch) const
+{
+	Vector<String> result;
+
+	const char* ptr = data();
+	int last = 0;
+	int index = 1;
+
+	while (index < m_length)
+	{
+		if (ptr[index] == ch)
+		{
+			result.push_back(substr(last, index));
+			last = index + 1;
+		}
+		index++;
+	}
+
+	if (last < index)
+		result.push_back(substr(last, index));
+
+	return result;
 }
 
 void Str::replace(char c, char r)

@@ -28,9 +28,9 @@ bool Directory::remove(const FilePath& path)
 	return Internal::Platform::dir_delete(path.cstr());
 }
 
-List<FilePath> Directory::enumerate(const FilePath& path, bool recursive)
+Vector<FilePath> Directory::enumerate(const FilePath& path, bool recursive)
 {
-	List<FilePath> list;
+	Vector<FilePath> list;
 
 	// get files
 	Internal::Platform::dir_enumerate(list, path.cstr(), recursive);

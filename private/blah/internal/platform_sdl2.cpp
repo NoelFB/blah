@@ -12,6 +12,7 @@
 
 #if _WIN32
 // on Windows we're using the C++ <filesystem> API for now
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winuser.h>	// for SetProcessDPIAware
 #include <filesystem>	// for File Reading/Writing
@@ -482,25 +483,19 @@ bool Platform::dir_delete(const char* path)
 	return false;
 }
 
-void Platform::dir_enumerate(List<FilePath>& list, const char* path, bool recursive)
+void Platform::dir_enumerate(Vector<FilePath>& list, const char* path, bool recursive)
 {
 	if (fs::is_directory(path))
 	{
 		if (recursive)
 		{
 			for (auto& p : fs::recursive_directory_iterator(path))
-			{
-				FilePath str(p.path().string().c_str());
-				list.add(str);
-			}
+				list.emplace_back(p.path().string().c_str());
 		}
 		else
 		{
 			for (auto& p : fs::directory_iterator(path))
-			{
-				FilePath str(p.path().string().c_str());
-				list.add(str);
-			}
+				list.emplace_back(p.path().string().c_str());
 		}
 	}
 }

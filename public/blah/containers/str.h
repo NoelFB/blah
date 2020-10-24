@@ -1,8 +1,13 @@
 #pragma once
 #include <inttypes.h>
+#include <blah/containers/vector.h>
 
 namespace Blah
 {
+	template<int T>
+	class StrOf;
+	using String = StrOf<64>;
+
 	class Str
 	{
 	public:
@@ -115,10 +120,12 @@ namespace Blah
 		int last_index_of(char ch) const;
 
 		// returns a substring of the string
-		Str substr(int start) const;
+		String substr(int start) const;
 
 		// returns a substring of the string
-		Str substr(int start, int end) const;
+		String substr(int start, int end) const;
+
+		Vector<String> split(char ch) const;
 
 		// replaces all occurances of the given character in the string
 		void replace(char c, char r);
@@ -148,11 +155,10 @@ namespace Blah
 		}
 
 		// returns a pointer to the heap buffer or to our stack allocation
-		char* data()				{ return (m_buffer != nullptr ? m_buffer : ((char*)(this) + sizeof(Str))); }
+		char* data()			 { return (m_buffer != nullptr ? m_buffer : ((char*)(this) + sizeof(Str))); }
 		const char* data() const { return (m_buffer != nullptr ? m_buffer : ((char*)(this) + sizeof(Str))); }
 
 		void set(const Str& str) { set(str.cstr(), str.cstr() + str.m_length); }
-
 		void set(const char* start, const char* end = nullptr);
 
 	private:
@@ -180,6 +186,4 @@ namespace Blah
 		StrOf& operator=(const Str& rhs)	{ set(rhs); return *this; }
 		StrOf& operator=(const StrOf& rhs)	{ set(rhs); return *this; }
 	};
-
-	using String = StrOf<64>;
 }

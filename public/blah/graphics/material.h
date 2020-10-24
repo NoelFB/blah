@@ -1,7 +1,7 @@
 #pragma once
 #include <blah/graphics/texture.h>
 #include <blah/graphics/shader.h>
-#include <blah/containers/list.h>
+#include <blah/containers/vector.h>
 #include <memory>
 
 namespace Blah
@@ -56,8 +56,8 @@ namespace Blah
 
 	private:
 		ShaderRef m_shader;
-		List<TextureRef> m_textures;
-		List<float*> m_floats;
+		Vector<TextureRef> m_textures;
+		Vector<float*> m_floats;
 		float* m_data;
 		bool m_disposed;
 	};

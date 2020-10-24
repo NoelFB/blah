@@ -67,54 +67,45 @@ namespace
 	}
 }
 
-#define MAKE_VERTEX(vert, mat, px, py, tx, ty, c, m, w, f) \
-	(vert)->pos.x = ((px) * mat.m11) + ((py) * mat.m21) + mat.m31; \
-	(vert)->pos.y = ((px) * mat.m12) + ((py) * mat.m22) + mat.m32; \
-	(vert)->tex.x = tx;  \
-	if (m_batch.flip_vertically) \
-		(vert)->tex.y = 1.0f - ty; \
-	else \
-		(vert)->tex.y = ty; \
-	(vert)->col = c; \
-	(vert)->mult = m; \
-	(vert)->wash = w; \
-	(vert)->fill = f;
+#define MAKE_VERTEX(mat, px, py, tx, ty, c, m, w, f) \
+	{ \
+		Vec2( \
+			((px)*mat.m11) + ((py)*mat.m21) + mat.m31, \
+			((px)*mat.m12) + ((py)*mat.m22) + mat.m32), \
+		Vec2(tx, (m_batch.flip_vertically ? 1.0f - ty : ty)), \
+		c, m, w, f \
+	}
 	
 #define PUSH_QUAD(px0, py0, px1, py1, px2, py2, px3, py3, tx0, ty0, tx1, ty1, tx2, ty2, tx3, ty3, col0, col1, col2, col3, mult, fill, wash) \
 	{ \
+		const int __v = (int)m_vertices.size(); \
 		m_batch.elements += 2; \
-		int* _i = m_indices.expand(6); \
-		*_i++ = m_vertices.count() + 0; \
-		*_i++ = m_vertices.count() + 1; \
-		*_i++ = m_vertices.count() + 2; \
-		*_i++ = m_vertices.count() + 0; \
-		*_i++ = m_vertices.count() + 2; \
-		*_i++ = m_vertices.count() + 3; \
-		Vertex* _v = m_vertices.expand(4); \
-		MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash); _v++; \
-		MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash); _v++; \
-		MAKE_VERTEX(_v, m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash); _v++; \
-		MAKE_VERTEX(_v, m_matrix, px3, py3, tx3, ty3, col3, mult, fill, wash); \
+		m_indices.insert(m_indices.end(), { __v + 0, __v + 1, __v + 2, __v + 0, __v + 2, __v + 3 }); \
+		m_vertices.insert(m_vertices.end(), { \
+			MAKE_VERTEX(m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash), \
+			MAKE_VERTEX(m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash), \
+			MAKE_VERTEX(m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash), \
+			MAKE_VERTEX(m_matrix, px3, py3, tx3, ty3, col3, mult, fill, wash) \
+			}); \
 	}
 
 #define PUSH_TRIANGLE(px0, py0, px1, py1, px2, py2, tx0, ty0, tx1, ty1, tx2, ty2, col0, col1, col2, mult, fill, wash) \
 	{ \
+		const int __v = (int)m_vertices.size(); \
 		m_batch.elements += 1; \
-		int* _i = m_indices.expand(3); \
-		*_i++ = m_vertices.count() + 0; \
-		*_i++ = m_vertices.count() + 1; \
-		*_i++ = m_vertices.count() + 2; \
-		Vertex* _v = m_vertices.expand(3); \
-		MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash); _v++; \
-		MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash); _v++; \
-		MAKE_VERTEX(_v, m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash); \
+		m_indices.insert(m_indices.end(), { __v + 0, __v + 1, __v + 2 }); \
+		m_vertices.insert(m_vertices.end(), { \
+			MAKE_VERTEX(m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash), \
+			MAKE_VERTEX(m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash), \
+			MAKE_VERTEX(m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash) \
+			}); \
 	}
 
 // Compares a Batcher variable, and starts a new batch if it has changed
 #define SET_BATCH_VAR(variable) \
 	if (m_batch.elements > 0 && variable != m_batch.variable) \
 	{ \
-		m_batches.add(m_batch); \
+		m_batches.push_back(m_batch); \
 		m_batch.offset += m_batch.elements; \
 		m_batch.elements = 0; \
 	} \
@@ -137,66 +128,71 @@ Batch::~Batch()
 
 void Batch::push_matrix(const Mat3x2& matrix)
 {
-	m_matrix_stack.add(m_matrix);
+	m_matrix_stack.push(m_matrix);
 	m_matrix = matrix * m_matrix;
 }
 
 void Batch::pop_matrix()
 {
-	m_matrix = m_matrix_stack.pop();
+	m_matrix = m_matrix_stack.top();
+	m_matrix_stack.pop();
 }
 
 void Batch::push_scissor(const Rect& scissor)
 {
-	m_scissor_stack.add(m_batch.scissor);
+	m_scissor_stack.push(m_batch.scissor);
 	SET_BATCH_VAR(scissor);
 }
 
 void Batch::pop_scissor()
 {
-	Rect scissor = m_scissor_stack.pop();
+	Rect scissor = m_scissor_stack.top();
+	m_scissor_stack.pop();
 	SET_BATCH_VAR(scissor);
 }
 
 void Batch::push_blend(const BlendMode& blend)
 {
-	m_blend_stack.add(m_batch.blend);
+	m_blend_stack.push(m_batch.blend);
 	SET_BATCH_VAR(blend);
 }
 
 void Batch::pop_blend()
 {
-	BlendMode blend = m_blend_stack.pop();
+	BlendMode blend = m_blend_stack.top();
+	m_blend_stack.pop();
 	SET_BATCH_VAR(blend);
 }
 
 void Batch::push_material(const MaterialRef& material)
 {
-	m_material_stack.add(m_batch.material);
+	m_material_stack.push(m_batch.material);
 	SET_BATCH_VAR(material);
 }
 
 void Batch::pop_material()
 {
-	MaterialRef material = m_material_stack.pop();
+	MaterialRef material = m_material_stack.top();
+	m_material_stack.pop();
 	SET_BATCH_VAR(material);
 }
 
 void Batch::push_layer(int layer)
 {
-	m_layer_stack.add(m_batch.layer);
+	m_layer_stack.push(m_batch.layer);
 	SET_BATCH_VAR(layer);
 }
 
 void Batch::pop_layer()
 {
-	int layer = m_layer_stack.pop();
+	int layer = m_layer_stack.top();
+	m_layer_stack.pop();
 	SET_BATCH_VAR(layer);
 }
 
 void Batch::push_color_mode(ColorMode mode)
 {
-	m_color_mode_stack.add(m_color_mode);
+	m_color_mode_stack.push(m_color_mode);
 	m_color_mode = mode;
 
 	m_tex_mult = (m_color_mode == ColorMode::Normal ? 255 : 0);
@@ -205,7 +201,8 @@ void Batch::push_color_mode(ColorMode mode)
 
 void Batch::pop_color_mode()
 {
-	m_color_mode = m_color_mode_stack.pop();
+	m_color_mode = m_color_mode_stack.top();
+	m_color_mode_stack.pop();
 	m_tex_mult = (m_color_mode == ColorMode::Normal ? 255 : 0);
 	m_tex_wash = (m_color_mode == ColorMode::Wash ? 255 : 0);
 }
@@ -214,7 +211,7 @@ void Batch::set_texture(const TextureRef& texture)
 {
 	if (m_batch.elements > 0 && texture != m_batch.texture && m_batch.texture && m_batch.texture->is_valid())
 	{
-		m_batches.add(m_batch);
+		m_batches.push_back(m_batch);
 		m_batch.offset += m_batch.elements;
 		m_batch.elements = 0;
 	}
@@ -240,7 +237,7 @@ void Batch::render(const FrameBufferRef& target)
 void Batch::render(const FrameBufferRef& target, const Mat4x4& matrix)
 {
 	// nothing to draw
-	if ((m_batches.count() <= 0 && m_batch.elements <= 0) || m_indices.count() <= 0)
+	if ((m_batches.size() <= 0 && m_batch.elements <= 0) || m_indices.size() <= 0)
 		return;
 
 	// define defaults
@@ -259,8 +256,8 @@ void Batch::render(const FrameBufferRef& target, const Mat4x4& matrix)
 	}
 
 	// upload data
-	m_mesh->index_data(m_indices.begin(), m_indices.count());
-	m_mesh->vertex_data(m_vertices.begin(), m_vertices.count());
+	m_mesh->index_data(m_indices.data(), m_indices.size());
+	m_mesh->vertex_data(m_vertices.data(), m_vertices.size());
 
 	RenderCall call;
 	call.target = target;
@@ -315,28 +312,20 @@ void Batch::clear()
 	m_batch.scissor.w = m_batch.scissor.h = -1;
 	m_batch.flip_vertically = false;
 
-	m_matrix_stack.clear();
-	m_scissor_stack.clear();
-	m_blend_stack.clear();
-	m_material_stack.clear();
-	m_color_mode_stack.clear();
-	m_layer_stack.clear();
+	m_matrix_stack = std::stack<Mat3x2>();
+	m_scissor_stack = std::stack<Rect>();
+	m_blend_stack = std::stack<BlendMode>();
+	m_material_stack = std::stack<MaterialRef>();
+	m_color_mode_stack = std::stack<ColorMode>();
+	m_layer_stack = std::stack<int>();
 	m_batches.clear();
 }
 
 void Batch::dispose()
 {
-	m_matrix_stack.dispose();
-	m_scissor_stack.dispose();
-	m_blend_stack.dispose();
-	m_material_stack.dispose();
-	m_color_mode_stack.dispose();
-	m_layer_stack.dispose();
-	m_batches.dispose();
+	clear();
 	m_default_material.reset();
 	m_mesh.reset();
-	m_vertices.dispose();
-	m_indices.dispose();
 }
 
 void Batch::line(const Vec2& from, const Vec2& to, float t, Color color)
