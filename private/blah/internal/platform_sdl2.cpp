@@ -551,7 +551,7 @@ bool Platform::dir_delete(const char* path)
 	return false;
 }
 
-void Platform::dir_enumerate(List<FilePath>& list, const char* path, bool recursive)
+void Platform::dir_enumerate(Vector<FilePath>& list, const char* path, bool recursive)
 {
 	DIR* dirp = opendir(path);
 	if (dirp != NULL)
@@ -562,8 +562,8 @@ void Platform::dir_enumerate(List<FilePath>& list, const char* path, bool recurs
 			if (dp->d_name[0] == '.')
 				continue;
 
-			FilePath subpath = FilePath(path).Append(dp->d_name);
-			list.Add(subpath);
+			FilePath subpath = FilePath(path).append(dp->d_name);
+			list.push_back(subpath);
 
 			if (recursive && dp->d_type == DT_DIR)
 				dir_enumerate(list, subpath + "/", true);
@@ -574,7 +574,7 @@ void Platform::dir_enumerate(List<FilePath>& list, const char* path, bool recurs
 
 void Platform::dir_explore(const char* path)
 {
-	BLAH_ERROR("not implemented");
+	BLAH_ERROR("'dir_explore' Not Implemented");
 }
 
 #endif
