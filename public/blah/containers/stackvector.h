@@ -184,7 +184,7 @@ namespace Blah
 			}
 			else
 			{
-				for (int i = index; i < m_size - 1; i++)
+				for (auto i = index; i < m_size - 1; i++)
 					begin()[i] = std::move(begin()[i + 1]);
 				begin()[m_size - 1].~T();
 			}

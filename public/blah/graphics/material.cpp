@@ -167,7 +167,7 @@ void Material::set_value(const char* name, const float* value, int64_t length)
 
 		if (strcmp(uniform.name, name) == 0)
 		{
-			size_t max = calc_uniform_size(uniform);
+			auto max = calc_uniform_size(uniform);
 			if (length > max)
 			{
 				Log::warn("Exceeding length of Uniform '%s' (%i / %i)", name, length, max);
