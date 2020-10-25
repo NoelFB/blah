@@ -137,71 +137,66 @@ Batch::~Batch()
 
 void Batch::push_matrix(const Mat3x2& matrix)
 {
-	m_matrix_stack.push(m_matrix);
+	m_matrix_stack.push_back(m_matrix);
 	m_matrix = matrix * m_matrix;
 }
 
 void Batch::pop_matrix()
 {
-	m_matrix = m_matrix_stack.top();
-	m_matrix_stack.pop();
+	m_matrix = m_matrix_stack.pop();
 }
 
 void Batch::push_scissor(const Rect& scissor)
 {
-	m_scissor_stack.push(m_batch.scissor);
+	m_scissor_stack.push_back(m_batch.scissor);
 	SET_BATCH_VAR(scissor);
 }
 
 void Batch::pop_scissor()
 {
-	Rect scissor = m_scissor_stack.top();
-	m_scissor_stack.pop();
+	Rect scissor = m_scissor_stack.pop();
 	SET_BATCH_VAR(scissor);
 }
 
 void Batch::push_blend(const BlendMode& blend)
 {
-	m_blend_stack.push(m_batch.blend);
+	m_blend_stack.push_back(m_batch.blend);
 	SET_BATCH_VAR(blend);
 }
 
 void Batch::pop_blend()
 {
-	BlendMode blend = m_blend_stack.top();
-	m_blend_stack.pop();
+	BlendMode blend = m_blend_stack.pop();
 	SET_BATCH_VAR(blend);
 }
 
 void Batch::push_material(const MaterialRef& material)
 {
-	m_material_stack.push(m_batch.material);
+	m_material_stack.push_back(m_batch.material);
 	SET_BATCH_VAR(material);
 }
 
 void Batch::pop_material()
 {
-	MaterialRef material = m_material_stack.top();
-	m_material_stack.pop();
+	MaterialRef material = m_material_stack.pop();
 	SET_BATCH_VAR(material);
 }
 
 void Batch::push_layer(int layer)
 {
-	m_layer_stack.push(m_batch.layer);
+	m_layer_stack.push_back(m_batch.layer);
 	SET_BATCH_VAR(layer);
 }
 
 void Batch::pop_layer()
 {
-	int layer = m_layer_stack.top();
-	m_layer_stack.pop();
+	int layer = m_layer_stack.pop();
 	SET_BATCH_VAR(layer);
 }
 
 void Batch::push_color_mode(ColorMode mode)
 {
-	m_color_mode_stack.push(m_color_mode);
+	m_color_mode_stack.push_back(m_color_mode);
 	m_color_mode = mode;
 
 	m_tex_mult = (m_color_mode == ColorMode::Normal ? 255 : 0);
@@ -210,8 +205,7 @@ void Batch::push_color_mode(ColorMode mode)
 
 void Batch::pop_color_mode()
 {
-	m_color_mode = m_color_mode_stack.top();
-	m_color_mode_stack.pop();
+	m_color_mode = m_color_mode_stack.pop();
 	m_tex_mult = (m_color_mode == ColorMode::Normal ? 255 : 0);
 	m_tex_wash = (m_color_mode == ColorMode::Wash ? 255 : 0);
 }
@@ -321,18 +315,29 @@ void Batch::clear()
 	m_batch.scissor.w = m_batch.scissor.h = -1;
 	m_batch.flip_vertically = false;
 
-	m_matrix_stack = std::stack<Mat3x2>();
-	m_scissor_stack = std::stack<Rect>();
-	m_blend_stack = std::stack<BlendMode>();
-	m_material_stack = std::stack<MaterialRef>();
-	m_color_mode_stack = std::stack<ColorMode>();
-	m_layer_stack = std::stack<int>();
+	m_matrix_stack.clear();
+	m_scissor_stack.clear();
+	m_blend_stack.clear();
+	m_material_stack.clear();
+	m_color_mode_stack.clear();
+	m_layer_stack.clear();
 	m_batches.clear();
 }
 
 void Batch::dispose()
 {
 	clear();
+
+	m_vertices.dispose();
+	m_indices.dispose();
+	m_matrix_stack.dispose();
+	m_scissor_stack.dispose();
+	m_blend_stack.dispose();
+	m_material_stack.dispose();
+	m_color_mode_stack.dispose();
+	m_layer_stack.dispose();
+	m_batches.dispose();
+
 	m_default_material.reset();
 	m_mesh.reset();
 }

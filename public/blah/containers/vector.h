@@ -2,7 +2,6 @@
 #include <blah/log.h>
 #include <type_traits>
 #include <new>
-#include <string.h>
 
 namespace Blah
 {
@@ -11,8 +10,8 @@ namespace Blah
 	{
 	private:
 		T* m_buffer;
-		size_t m_size;
-		size_t m_capacity;
+		int m_count;
+		int m_capacity;
 
 	public:
 
@@ -25,297 +24,318 @@ namespace Blah
 		Vector& operator=(const Vector& src);
 		Vector& operator=(Vector&& src) noexcept;
 
-		// reserves the given amount of capacity
+		void clear();
+		void dispose();
+
+		int size() const;
+		int capacity() const;
+
 		void reserve(size_t new_capacity);
+		void resize(int new_count);
+		T* expand(int amount = 1);
 
-		// adds an element to the Vector
 		void push_back(const T& item);
-
-		// moves an element into the Vector
 		void push_back(T&& item);
-
 		template<class ...Args>
 		void emplace_back(Args&&...args);
 
-		// resizes the vector
-		void resize(size_t capacity);
-
-		// expands the Vector by the given amount, and returns a pointer to the first element
-		T* expand(size_t amount = 1);
-
-		// returns a reference to the element at the given index
 		T& operator[](int index);
-
-		// returns a reference to the element at the given index
 		const T& operator[](int index) const;
 
-		// returns a pointer to the first element
-		T* data() { return m_buffer; }
+		T* data();
+		const T* data() const;
+		T* begin();
+		const T* begin() const;
+		T* end();
+		const T* end() const;
+		T& front();
+		const T& front() const;
+		T& back();
+		const T& back() const;
 
-		// returns a pointer to the first element
-		const T* data() const { return m_buffer; }
-
-		// returns a pointer to the first element
-		T* begin() { return m_buffer; }
-
-		// returns a pointer to the first element
-		const T* begin() const { return m_buffer; }
-
-		// returns a pointer to the last element plus 1
-		T* end() { return m_buffer + m_size; }
-
-		// returns a pointer to the last element plus 1
-		const T* end() const { return m_buffer + m_size; }
-
-		// returns the front element
-		T& front() { BLAH_ASSERT(m_size > 0, "Index out of range"); return *begin(); }
-		
-		// returns the front element
-		const T& front() const { BLAH_ASSERT(m_size > 0, "Index out of range"); return *begin(); }
-
-		// returns the last element
-		T& back() { BLAH_ASSERT(m_size > 0, "Index out of range"); return *(end() - 1); }
-
-		// returns the last element
-		const T& back() const { BLAH_ASSERT(m_size > 0, "Index out of range"); return *(end() - 1); }
-
-		// clears all elements
-		void clear();
-
-		// removes the element at the index
-		void erase(const T* position);
-
-		// returns the total number of elements
-		size_t size() const { return m_size; }
-
-		// returns the internal buffer capacity of the Vector
-		size_t capacity() const { return m_capacity; }
-
-		// removes all elements and disposes the internal buffer
-		void dispose();
+		void erase(int index, int elements = 1);
+		T pop();
 	};
 
+
 	template<class T>
-	Vector<T>::Vector()
+	inline Vector<T>::Vector()
 	{
 		m_buffer = nullptr;
-		m_size = m_capacity = 0;
+		m_count = m_capacity = 0;
 	}
 
 	template<class T>
-	Vector<T>::Vector(int capacity)
+	inline Vector<T>::Vector(int capacity)
 	{
 		m_buffer = nullptr;
-		m_size = m_capacity = capacity;
-		reserve(m_capacity);
+		m_count = m_capacity = 0;
+		reserve(capacity);
 	}
 
 	template<class T>
-	Vector<T>::Vector(const Vector<T>& src)
+	inline Vector<T>::Vector(const Vector& src)
 	{
-		m_buffer = (T*)(::operator new (sizeof(T) * src.m_capacity));
-		m_size = src.m_size;
-		m_capacity = src.m_capacity;
-
-		for (int n = 0; n < m_size; n++)
-			new (m_buffer + n) T(*(src.m_buffer + n));
+		m_buffer = nullptr;
+		m_count = m_capacity = 0;
+		reserve(src.m_capacity);
+		for (int i = 0; i < src.m_count; i++)
+			m_buffer[i] = src.m_buffer[i];
+		m_count = src.m_count;
 	}
 
 	template<class T>
-	Vector<T>::Vector(Vector<T>&& src) noexcept
+	inline Vector<T>::Vector(Vector&& src) noexcept
 	{
 		m_buffer = src.m_buffer;
-		m_size = src.m_size;
 		m_capacity = src.m_capacity;
+		m_count = src.m_count;
 		src.m_buffer = nullptr;
-		src.m_size = src.m_capacity = 0;
+		src.m_capacity = 0;
+		src.m_count = 0;
 	}
 
 	template<class T>
-	Vector<T>& Vector<T>::operator=(const Vector<T>& src)
+	inline Vector<T>::~Vector()
+	{
+		dispose();
+	}
+
+	template<class T>
+	inline Vector<T>& Vector<T>::operator=(const Vector& src)
+	{
+		clear();
+		reserve(src.m_capacity);
+		for (int i = 0; i < src.m_count; i++)
+			m_buffer[i] = src.m_buffer[i];
+		m_count = src.m_count;
+		return *this;
+	}
+
+	template<class T>
+	inline Vector<T>& Vector<T>::operator=(Vector&& src) noexcept
+	{
+		dispose();
+		m_buffer = src.m_buffer;
+		m_capacity = src.m_capacity;
+		m_count = src.m_count;
+		src.m_buffer = nullptr;
+		src.m_capacity = 0;
+		src.m_count = 0;
+		return *this;
+	}
+
+	template<class T>
+	inline void Vector<T>::clear()
+	{
+		for (int i = 0; i < m_count; i++)
+			m_buffer[i].~T();
+		m_count = 0;
+	}
+
+	template<class T>
+	inline void Vector<T>::dispose()
 	{
 		clear();
 
-		if (m_capacity < src.m_size)
-			reserve(src.m_size);
-		m_size = src.m_size;
+		::operator delete (m_buffer, sizeof(T) * m_capacity);
 
-		for (int n = 0; n < m_size; n++)
-			new (m_buffer + n) T(*(src.m_buffer + n));
-
-		return *this;
+		m_capacity = 0;
+		m_buffer = nullptr;
 	}
 
 	template<class T>
-	Vector<T>& Vector<T>::operator=(Vector<T>&& src) noexcept
+	inline int Vector<T>::size() const
 	{
-		dispose();
-		m_buffer = src.m_buffer;
-		m_size = src.m_size;
-		m_capacity = src.m_capacity;
-		src.m_buffer = nullptr;
-		src.m_size = src.m_capacity = 0;
-		return *this;
+		return m_count;
 	}
 
 	template<class T>
-	Vector<T>::~Vector()
+	inline int Vector<T>::capacity() const
 	{
-		dispose();
+		return m_capacity;
 	}
 
 	template<class T>
-	void Vector<T>::reserve(size_t new_capacity)
+	inline void Vector<T>::reserve(size_t cap)
 	{
-		if (new_capacity >= m_capacity)
+		if (cap > m_capacity)
 		{
-			auto last_capacity = m_capacity;
+			int new_capacity = m_capacity;
+			if (new_capacity <= 0)
+				new_capacity = 8;
+			while (new_capacity < cap)
+				new_capacity *= 2;
 
-			if (m_capacity <= 0)
-				m_capacity = 8;
+			T* new_buffer = (T*)::operator new (sizeof(T) * new_capacity);
 
-			while (new_capacity >= m_capacity)
-				m_capacity = m_capacity * 2;
-
-			T* new_buffer = (T*)::operator new (sizeof(T) * m_capacity);
-
-			if (std::is_trivially_copyable<T>::value)
+			for (int i = 0; i < m_count; i++)
 			{
-				memcpy(new_buffer, m_buffer, sizeof(T) * m_size);
-			}
-			else
-			{
-				for (auto n = 0; n < m_size; n++)
-				{
-					new (new_buffer + n) T(std::move(m_buffer[n]));
-					m_buffer[n].~T();
-				}
-			}
-
-			::operator delete (m_buffer, sizeof(T) * last_capacity);
-			m_buffer = new_buffer;
-		}
-	}
-
-	template<class T>
-	void Vector<T>::resize(size_t new_size)
-	{
-		if (new_size > m_size)
-		{
-			reserve(new_size);
-			for (auto n = m_size; n < new_size; n++)
-				new (m_buffer + n) T();
-		}
-		else if (new_size < m_size)
-		{
-			for (auto i = new_size; i < m_size; i ++)
+				if (i < new_capacity)
+					new (new_buffer + i) T(std::move(m_buffer[i]));
 				m_buffer[i].~T();
+			}
+
+			::operator delete (m_buffer, sizeof(T)* m_capacity);
+
+			m_buffer = new_buffer;
+			m_capacity = new_capacity;
+		}
+	}
+
+	template<class T>
+	inline void Vector<T>::resize(int new_count)
+	{
+		if (new_count < m_count)
+			erase(new_count, m_count - new_count);
+		else
+			expand(new_count - m_count);
+	}
+
+	template<class T>
+	inline T* Vector<T>::expand(int amount)
+	{
+		if (amount > 0)
+		{
+			int count = m_count;
+
+			reserve(count + amount);
+			for (int i = 0; i < amount; i++)
+				new (m_buffer + count + i) T();
+
+			m_count += amount;
+			return &m_buffer[count];
 		}
 
-		m_size = new_size;
+		return m_buffer;
 	}
 
 	template<class T>
-	T* Vector<T>::expand(size_t amount)
+	inline void Vector<T>::push_back(const T& item)
 	{
-		reserve(m_size + amount);
-		for (auto n = m_size; n < m_size + amount; n++)
-			new (m_buffer + n) T();
-		m_size += amount;
-		return (m_buffer + m_size - amount);
+		reserve(m_count + 1);
+		new (m_buffer + m_count) T(item);
+		m_count++;
 	}
 
 	template<class T>
-	void Vector<T>::push_back(const T& item)
+	inline void Vector<T>::push_back(T&& item)
 	{
-		reserve(m_size + 1);
-		new (m_buffer + m_size) T(item);
-		m_size++;
-	}
-
-	template<class T>
-	void Vector<T>::push_back(T&& item)
-	{
-		reserve(m_size + 1);
-		new (m_buffer + m_size) T(std::move(item));
-		m_size++;
+		reserve(m_count + 1);
+		new (m_buffer + m_count) T(std::move(item));
+		m_count++;
 	}
 
 	template<class T>
 	template<class ...Args>
-	void Vector<T>::emplace_back(Args&&...args)
+	inline void Vector<T>::emplace_back(Args && ...args)
 	{
-		reserve(m_size + 1);
-		new (m_buffer + m_size) T(std::forward<Args>(args)...);
-		m_size++;
+		reserve(m_count + 1);
+		new (m_buffer + m_count) T(std::forward<Args>(args)...);
+		m_count++;
 	}
 
 	template<class T>
-	T& Vector<T>::operator[](int index)
+	inline T& Vector<T>::operator[](int index)
 	{
-		BLAH_ASSERT(index >= 0 && index < m_size, "Index is out of range");
+		BLAH_ASSERT(index >= 0 && index < m_count, "Index out of range");
 		return m_buffer[index];
 	}
 
 	template<class T>
-	const T& Vector<T>::operator[](int index) const
+	inline const T& Vector<T>::operator[](int index) const
 	{
-		BLAH_ASSERT(index >= 0 && index < m_size, "Index is out of range");
+		BLAH_ASSERT(index >= 0 && index < m_count, "Index out of range");
 		return m_buffer[index];
 	}
 
 	template<class T>
-	void Vector<T>::clear()
+	inline T* Vector<T>::data()
 	{
-		for (T* it = m_buffer; it < m_buffer + m_size; it++)
-			it->~T();
-		m_size = 0;
+		return m_buffer;
 	}
 
 	template<class T>
-	void Vector<T>::erase(const T* position)
+	inline const T* Vector<T>::data() const
 	{
-		BLAH_ASSERT(m_size > 0, "Index is out of range");
-		BLAH_ASSERT(position >= begin() && position < end(), "Index is out of range");
+		return m_buffer;
+	}
 
-		if (m_size > 0)
+	template<class T>
+	inline T* Vector<T>::begin()
+	{
+		return m_buffer;
+	}
+
+	template<class T>
+	inline const T* Vector<T>::begin() const
+	{
+		return m_buffer;
+	}
+
+	template<class T>
+	inline T* Vector<T>::end()
+	{
+		return m_buffer + m_count;
+	}
+
+	template<class T>
+	inline const T* Vector<T>::end() const
+	{
+		return m_buffer + m_count;
+	}
+
+	template<class T>
+	inline T& Vector<T>::front()
+	{
+		BLAH_ASSERT(m_count > 0, "Index out of range");
+		return m_buffer[0];
+	}
+
+	template<class T>
+	inline const T& Vector<T>::front() const
+	{
+		BLAH_ASSERT(m_count > 0, "Index out of range");
+		return m_buffer[0];
+	}
+
+	template<class T>
+	inline T& Vector<T>::back()
+	{
+		BLAH_ASSERT(m_count > 0, "Index out of range");
+		return m_buffer[m_count - 1];
+	}
+
+	template<class T>
+	inline const T& Vector<T>::back() const
+	{
+		BLAH_ASSERT(m_count > 0, "Index out of range");
+		return m_buffer[m_count - 1];
+	}
+
+	template<class T>
+	inline void Vector<T>::erase(int index, int elements)
+	{
+		BLAH_ASSERT(index >= 0 && index + elements <= m_count, "Index out of range");
+
+		if (elements >= 1)
 		{
-			const size_t index = position - begin();
-
-			if (index < m_size - 1)
-			{
-				size_t diff = (m_size - index - 1);
-				if (diff <= 0) diff = 0;
-
-				if (std::is_trivially_copyable<T>::value)
-				{
-					m_buffer[index].~T();
-					memmove(m_buffer + index, m_buffer + index + 1, (size_t)diff * sizeof(T));
-				}
-				else
-				{
-					for (auto i = index; i < m_size - 1; i++)
-						m_buffer[i] = std::move(m_buffer[i + 1]);
-					m_buffer[m_size - 1].~T();
-				}
-			}
-			else
-			{
-				m_buffer[index].~T();
-			}
-
-			m_size--;
+			for (int i = index; i < (m_count - elements); i++)
+				m_buffer[i] = std::move(m_buffer[i + elements]);
+			for (int i = m_count - elements; i < m_count; i++)
+				m_buffer[i].~T();
+			m_count -= elements;
 		}
 	}
 
 	template<class T>
-	void Vector<T>::dispose()
+	inline T Vector<T>::pop()
 	{
-		clear();
-		::operator delete (m_buffer, sizeof(T) * m_capacity);
-		m_buffer = nullptr;
-		m_size = 0;
-		m_capacity = 0;
-	}
+		BLAH_ASSERT(m_count > 0, "Index out of range");
 
+		T value = std::move(m_buffer[m_count - 1]);
+		m_buffer[m_count - 1].~T();
+		m_count--;
+		return value;
+	}
 }

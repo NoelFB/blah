@@ -1,6 +1,5 @@
 #pragma once
 #include <blah/log.h>
-#include <string.h>
 #include <new>
 
 namespace Blah
@@ -8,14 +7,12 @@ namespace Blah
 	// A mix between an std::vector and an std::array
 	// The goal is to have an std::vector implementation that lives
 	// on the stack instead of the heap
-	template<class T, int Capacity>
+	template<class T, size_t Capacity>
 	class StackVector
 	{
 	private:
-		// we avoid using an array of type T to make sure the default
-		// constructor/destructors are not called
-		char m_buffer[Capacity * sizeof(T)];
-		size_t m_size;
+		char* m_buffer[sizeof(T) * Capacity];
+		int m_count;
 
 	public:
 
@@ -27,174 +24,246 @@ namespace Blah
 		StackVector& operator=(const StackVector& src);
 		StackVector& operator=(StackVector&& src) noexcept;
 
+		void clear();
+
+		int size() const;
+		constexpr int capacity() { return Capacity; }
+
+		T* expand(int amount = 1);
 		void push_back(const T& item);
 		void push_back(T&& item);
-
-		template<class ... Args>
-		void emplace_back(Args&&... args) { push_back(T(std::forward<Args>(args)...)); }
+		template<class ...Args>
+		void emplace_back(Args&&...args);
 
 		T& operator[](int index);
 		const T& operator[](int index) const;
 
-		T* begin() { return (T*)m_buffer; }
-		const T* begin() const { return (T*)m_buffer; }
-		T* end() { return ((T*)m_buffer) + m_size; }
-		const T* end() const { return ((T*)m_buffer) + m_size; }
-		T& front() { BLAH_ASSERT(m_size > 0, "Index out of range"); return *begin(); }
-		const T& front() const { BLAH_ASSERT(m_size > 0, "Index out of range"); return *begin(); }
-		T& back() { BLAH_ASSERT(m_size > 0, "Index out of range"); return *(end() - 1); }
-		const T& back() const { BLAH_ASSERT(m_size > 0, "Index out of range"); return *(end() - 1); }
+		T* data();
+		const T* data() const;
+		T* begin();
+		const T* begin() const;
+		T* end();
+		const T* end() const;
+		T& front();
+		const T& front() const;
+		T& back();
+		const T& back() const;
 
-		void clear();
-
-		void erase(const T* position);
-
-		size_t size() const { return m_size; }
-		constexpr size_t capacity() const { return Capacity; }
+		void erase(int index, int elements = 1);
+		T pop();
 	};
 
-	template<class T, int Capacity>
-	StackVector<T, Capacity>::StackVector()
+	template<class T, size_t Capacity>
+	inline StackVector<T, Capacity>::StackVector()
 	{
-		m_size = 0;
-		m_buffer[0] = 0;
+		m_count = 0;
 	}
 
-	template<class T, int Capacity>
-	StackVector<T, Capacity>::StackVector(const StackVector<T, Capacity>& src)
+	template<class T, size_t Capacity>
+	inline StackVector<T, Capacity>::StackVector(const StackVector& src)
 	{
-		m_size = src.m_size;
-		for (int n = 0; n < m_size; n++)
-			new(begin() + n) T(*(src.begin() + n));
+		for (int i = 0; i < src.m_count; i++)
+			new (data() + i) T(src.data()[i]);
+		m_count = src.m_count;
 	}
 
-	template<class T, int Capacity>
-	StackVector<T, Capacity>::StackVector(StackVector<T, Capacity>&& src) noexcept
+	template<class T, size_t Capacity>
+	inline StackVector<T, Capacity>::StackVector(StackVector&& src) noexcept
 	{
-		m_size = src.m_size;
-
-		if (std::is_trivially_copyable<T>::value)
-		{
-			memcpy(m_buffer, src.m_buffer, sizeof(T) * m_size);
-			src.m_size = 0;
-		}
-		else
-		{
-			for (int n = 0; n < m_size; n++)
-				new(begin() + n) T(std::move(*(src.begin() + n)));
-			src.clear();
-		}
+		for (int i = 0; i < src.m_count; i++)
+			new (data() + i) T(std::move(src.data()[i]));
+		m_count = src.m_count;
 	}
 
-	template<class T, int Capacity>
-	StackVector<T, Capacity>& StackVector<T, Capacity>::operator=(const StackVector<T, Capacity>& src)
+	template<class T, size_t Capacity>
+	inline StackVector<T, Capacity>::~StackVector()
+	{
+		clear();
+	}
+
+	template<class T, size_t Capacity>
+	inline StackVector<T, Capacity>& StackVector<T, Capacity>::operator=(const StackVector& src)
 	{
 		clear();
 
-		m_size = src.m_size;
-		for (int n = 0; n < m_size; n++)
-			new(begin() + n) T(*(src.begin() + n));
+		for (int i = 0; i < src.m_count; i++)
+			data()[i] = src.data()[i];
+		m_count = src.m_count;
 
 		return *this;
 	}
 
-	template<class T, int Capacity>
-	StackVector<T, Capacity>& StackVector<T, Capacity>::operator=(StackVector<T, Capacity>&& src) noexcept
+	template<class T, size_t Capacity>
+	inline StackVector<T, Capacity>& StackVector<T, Capacity>::operator=(StackVector&& src) noexcept
 	{
 		clear();
 
-		m_size = src.m_size;
-
-		if (std::is_trivially_copyable<T>::value)
-		{
-			memcpy(m_buffer, src.m_buffer, sizeof(T) * m_size);
-			src.m_size = 0;
-		}
-		else
-		{
-			for (int n = 0; n < m_size; n++)
-				new(begin() + n) T(std::move(*(src.begin() + n)));
-			src.clear();
-		}
+		for (int i = 0; i < src.m_count; i++)
+			data()[i] = std::move(src.data()[i]);
+		m_count = src.m_count;
 
 		return *this;
 	}
 
-	template<class T, int Capacity>
-	StackVector<T, Capacity>::~StackVector()
+	template<class T, size_t Capacity>
+	inline void StackVector<T, Capacity>::clear()
 	{
-		clear();
+		for (int i = 0; i < m_count; i++)
+			data()[i].~T();
+		m_count = 0;
 	}
 
-	template<class T, int Capacity>
-	void StackVector<T, Capacity>::push_back(const T& item)
+	template<class T, size_t Capacity>
+	inline int StackVector<T, Capacity>::size() const
 	{
-		BLAH_ASSERT(m_size < Capacity, "Exceeded StackVector Capacity");
-		new(begin() + m_size) T(item);
-		m_size++;
+		return m_count;
 	}
 
-	template<class T, int Capacity>
-	void StackVector<T, Capacity>::push_back(T&& item)
+	template<class T, size_t Capacity>
+	inline T* StackVector<T, Capacity>::expand(int amount)
 	{
-		BLAH_ASSERT(m_size < Capacity, "Exceeded StackVector Capacity");
-		new(begin() + m_size) T(std::move(item));
-		m_size++;
-	}
+		BLAH_ASSERT(m_count + amount <= Capacity, "Exceeded StackVector Capacity");
 
-	template<class T, int Capacity>
-	T& StackVector<T, Capacity>::operator[](int index)
-	{
-		BLAH_ASSERT(index >= 0 && index < m_size, "Index is out of range");
-		return begin()[index];
-	}
-
-	template<class T, int Capacity>
-	const T& StackVector<T, Capacity>::operator[](int index) const
-	{
-		BLAH_ASSERT(index >= 0 && index < m_size, "Index is out of range");
-		return begin()[index];
-	}
-
-
-
-	template<class T, int Capacity>
-	void StackVector<T, Capacity>::clear()
-	{
-		for (T* it = begin(); it < begin() + m_size; it++)
-			it->~T();
-		m_size = 0;
-	}
-
-	template<class T, int Capacity>
-	void StackVector<T, Capacity>::erase(const T* position)
-	{
-		BLAH_ASSERT(position >= begin() && position < end(), "Index is out of range");
-
-		const size_t index = position - begin();
-		if (index < m_size - 1)
+		if (amount > 0)
 		{
-			size_t diff = (m_size - index - 1);
-			if (diff <= 0) diff = 0;
+			int count = m_count;
 
-			if (std::is_trivially_copyable<T>::value)
-			{
-				begin()[index].~T();
-				memmove(begin() + index, begin() + index + 1, (size_t)diff * sizeof(T));
-			}
-			else
-			{
-				for (auto i = index; i < m_size - 1; i++)
-					begin()[i] = std::move(begin()[i + 1]);
-				begin()[m_size - 1].~T();
-			}
-		}
-		else
-		{
-			begin()[index].~T();
+			for (int i = 0; i < amount; i++)
+				new (data() + count + i) T(item);
+
+			m_count += amount;
+			return &data()[count];
 		}
 
-		m_size--;
+		return m_buffer;
 	}
 
+	template<class T, size_t Capacity>
+	inline void StackVector<T, Capacity>::push_back(const T& item)
+	{
+		BLAH_ASSERT(m_count + 1 <= Capacity, "Exceeded StackVector Capacity");
+		new (data() + m_count) T(item);
+		m_count++;
+	}
+
+	template<class T, size_t Capacity>
+	inline void StackVector<T, Capacity>::push_back(T&& item)
+	{
+		BLAH_ASSERT(m_count + 1 <= Capacity, "Exceeded StackVector Capacity");
+		new (data() + m_count) T(std::move(item));
+		m_count++;
+	}
+
+	template<class T, size_t Capacity>
+	template<class ...Args>
+	inline void StackVector<T, Capacity>::emplace_back(Args && ...args)
+	{
+		BLAH_ASSERT(m_count + 1 <= Capacity, "Exceeded StackVector Capacity");
+		new (data() + m_count) T(std::forward<Args>(args)...);
+		m_count++;
+	}
+
+	template<class T, size_t Capacity>
+	inline T& StackVector<T, Capacity>::operator[](int index)
+	{
+		BLAH_ASSERT(index >= 0 && index < m_count, "Index out of range");
+		return data()[index];
+	}
+
+	template<class T, size_t Capacity>
+	inline const T& StackVector<T, Capacity>::operator[](int index) const
+	{
+		BLAH_ASSERT(index >= 0 && index < m_count, "Index out of range");
+		return data()[index];
+	}
+
+	template<class T, size_t Capacity>
+	inline T* StackVector<T, Capacity>::data()
+	{
+		return (T*)m_buffer;
+	}
+
+	template<class T, size_t Capacity>
+	inline const T* StackVector<T, Capacity>::data() const
+	{
+		return (T*)m_buffer;
+	}
+
+	template<class T, size_t Capacity>
+	inline T* StackVector<T, Capacity>::begin()
+	{
+		return (T*)m_buffer;
+	}
+
+	template<class T, size_t Capacity>
+	inline const T* StackVector<T, Capacity>::begin() const
+	{
+		return (T*)m_buffer;
+	}
+
+	template<class T, size_t Capacity>
+	inline T* StackVector<T, Capacity>::end()
+	{
+		return ((T*)m_buffer) + m_count;
+	}
+
+	template<class T, size_t Capacity>
+	inline const T* StackVector<T, Capacity>::end() const
+	{
+		return ((T*)m_buffer) + m_count;
+	}
+
+	template<class T, size_t Capacity>
+	inline T& StackVector<T, Capacity>::front()
+	{
+		BLAH_ASSERT(m_count > 0, "Index out of range");
+		return data()[0];
+	}
+
+	template<class T, size_t Capacity>
+	inline const T& StackVector<T, Capacity>::front() const
+	{
+		BLAH_ASSERT(m_count > 0, "Index out of range");
+		return data()[0];
+	}
+
+	template<class T, size_t Capacity>
+	inline T& StackVector<T, Capacity>::back()
+	{
+		BLAH_ASSERT(m_count > 0, "Index out of range");
+		return data()[m_count - 1];
+	}
+
+	template<class T, size_t Capacity>
+	inline const T& StackVector<T, Capacity>::back() const
+	{
+		BLAH_ASSERT(m_count > 0, "Index out of range");
+		return data()[m_count - 1];
+	}
+
+	template<class T, size_t Capacity>
+	inline void StackVector<T, Capacity>::erase(int index, int elements)
+	{
+		BLAH_ASSERT(index >= 0 && index + elements <= m_count, "Index out of range");
+
+		if (elements >= 1)
+		{
+			for (int i = index; i < (m_count - elements); i++)
+				data()[i] = std::move(data()[i + elements]);
+			for (int i = m_count - elements; i < m_count; i++)
+				data()[i].~T();
+			m_count -= elements;
+		}
+	}
+
+	template<class T, size_t Capacity>
+	inline T StackVector<T, Capacity>::pop()
+	{
+		BLAH_ASSERT(m_count > 0, "Index out of range");
+
+		T value = std::move(data()[m_count - 1]);
+		data()[m_count - 1].~T();
+		m_count--;
+		return value;
+	}
 }

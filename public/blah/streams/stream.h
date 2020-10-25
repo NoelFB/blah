@@ -2,6 +2,7 @@
 #include <inttypes.h>
 #include <blah/containers/str.h>
 #include <blah/streams/endian.h>
+#include <string.h>
 
 namespace Blah
 {

@@ -9,7 +9,6 @@
 #include <blah/drawing/subtexture.h>
 #include <blah/drawing/spritefont.h>
 #include <blah/containers/vector.h>
-#include <stack>
 
 namespace Blah
 {
@@ -146,23 +145,23 @@ namespace Blah
 				scissor(0, 0, -1, -1) {}
 		};
 
-		static ShaderRef			m_default_shader;
-		MaterialRef					m_default_material;
-		MeshRef						m_mesh;
-		Mat3x2						m_matrix;
-		ColorMode					m_color_mode;
-		uint8_t						m_tex_mult;
-		uint8_t						m_tex_wash;
-		DrawBatch					m_batch;
-		Vector<Vertex>				m_vertices;
-		Vector<int>					m_indices;
-		std::stack<Mat3x2>			m_matrix_stack;
-		std::stack<Rect>			m_scissor_stack;
-		std::stack<BlendMode>		m_blend_stack;
-		std::stack<MaterialRef>		m_material_stack;
-		std::stack<ColorMode>		m_color_mode_stack;
-		std::stack<int>				m_layer_stack;
-		Vector<DrawBatch>			m_batches;
+		static ShaderRef		m_default_shader;
+		MaterialRef				m_default_material;
+		MeshRef					m_mesh;
+		Mat3x2					m_matrix;
+		ColorMode				m_color_mode;
+		uint8_t					m_tex_mult;
+		uint8_t					m_tex_wash;
+		DrawBatch				m_batch;
+		Vector<Vertex>			m_vertices;
+		Vector<int>				m_indices;
+		Vector<Mat3x2>			m_matrix_stack;
+		Vector<Rect>			m_scissor_stack;
+		Vector<BlendMode>		m_blend_stack;
+		Vector<MaterialRef>		m_material_stack;
+		Vector<ColorMode>		m_color_mode_stack;
+		Vector<int>				m_layer_stack;
+		Vector<DrawBatch>		m_batches;
 
 		void render_single_batch(RenderCall& call, const DrawBatch& b, const Mat4x4& matrix);
 	};
