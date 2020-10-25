@@ -67,38 +67,47 @@ namespace
 	}
 }
 
-#define MAKE_VERTEX(mat, px, py, tx, ty, c, m, w, f) \
-	{ \
-		Vec2( \
-			((px)*mat.m11) + ((py)*mat.m21) + mat.m31, \
-			((px)*mat.m12) + ((py)*mat.m22) + mat.m32), \
-		Vec2(tx, (m_batch.flip_vertically ? 1.0f - ty : ty)), \
-		c, m, w, f \
-	}
+#define MAKE_VERTEX(vert, mat, px, py, tx, ty, c, m, w, f) \
+	(vert)->pos.x = ((px) * mat.m11) + ((py) * mat.m21) + mat.m31; \
+	(vert)->pos.y = ((px) * mat.m12) + ((py) * mat.m22) + mat.m32; \
+	(vert)->tex.x = tx;  \
+	if (m_batch.flip_vertically) \
+		(vert)->tex.y = 1.0f - ty; \
+	else \
+		(vert)->tex.y = ty; \
+	(vert)->col = c; \
+	(vert)->mult = m; \
+	(vert)->wash = w; \
+	(vert)->fill = f;
 	
 #define PUSH_QUAD(px0, py0, px1, py1, px2, py2, px3, py3, tx0, ty0, tx1, ty1, tx2, ty2, tx3, ty3, col0, col1, col2, col3, mult, fill, wash) \
 	{ \
-		const int __v = (int)m_vertices.size(); \
 		m_batch.elements += 2; \
-		m_indices.insert(m_indices.end(), { __v + 0, __v + 1, __v + 2, __v + 0, __v + 2, __v + 3 }); \
-		m_vertices.insert(m_vertices.end(), { \
-			MAKE_VERTEX(m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash), \
-			MAKE_VERTEX(m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash), \
-			MAKE_VERTEX(m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash), \
-			MAKE_VERTEX(m_matrix, px3, py3, tx3, ty3, col3, mult, fill, wash) \
-			}); \
+		int* _i = m_indices.expand(6); \
+		*_i++ = m_vertices.size() + 0; \
+		*_i++ = m_vertices.size() + 1; \
+		*_i++ = m_vertices.size() + 2; \
+		*_i++ = m_vertices.size() + 0; \
+		*_i++ = m_vertices.size() + 2; \
+		*_i++ = m_vertices.size() + 3; \
+		Vertex* _v = m_vertices.expand(4); \
+		MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash); _v++; \
+		MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash); _v++; \
+		MAKE_VERTEX(_v, m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash); _v++; \
+		MAKE_VERTEX(_v, m_matrix, px3, py3, tx3, ty3, col3, mult, fill, wash); \
 	}
 
 #define PUSH_TRIANGLE(px0, py0, px1, py1, px2, py2, tx0, ty0, tx1, ty1, tx2, ty2, col0, col1, col2, mult, fill, wash) \
 	{ \
-		const int __v = (int)m_vertices.size(); \
 		m_batch.elements += 1; \
-		m_indices.insert(m_indices.end(), { __v + 0, __v + 1, __v + 2 }); \
-		m_vertices.insert(m_vertices.end(), { \
-			MAKE_VERTEX(m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash), \
-			MAKE_VERTEX(m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash), \
-			MAKE_VERTEX(m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash) \
-			}); \
+		int* _i = m_indices.expand(3); \
+		*_i++ = m_vertices.size() + 0; \
+		*_i++ = m_vertices.size() + 1; \
+		*_i++ = m_vertices.size() + 2; \
+		Vertex* _v = m_vertices.expand(3); \
+		MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash); _v++; \
+		MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash); _v++; \
+		MAKE_VERTEX(_v, m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash); \
 	}
 
 // Compares a Batcher variable, and starts a new batch if it has changed

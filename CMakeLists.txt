@@ -35,7 +35,8 @@ add_library(blah
 	public/blah/input/virtual_button.h
 	public/blah/input/virtual_axis.cpp
 	public/blah/input/virtual_axis.h
-	 
+	
+	public/blah/containers/vector.h
 	public/blah/containers/stackvector.h
 	public/blah/containers/str.cpp
 	public/blah/containers/str.h
@@ -83,6 +84,7 @@ add_library(blah
 	public/blah/math/vec2.h
 	public/blah/math/vec4.h
 	
+	public/blah/streams/endian.h
 	public/blah/streams/bufferstream.cpp
 	public/blah/streams/bufferstream.h	
 	public/blah/streams/filestream.cpp
@@ -99,7 +101,7 @@ add_library(blah
 	private/blah/internal/graphics_opengl.cpp
 	private/blah/internal/input.h
 	private/blah/internal/platform.h
-	private/blah/internal/platform_sdl2.cpp "public/blah/containers/vector.h")
+	private/blah/internal/platform_sdl2.cpp)
 
 target_include_directories(blah
 	PUBLIC

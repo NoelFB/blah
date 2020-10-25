@@ -1,29 +1,14 @@
 #pragma once
 #include <inttypes.h>
 #include <blah/containers/str.h>
-
-#define BLAH_SWAP_ENDIAN(value, type) \
-	for (int i = 0; i < sizeof(type) / 2; i ++) { \
-		uint8_t* _ptr = (uint8_t*)&value;\
-		uint8_t _temp = *(_ptr + i); \
-		*(_ptr + i) = *(_ptr + sizeof(type) - i - 1); \
-		*(_ptr + sizeof(type) - i - 1) = _temp; \
-	}
-
-#define BLAH_BIG_ENDIAN (*((short*)"AB") == 0x4243)
+#include <blah/streams/endian.h>
 
 namespace Blah
 {
-	enum class Endian
-	{
-		Little,
-		Big
-	};
-
 	class Stream
 	{
 	public:
-		Stream();
+		Stream() = default;
 		Stream(const Stream&) = delete;
 		Stream& operator=(const Stream&) = delete;
 
@@ -53,44 +38,92 @@ namespace Blah
 		// pipes the contents of this tream to another stream
 		int64_t pipe(Stream& to, int64_t length);
 
-		// reads a single line from this stream (up until \r or \n)
-		String read_line();
-
-		// reada a single line from this stream, to the given string (up until \r or \n)
-		int64_t read_line(String& writeTo);
-
-		// reads a string of a given length, or until a null terminator if -1
-		String read_string(int length = -1);
-
 		// reads the amount of bytes into the given buffer, and returns the amount read
 		int64_t read(void* buffer, int64_t length) { return read_into(buffer, length); }
 
-		template<class T>
-		T read() { return read<T>(Endian::Little); }
+		// reads a string. if length < 0, assumes null-terminated
+		String read_string(int length = -1)
+		{
+			String result;
 
+			if (length < 0)
+			{
+				char next;
+				while (read(&next, 1) && next != '\0')
+					result.append(next);
+			}
+			else
+			{
+				result.set_length(length);
+				read_into(result.cstr(), length);
+			}
+
+			return result;
+		}
+
+		String read_line()
+		{
+			String result;
+
+			char next;
+			while (read(&next, 1) && next != '\n' && next != '\0')
+				result.append(next);
+
+			return result;
+		}
+
+		// reads a number
+		template<class T>
+		T read()
+		{
+			return read<T>(Endian::Little);
+		}
+
+		// reads a number
 		template<class T>
 		T read(Endian endian)
 		{
-			T value;
-			read(&value, sizeof(T));
-			
-			if ((endian == Endian::Little && BLAH_BIG_ENDIAN) || (endian == Endian::Big && !BLAH_BIG_ENDIAN))
-				BLAH_SWAP_ENDIAN(value, T);
-
-			return value;
+			T result;
+			read(&result, sizeof(T));
+			if (!Blah::is_endian(endian))
+				Blah::swap_endian(&result);
+			return result;
 		}
 
-		int64_t write(const void* buffer, int64_t length) { return write_from(buffer, length); }
+		// writes the amount of bytes to the stream from the given buffer, and returns the amount written
+		int64_t write(const void* buffer, int64_t length) 
+		{ 
+			return write_from(buffer, length);
+		}
 
+		// writes a null-terminated string, and returns the amount written
+		int64_t write_cstr(const Str& string)
+		{
+			return write(string.cstr(), string.length() + 1);
+		}
+
+		// writes a null-terminated string, and returns the amount written
+		int64_t write_cstr(const char* cstr)
+		{
+			return write(cstr, strlen(cstr) + 1);
+		}
+
+		// writes a number
 		template<class T>
-		int64_t write(const T& value) { return write<T>(value, Endian::Little); }
+		int64_t write(const T& value)
+		{
+			return write<T>(value, Endian::Little);
+		}
 
+		// writes a number
 		template<class T>
 		int64_t write(const T& value, Endian endian)
 		{
 			T writing = value;
-			if ((endian == Endian::Little && BLAH_BIG_ENDIAN) || (endian == Endian::Big && !BLAH_BIG_ENDIAN))
-				BLAH_SWAP_ENDIAN(writing, T);
+
+			if (!Blah::is_endian(endian))
+				Blah::swap_endian(&writing);
+
 			return write(&writing, sizeof(T));
 		}
 
@@ -100,7 +133,6 @@ namespace Blah
 
 		// writes from the stream from the given buffer, and returns the number of bytes written
 		virtual int64_t write_from(const void* buffer, int64_t length) = 0;
-
 	};
 }
 
