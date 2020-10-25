@@ -275,33 +275,37 @@ namespace Blah
 	template<class T>
 	void Vector<T>::erase(const T* position)
 	{
+		BLAH_ASSERT(m_size > 0, "Index is out of range");
 		BLAH_ASSERT(position >= begin() && position < end(), "Index is out of range");
 
-		const size_t index = position - begin();
-
-		if (index < m_size - 1)
+		if (m_size > 0)
 		{
-			size_t diff = (m_size - index - 1);
-			if (diff <= 0) diff = 0;
+			const size_t index = position - begin();
 
-			if (std::is_trivially_copyable<T>::value)
+			if (index < m_size - 1)
 			{
-				m_buffer[index].~T();
-				memmove(m_buffer + index, m_buffer + index + 1, (size_t)diff * sizeof(T));
+				size_t diff = (m_size - index - 1);
+				if (diff <= 0) diff = 0;
+
+				if (std::is_trivially_copyable<T>::value)
+				{
+					m_buffer[index].~T();
+					memmove(m_buffer + index, m_buffer + index + 1, (size_t)diff * sizeof(T));
+				}
+				else
+				{
+					for (auto i = index; i < m_size - 1; i++)
+						m_buffer[i] = std::move(m_buffer[i + 1]);
+					m_buffer[m_size - 1].~T();
+				}
 			}
 			else
 			{
-				for (auto i = index; i < m_size - 1; i++)
-					m_buffer[i] = std::move(m_buffer[i + 1]);
-				m_buffer[m_size - 1].~T();
+				m_buffer[index].~T();
 			}
-		}
-		else
-		{
-			m_buffer[index].~T();
-		}
 
-		m_size--;
+			m_size--;
+		}
 	}
 
 	template<class T>
