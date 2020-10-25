@@ -84,12 +84,12 @@ namespace
 	{ \
 		m_batch.elements += 2; \
 		int* _i = m_indices.expand(6); \
-		*_i++ = m_vertices.size() + 0; \
-		*_i++ = m_vertices.size() + 1; \
-		*_i++ = m_vertices.size() + 2; \
-		*_i++ = m_vertices.size() + 0; \
-		*_i++ = m_vertices.size() + 2; \
-		*_i++ = m_vertices.size() + 3; \
+		*_i++ = (int)m_vertices.size() + 0; \
+		*_i++ = (int)m_vertices.size() + 1; \
+		*_i++ = (int)m_vertices.size() + 2; \
+		*_i++ = (int)m_vertices.size() + 0; \
+		*_i++ = (int)m_vertices.size() + 2; \
+		*_i++ = (int)m_vertices.size() + 3; \
 		Vertex* _v = m_vertices.expand(4); \
 		MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash); _v++; \
 		MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash); _v++; \
@@ -101,9 +101,9 @@ namespace
 	{ \
 		m_batch.elements += 1; \
 		int* _i = m_indices.expand(3); \
-		*_i++ = m_vertices.size() + 0; \
-		*_i++ = m_vertices.size() + 1; \
-		*_i++ = m_vertices.size() + 2; \
+		*_i++ = (int)m_vertices.size() + 0; \
+		*_i++ = (int)m_vertices.size() + 1; \
+		*_i++ = (int)m_vertices.size() + 2; \
 		Vertex* _v = m_vertices.expand(3); \
 		MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash); _v++; \
 		MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash); _v++; \

@@ -185,7 +185,7 @@ namespace Blah
 			}
 			else
 			{
-				for (int n = 0; n < m_size; n++)
+				for (auto n = 0; n < m_size; n++)
 				{
 					new (new_buffer + n) T(std::move(m_buffer[n]));
 					m_buffer[n].~T();
@@ -203,12 +203,12 @@ namespace Blah
 		if (new_size > m_size)
 		{
 			reserve(new_size);
-			for (int n = m_size; n < new_size; n++)
+			for (auto n = m_size; n < new_size; n++)
 				new (m_buffer + n) T();
 		}
 		else if (new_size < m_size)
 		{
-			for (int i = new_size; i < m_size; i ++)
+			for (auto i = new_size; i < m_size; i ++)
 				m_buffer[i].~T();
 		}
 
@@ -219,7 +219,7 @@ namespace Blah
 	T* Vector<T>::expand(size_t amount)
 	{
 		reserve(m_size + amount);
-		for (int n = m_size; n < m_size + amount; n++)
+		for (auto n = m_size; n < m_size + amount; n++)
 			new (m_buffer + n) T();
 		m_size += amount;
 		return (m_buffer + m_size - amount);
@@ -291,7 +291,7 @@ namespace Blah
 			}
 			else
 			{
-				for (int i = index; i < m_size - 1; i++)
+				for (auto i = index; i < m_size - 1; i++)
 					m_buffer[i] = std::move(m_buffer[i + 1]);
 				m_buffer[m_size - 1].~T();
 			}
