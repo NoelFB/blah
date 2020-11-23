@@ -11,7 +11,7 @@ namespace Blah
 	class StackVector
 	{
 	private:
-		char* m_buffer[sizeof(T) * Capacity];
+		char m_buffer[sizeof(T) * Capacity];
 		int m_count;
 
 	public:
