@@ -129,7 +129,7 @@ namespace Blah
 			int count = m_count;
 
 			for (int i = 0; i < amount; i++)
-				new (data() + count + i) T(item);
+				new (data() + count + i) T();
 
 			m_count += amount;
 			return &data()[count];
