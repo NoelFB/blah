@@ -835,50 +835,62 @@ void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, Tex
 	push_matrix(
 		Mat3x2::create_scale(size / font.size) *
 		Mat3x2::create_translation(pos)
-		);
+	);
 
 	Vec2 offset;
+
 	if ((align & TextAlign::Left) == TextAlign::Left)
 		offset.x = 0;
 	else if ((align & TextAlign::Right) == TextAlign::Right)
 		offset.x -= font.width_of_line(text);
 	else
-		offset.x -= (int)(font.width_of_line(text) * 0.5f);
+		offset.x -= font.width_of_line(text) * 0.5f;
+
 	if ((align & TextAlign::Top) == TextAlign::Top)
 		offset.y = font.ascent + font.descent;
 	else if ((align & TextAlign::Bottom) == TextAlign::Bottom)
-		offset.y = font.ascent + font.descent - font.height_of(text);
+		offset.y = font.height() - font.height_of(text);
 	else
-		offset.y = font.ascent + font.descent - (int)(font.height_of(text) * 0.5f);
+		offset.y = (font.ascent + font.descent + font.height() - font.height_of(text)) * 0.5f;
 
-	Vec2 at;
 	for (int i = 0, l = text.length(); i < l; i++)
 	{
 		if (text[i] == '\n')
 		{
-			at.x = 0;
-			at.y += font.line_height();
+			// increment y
+			offset.y += font.line_height();
+
+			// re-align X for this line
+			if ((align & TextAlign::Left) == TextAlign::Left)
+				offset.x = 0;
+			else if ((align & TextAlign::Right) == TextAlign::Right)
+				offset.x = -font.width_of_line(text, i + 1);
+			else
+				offset.x = -font.width_of_line(text, i + 1) * 0.5f;
+
 			continue;
 		}
 
 		// TODO:
-		// This doesn't parse Unicode!
+		// This doesn't parse Unicode! 
 		// It will assume it's a 1-byte ASCII char which is incorrect
-		auto ch = font[text[i]];
+		const auto& ch = font[text[i]];
 
-		if (ch.subtexture.texture && ch.subtexture.texture->is_valid())
+		if (ch.subtexture.texture)
 		{
-			if (i > 0)
+			Vec2 at = offset + ch.offset;
+
+			if (i > 0 && text[i - 1] != '\n')
 			{
 				// TODO:
-				// This doesn't parse Unicode!
+				// This doesn't parse Unicode! 
 				at.x += font.get_kerning(text[i - 1], text[i]);
 			}
 
-			tex(ch.subtexture, at + offset + ch.offset, color);
+			tex(ch.subtexture, at, color);
 		}
 
-		at.x += ch.advance;
+		offset.x += ch.advance;
 	}
 
 	pop_matrix();
