@@ -14,6 +14,9 @@ namespace Blah
 		Circle(Vec2 center, float radius)
 			: center(center), radius(radius) {}
 
+		Circle(float x, float y, float radius)
+			: center(x, y), radius(radius) {}
+
 		void project(const Vec2& axis, float* min, float* max) const;
 	};
 }
