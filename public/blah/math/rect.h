@@ -75,7 +75,7 @@ namespace Blah
 				return Vec2::zero;
 		}
 
-		Rect inflate(float amount) { return Rect(x - amount, y - amount, w + amount * 2, h + amount * 2); }
+		Rect inflate(float amount) const { return Rect(x - amount, y - amount, w + amount * 2, h + amount * 2); }
 
 		/*
 			Rect Sectors:
