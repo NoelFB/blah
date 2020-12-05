@@ -1,4 +1,3 @@
-#pragma once
 #include <blah/input/virtual_axis.h>
 #include <blah/time.h>
 #include <blah/log.h>
