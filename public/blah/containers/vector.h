@@ -30,7 +30,7 @@ namespace Blah
 		int size() const;
 		int capacity() const;
 
-		void reserve(size_t new_capacity);
+		void reserve(int new_capacity);
 		void resize(int new_count);
 		T* expand(int amount = 1);
 
@@ -157,7 +157,7 @@ namespace Blah
 	}
 
 	template<class T>
-	inline void Vector<T>::reserve(size_t cap)
+	inline void Vector<T>::reserve(int cap)
 	{
 		if (cap > m_capacity)
 		{
@@ -213,22 +213,18 @@ namespace Blah
 	template<class T>
 	inline void Vector<T>::push_back(const T& item)
 	{
-		reserve(m_count + 1);
-		new (m_buffer + m_count) T(item);
-		m_count++;
+		emplace_back(item);
 	}
 
 	template<class T>
 	inline void Vector<T>::push_back(T&& item)
 	{
-		reserve(m_count + 1);
-		new (m_buffer + m_count) T(std::move(item));
-		m_count++;
+		emplace_back(std::move(item));
 	}
 
 	template<class T>
 	template<class ...Args>
-	inline void Vector<T>::emplace_back(Args && ...args)
+	inline void Vector<T>::emplace_back(Args&& ...args)
 	{
 		reserve(m_count + 1);
 		new (m_buffer + m_count) T(std::forward<Args>(args)...);
