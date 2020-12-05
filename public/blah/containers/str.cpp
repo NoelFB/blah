@@ -357,12 +357,32 @@ Vector<String> Str::split(char ch) const
 	return result;
 }
 
-void Str::replace(char c, char r)
+Str& Str::replace(const Str& os, const Str& ns)
+{
+	for (int i = 0; i < m_length - os.m_length + 1; i++)
+	{
+		if (strcmp(data() + i, os.data()) == 0)
+		{
+			if (ns.m_length > os.m_length)
+				reserve(ns.m_length - os.m_length);
+
+			memcpy(data() + i + os.m_length, data() + i + ns.m_length, m_length - i - os.m_length);
+			memcpy(data() + i, ns.cstr(), ns.m_length);
+			set_length(m_length + ns.m_length - os.m_length);
+			i += os.m_length - 1;
+		}
+	}
+
+	return *this;
+}
+
+Str& Str::replace(char c, char r)
 {
 	char* ptr = data();
 	for (int n = 0; n < m_length; n++)
 		if (ptr[n] == c)
 			ptr[n] = r;
+	return *this;
 }
 
 void Str::clear()

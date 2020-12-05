@@ -1,5 +1,6 @@
 #pragma once
 #include <inttypes.h>
+#include <stdarg.h>
 #include <blah/containers/vector.h>
 
 namespace Blah
@@ -96,22 +97,25 @@ namespace Blah
 		Str& trim();
 
 		// returns true if the string begins with the given string
-		bool starts_with(const Str& str, bool ignoreCase = false) const { return starts_with(str.cstr(), ignoreCase); }
+		bool starts_with(const Str& str, bool ignore_case = false) const { return starts_with(str.cstr(), ignore_case); }
 
 		// returns true if the string begins with the given string
-		bool starts_with(const char* str, bool ignoreCase = false) const;
+		bool equals(const Str& str, bool ignore_case = false) const { return str.length() == length() && starts_with(str.cstr(), ignore_case); }
+
+		// returns true if the string begins with the given string
+		bool starts_with(const char* str, bool ignore_case = false) const;
 
 		// returns true if the string contains with the given string
-		bool contains(const Str& str, bool ignoreCase = false) const { return contains(str.cstr(), ignoreCase); }
+		bool contains(const Str& str, bool ignore_case = false) const { return contains(str.cstr(), ignore_case); }
 
 		// returns true if the string contains with the given string
-		bool contains(const char* str, bool ignoreCase = false) const;
+		bool contains(const char* str, bool ignore_case = false) const;
 
 		// returns true if the string ends with the given string
-		bool ends_with(const Str& str, bool ignoreCase = false) const { return ends_with(str.cstr(), ignoreCase); }
+		bool ends_with(const Str& str, bool ignore_case = false) const { return ends_with(str.cstr(), ignore_case); }
 
 		// returns true if the string ends with the given string
-		bool ends_with(const char* str, bool ignoreCase = false) const;
+		bool ends_with(const char* str, bool ignore_case = false) const;
 
 		// returns the first index of the given character, or -1 if it isn't found
 		int first_index_of(char ch) const;
@@ -127,8 +131,10 @@ namespace Blah
 
 		Vector<String> split(char ch) const;
 
+		Str& replace(const Str& old_str, const Str& new_str);
+
 		// replaces all occurances of the given character in the string
-		void replace(char c, char r);
+		Str& replace(char c, char r);
 
 		// checks if the string has a length of 0
 		bool empty() const { return m_length <= 0; }
@@ -169,6 +175,9 @@ namespace Blah
 		int		m_local_size;
 	};
 
+	// combine string
+	inline Str operator+(const Str& lhs, const Str& rhs) { Str str; str.append(lhs).append(rhs); return str; }
+
 	template<int T>
 	class StrOf : public Str
 	{
@@ -184,6 +193,36 @@ namespace Blah
 		// assignment operators
 		StrOf& operator=(const char* rhs)	{ set(rhs); return *this; }
 		StrOf& operator=(const Str& rhs)	{ set(rhs); return *this; }
-		StrOf& operator=(const StrOf& rhs)	{ set(rhs); return *this; }
+		StrOf& operator=(const StrOf& rhs) { set(rhs); return *this; }
+
+		// creates a string from the format
+		static StrOf fmt(const char* str, ...);
 	};
+
+	template<int T>
+	StrOf<T> StrOf<T>::fmt(const char* fmt, ...)
+	{
+		StrOf<T> str;
+
+		int add, diff;
+
+		// determine arg length
+		va_list args;
+		va_start(args, fmt);
+		add = vsnprintf(NULL, 0, fmt, args);
+		va_end(args);
+
+		// reserve
+		auto len = str.length();
+		str.set_length(len + add);
+		diff = str.capacity() - len;
+		if (diff <= 0) diff = 0;
+
+		// print out
+		va_start(args, fmt);
+		vsnprintf(str.cstr() + len, (size_t)diff, fmt, args);
+		va_end(args);
+
+		return str;
+	}
 }
