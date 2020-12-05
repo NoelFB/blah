@@ -28,6 +28,10 @@ namespace Blah
 
 		int clamp_int(int t, int min, int max);
 
+		float map(float t, float old_min, float old_max, float new_min, float new_max);
+
+		float clamped_map(float t, float old_min, float old_max, float new_min, float new_max);
+
 		int sign(int x);
 
 		float sign(float x);
@@ -41,7 +45,9 @@ namespace Blah
 
 		template<class T, class U>
 		T max(T a, U b) { return (T)(a > b ? a : b); }
-		
+
+		float round(float x);
+
 		float floor(float x);
 
 		float ceiling(float x);

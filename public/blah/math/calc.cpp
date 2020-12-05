@@ -46,6 +46,16 @@ int Calc::clamp_int(int t, int min, int max)
 	return t < min ? min : (t > max ? max : t);
 }
 
+float Calc::map(float t, float old_min, float old_max, float new_min, float new_max)
+{
+	return new_min + ((t - old_min) / (old_max - old_min)) * (new_max - new_min);
+}
+
+float Calc::clamped_map(float t, float old_min, float old_max, float new_min, float new_max)
+{
+	return map(Calc::clamp(t, old_min, old_max), old_min, old_max, new_min, new_max);
+}
+
 int Calc::sign(int x)
 {
 	return (x < 0 ? -1 : (x > 0 ? 1 : 0));
@@ -64,6 +74,11 @@ int Calc::abs(int x)
 float Calc::abs(float x)
 {
 	return x < 0 ? -x : x;
+}
+
+float Calc::round(float x)
+{
+	return roundf(x);
 }
 
 float Calc::floor(float x)
