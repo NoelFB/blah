@@ -1,31 +1,31 @@
 #include <blah/filesystem.h>
-#include <blah/internal/platform.h>
+#include <blah/internal/platform_backend.h>
 
 using namespace Blah;
 
 bool File::exists(const FilePath& path)
 {
-	return Internal::Platform::file_exists(path.cstr());
+	return PlatformBackend::file_exists(path.cstr());
 }
 
 bool File::remove(const FilePath& path)
 {
-	return Internal::Platform::file_delete(path.cstr());
+	return PlatformBackend::file_delete(path.cstr());
 }
 
 bool Directory::create(const FilePath& path)
 {
-	return Internal::Platform::dir_create(path.cstr());
+	return PlatformBackend::dir_create(path.cstr());
 }
 
 bool Directory::exists(const FilePath& path)
 {
-	return Internal::Platform::dir_exists(path.cstr());
+	return PlatformBackend::dir_exists(path.cstr());
 }
 
 bool Directory::remove(const FilePath& path)
 {
-	return Internal::Platform::dir_delete(path.cstr());
+	return PlatformBackend::dir_delete(path.cstr());
 }
 
 Vector<FilePath> Directory::enumerate(const FilePath& path, bool recursive)
@@ -33,7 +33,7 @@ Vector<FilePath> Directory::enumerate(const FilePath& path, bool recursive)
 	Vector<FilePath> list;
 
 	// get files
-	Internal::Platform::dir_enumerate(list, path.cstr(), recursive);
+	PlatformBackend::dir_enumerate(list, path.cstr(), recursive);
 
 	// normalize path names
 	for (auto& it : list)
@@ -44,7 +44,7 @@ Vector<FilePath> Directory::enumerate(const FilePath& path, bool recursive)
 
 void Directory::explore(const FilePath& path)
 {
-	Internal::Platform::dir_explore(path);
+	PlatformBackend::dir_explore(path);
 }
 
 FilePath Path::get_file_name(const FilePath& path)

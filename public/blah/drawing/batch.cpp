@@ -135,15 +135,20 @@ Batch::~Batch()
 	dispose();
 }
 
-void Batch::push_matrix(const Mat3x2& matrix)
+void Batch::push_matrix(const Mat3x2& matrix, bool absolute)
 {
 	m_matrix_stack.push_back(m_matrix);
-	m_matrix = matrix * m_matrix;
+	if (absolute)
+		m_matrix = matrix;
+	else
+		m_matrix = matrix * m_matrix;
 }
 
-void Batch::pop_matrix()
+Mat3x2 Batch::pop_matrix()
 {
+	auto was = m_matrix;
 	m_matrix = m_matrix_stack.pop();
+	return was;
 }
 
 void Batch::push_scissor(const Rect& scissor)
@@ -212,7 +217,7 @@ void Batch::pop_color_mode()
 
 void Batch::set_texture(const TextureRef& texture)
 {
-	if (m_batch.elements > 0 && texture != m_batch.texture && m_batch.texture && m_batch.texture->is_valid())
+	if (m_batch.elements > 0 && texture != m_batch.texture && m_batch.texture)
 	{
 		m_batches.push_back(m_batch);
 		m_batch.offset += m_batch.elements;
@@ -222,14 +227,14 @@ void Batch::set_texture(const TextureRef& texture)
 	if (m_batch.texture != texture)
 	{
 		m_batch.texture = texture;
-		m_batch.flip_vertically = Graphics::info()->origin_bottom_left && texture && texture->is_valid() && texture->is_framebuffer();
+		m_batch.flip_vertically = Graphics::info()->origin_bottom_left && texture && texture->is_framebuffer();
 	}
 }
 
 void Batch::render(const FrameBufferRef& target)
 {
 	Point size;
-	if (!target || !target->is_valid())
+	if (!target)
 		size = Point(App::draw_width(), App::draw_height());
 	else
 		size = Point(target->width(), target->height());
@@ -245,7 +250,7 @@ void Batch::render(const FrameBufferRef& target, const Mat4x4& matrix)
 
 	// define defaults
 	{
-		if (!m_mesh || !m_mesh->is_valid())
+		if (!m_mesh)
 		{
 			m_mesh = Graphics::create_mesh();
 			m_mesh->vertex_format(attributes, 4, sizeof(Vertex));
@@ -281,7 +286,7 @@ void Batch::render(const FrameBufferRef& target, const Mat4x4& matrix)
 void Batch::render_single_batch(RenderCall& call, const DrawBatch& b, const Mat4x4& matrix)
 {
 	call.material = b.material;
-	if (!call.material || !call.material->is_valid())
+	if (!call.material)
 		call.material = m_default_material;
 
 	call.material->set_texture(texture_uniform, b.texture, 0);
@@ -636,6 +641,11 @@ void Batch::semi_circle_line(Vec2 center, float start_radians, float end_radians
 
 void Batch::circle(const Vec2 center, float radius, int steps, Color color)
 {
+	circle(center, radius, steps, color, color);
+}
+
+void Batch::circle(const Vec2 center, float radius, int steps, Color center_color, Color outer_color)
+{
 	Vec2 last = Vec2(center.x + radius, center.y);
 
 	for (int i = 1; i <= steps; i++)
@@ -643,7 +653,7 @@ void Batch::circle(const Vec2 center, float radius, int steps, Color color)
 		const auto radians = (i / (float)steps) * Calc::TAU;
 		const auto next = Vec2(center.x + Calc::cos(radians) * radius, center.y + Calc::sin(radians) * radius);
 
-		tri(last, next, center, color);
+		tri(last, next, center, outer_color, outer_color, center_color);
 
 		last = next;
 	}
@@ -761,7 +771,7 @@ void Batch::tex()
 
 void Batch::tex(const Subtexture& sub, const Vec2& pos, Color color)
 {
-	if (!sub.texture || !sub.texture->is_valid())
+	if (!sub.texture)
 	{
 		PUSH_QUAD(
 			pos.x + sub.draw_coords[0].x, pos.y + sub.draw_coords[0].y,
@@ -794,7 +804,7 @@ void Batch::tex(const Subtexture& sub, const Vec2& pos, const Vec2& origin, cons
 {
 	push_matrix(Mat3x2::create_transform(pos, origin, scale, rotation));
 
-	if (!sub.texture || !sub.texture->is_valid())
+	if (!sub.texture)
 	{
 		PUSH_QUAD(
 			sub.draw_coords[0].x, sub.draw_coords[0].y,

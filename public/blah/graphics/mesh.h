@@ -36,12 +36,6 @@ namespace Blah
 		// Gets the instance count of the Mesh
 		virtual int64_t instance_count() const = 0;
 
-		// Returns true if the Mesh is valid
-		virtual bool is_valid() const = 0;
-
-		// Destroys the given Mesh
-		virtual void dispose() = 0;
-
 	protected:
 		virtual void vertex_format_internal(const VertexAttribute* attributes, int count, int stride) = 0;
 		virtual void instance_format_internal(const VertexAttribute* attributes, int count, int stride) = 0;

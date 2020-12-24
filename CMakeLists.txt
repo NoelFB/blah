@@ -17,8 +17,8 @@ add_library(blah
 	public/blah/time.cpp
 	public/blah/time.h
 
-	public/blah/graphics/graphics.cpp
 	public/blah/graphics/graphics.h
+	public/blah/graphics/graphics.cpp
 	public/blah/graphics/texture.h
 	public/blah/graphics/framebuffer.h
 	public/blah/graphics/shader.h
@@ -27,8 +27,8 @@ add_library(blah
 	public/blah/graphics/material.h
 	public/blah/graphics/material.cpp
 
-	public/blah/input/input.cpp
 	public/blah/input/input.h
+	public/blah/input/input.cpp
 	public/blah/input/virtual_stick.cpp
 	public/blah/input/virtual_stick.h
 	public/blah/input/virtual_button.cpp
@@ -94,14 +94,15 @@ add_library(blah
 	public/blah/streams/stream.cpp
 	public/blah/streams/stream.h
 
+	private/blah/internal/graphics_backend.h
+	private/blah/internal/graphics_backend_gl.cpp
+	private/blah/internal/input_backend.h
+	private/blah/internal/platform_backend.h
+	private/blah/internal/platform_backend_sdl2.cpp
+	
 	private/blah/third_party/stb_image.h
 	private/blah/third_party/stb_image_write.h
-	private/blah/third_party/stb_truetype.h
-	private/blah/internal/graphics.h
-	private/blah/internal/graphics_opengl.cpp
-	private/blah/internal/input.h
-	private/blah/internal/platform.h
-	private/blah/internal/platform_sdl2.cpp)
+	private/blah/third_party/stb_truetype.h)
 
 target_include_directories(blah
 	PUBLIC

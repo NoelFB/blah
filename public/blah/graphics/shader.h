@@ -24,12 +24,6 @@ namespace Blah
 
 		// Gets a list of Shader Attributes from Shader
 		virtual const Attributes& attributes() const = 0;
-
-		// Returns true if the Shader is valid
-		virtual bool is_valid() const = 0;
-
-		// Destroys the given Shader
-		virtual void dispose() = 0;
 	};
 
 	typedef std::shared_ptr<Shader> ShaderRef;

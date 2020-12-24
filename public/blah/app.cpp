@@ -3,9 +3,9 @@
 #include <blah/time.h>
 #include <blah/math/point.h>
 
-#include <blah/internal/platform.h>
-#include <blah/internal/graphics.h>
-#include <blah/internal/input.h>
+#include <blah/internal/platform_backend.h>
+#include <blah/internal/graphics_backend.h>
+#include <blah/internal/input_backend.h>
 
 using namespace Blah;
 
@@ -24,7 +24,6 @@ Config::Config()
 	target_framerate = 60;
 	max_updates = 5;
 
-	graphics = GfxAPI::Any;
 	on_startup = nullptr;
 	on_shutdown = nullptr;
 	on_update = nullptr;
@@ -50,54 +49,43 @@ bool App::run(const Config* c)
 
 	Log::print("Starting Up ...");
 
-	// figure out the graphics api
-	if (app_config.graphics == GfxAPI::Any)
-	{
-		app_config.graphics = Internal::Graphics::pick_api();
-		if (app_config.graphics == GfxAPI::Any)
-		{
-			Log::error("Failed to find a supported graphics api");
-			return false;
-		}
-	}
-
 	// initialize the system
-	if (!Internal::Platform::init(&app_config))
+	if (!PlatformBackend::init(&app_config))
 	{
-		Log::error("Failed to initialize system module");
+		Log::error("Failed to initialize Platform module");
 		return false;
 	}
 
 	// initialize graphics
-	if (!Internal::Graphics::init(app_config.graphics))
+	if (!GraphicsBackend::init())
 	{
-		Log::error("Failed to initialize graphics module");
+		Log::error("Failed to initialize Graphics module");
 		return false;
 	}
 
 	// input
-	Internal::Input::init();
+	InputBackend::init();
 
 	// startup
 	if (app_config.on_startup != nullptr)
 		app_config.on_startup();
 
-	uint64_t time_last = Internal::Platform::time();
+	uint64_t time_last = PlatformBackend::time();
 	uint64_t time_accumulator = 0;
 
 	// display window
-	Internal::Platform::ready();
+	PlatformBackend::ready();
 
 	while (!app_is_exiting)
 	{
 		// poll system events
-		Internal::Platform::frame();
+		PlatformBackend::frame();
 
 		// update at a fixed timerate
 		// TODO: allow a non-fixed step update?
 		{
 			uint64_t time_target = (uint64_t)((1.0f / app_config.target_framerate) * 1000);
-			uint64_t time_curr = Internal::Platform::time();
+			uint64_t time_curr = PlatformBackend::time();
 			uint64_t time_diff = time_curr - time_last;
 			time_last = time_curr;
 			time_accumulator += time_diff;
@@ -105,9 +93,9 @@ bool App::run(const Config* c)
 			// do not let us run too fast
 			while (time_accumulator < time_target)
 			{
-				Internal::Platform::sleep((int)(time_target - time_accumulator));
+				PlatformBackend::sleep((int)(time_target - time_accumulator));
 
-				time_curr = Internal::Platform::time();
+				time_curr = PlatformBackend::time();
 				time_diff = time_curr - time_last;
 				time_last = time_curr;
 				time_accumulator += time_diff;
@@ -139,8 +127,8 @@ bool App::run(const Config* c)
 				Time::previous_elapsed = Time::elapsed;
 				Time::elapsed += Time::delta;
 
-				Internal::Input::frame();
-				Internal::Graphics::frame();
+				InputBackend::frame();
+				GraphicsBackend::frame();
 
 				if (app_config.on_update != nullptr)
 					app_config.on_update();
@@ -149,13 +137,13 @@ bool App::run(const Config* c)
 
 		// render
 		{
-			Internal::Graphics::before_render();
+			GraphicsBackend::before_render();
 
 			if (app_config.on_render != nullptr)
 				app_config.on_render();
 
-			Internal::Graphics::after_render();
-			Internal::Platform::present();
+			GraphicsBackend::after_render();
+			PlatformBackend::present();
 		}
 
 	}
@@ -166,8 +154,8 @@ bool App::run(const Config* c)
 	if (app_config.on_shutdown != nullptr)
 		app_config.on_shutdown();
 
-	Internal::Graphics::shutdown();
-	Internal::Platform::shutdown();
+	GraphicsBackend::shutdown();
+	PlatformBackend::shutdown();
 
 	// clear static state
 	Log::print("Exited");
@@ -198,48 +186,48 @@ const Config* App::config()
 
 const char* App::path()
 {
-	return Internal::Platform::app_path();
+	return PlatformBackend::app_path();
 }
 
 const char* App::user_path()
 {
-	return Internal::Platform::user_path();
+	return PlatformBackend::user_path();
 }
 
 int App::width()
 {
 	int w, h;
-	Internal::Platform::get_size(&w, &h);
+	PlatformBackend::get_size(&w, &h);
 	return w;
 }
 
 int App::height()
 {
 	int w, h;
-	Internal::Platform::get_size(&w, &h);
+	PlatformBackend::get_size(&w, &h);
 	return h;
 }
 
 int App::draw_width()
 {
 	int w, h;
-	Internal::Platform::get_draw_size(&w, &h);
+	PlatformBackend::get_draw_size(&w, &h);
 	return w;
 }
 
 int App::draw_height()
 {
 	int w, h;
-	Internal::Platform::get_draw_size(&w, &h);
+	PlatformBackend::get_draw_size(&w, &h);
 	return h;
 }
 
 float App::content_scale()
 {
-	return Internal::Platform::get_content_scale();
+	return PlatformBackend::get_content_scale();
 }
 
 void App::fullscreen(bool enabled)
 {
-	Internal::Platform::set_fullscreen(enabled);
+	PlatformBackend::set_fullscreen(enabled);
 }

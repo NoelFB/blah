@@ -44,8 +44,8 @@ namespace Blah
 		Batch& operator=(const Batch& other) = delete;
 		~Batch();
 
-		void push_matrix(const Mat3x2& matrix);
-		void pop_matrix();
+		void push_matrix(const Mat3x2& matrix, bool absolute = false);
+		Mat3x2 pop_matrix();
 		void push_scissor(const Rect& scissor);
 		void pop_scissor();
 		void push_blend(const BlendMode& blend);
@@ -90,6 +90,7 @@ namespace Blah
 		void semi_circle_line(Vec2 center, float start_radians, float end_radians, float radius, int steps, float t, Color color);
 
 		void circle(const Vec2 center, float radius, int steps, Color color);
+		void circle(const Vec2 center, float radius, int steps, Color center_color, Color outer_color);
 		void circle_line(const Vec2 center, float raidus, float t, int steps, Color color);
 
 		void quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& pos3, Color color);

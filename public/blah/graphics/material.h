@@ -10,8 +10,6 @@ namespace Blah
 	{
 	public:
 		Material(const ShaderRef& shader);
-		~Material();
-
 		Material(const Material& src) = delete;
 		Material(Material&& src) = delete;
 		Material& operator=(const Material& src) = delete;
@@ -48,18 +46,11 @@ namespace Blah
 		// is a float2, and there are 4 elements, the length should be 8.
 		const float* get_value(int slot, int64_t* length = nullptr) const;
 
-		// Returns true if the Material is valid
-		bool is_valid() const;
-
-		// Destroys the Material
-		void dispose();
-
 	private:
 		ShaderRef m_shader;
 		Vector<TextureRef> m_textures;
 		Vector<float*> m_floats;
-		float* m_data;
-		bool m_disposed;
+		Vector<float> m_data;
 	};
 
 	typedef std::shared_ptr<Material> MaterialRef;

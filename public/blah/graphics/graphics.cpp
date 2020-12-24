@@ -5,26 +5,11 @@
 #include <blah/graphics/material.h>
 #include <blah/graphics/shader.h>
 #include <blah/log.h>
-#include <blah/internal/graphics.h>
+#include <blah/internal/graphics_backend.h>
 #include <blah/images/image.h>
 #include <string.h>
 
 using namespace Blah;
-
-namespace
-{
-	// active graphics device
-	Internal::GraphicsDevice* device;
-
-	// active graphics device info
-	Internal::GraphicsDeviceInfo* device_info;
-
-	// list of possible device info
-	Internal::GraphicsDeviceInfo* device_options[] =
-	{
-		&Internal::OpenGL_DeviceInfo
-	};
-}
 
 const BlendMode BlendMode::Normal = BlendMode(
 	BlendOp::Add,
@@ -37,74 +22,25 @@ const BlendMode BlendMode::Normal = BlendMode(
 	0xffffffff
 );
 
-GfxAPI Internal::Graphics::pick_api()
-{
-	for (int i = 0; i < (int)GfxAPI::Count; i++)
-	{
-		if (device_options[i]->supported())
-			return device_options[i]->api;
-	}
-
-	return GfxAPI::Any;
-}
-
-bool Internal::Graphics::init(GfxAPI api)
-{
-	for (int i = 0; i < (int)GfxAPI::Count; i++)
-	{
-		if (device_options[i]->api == api)
-		{
-			device_info = device_options[i];
-			device = device_info->create();
-			if (device != nullptr)
-			{
-				device->startup();
-				if (device->valid)
-					break;
-
-				device_info->destroy(device);
-				device = nullptr;
-			}
-		}
-	}
-
-	return device != nullptr && device->valid;
-}
+const BlendMode BlendMode::Subtract = BlendMode(
+	BlendOp::ReverseSubtract,
+	BlendFactor::One,
+	BlendFactor::One,
+	BlendOp::Add,
+	BlendFactor::One,
+	BlendFactor::One,
+	BlendMask::RGBA,
+	0xffffffff
+);
 
 const GraphicsInfo* Graphics::info()
 {
-	if (device == nullptr || !device->valid)
-		return nullptr;
-	return &device->info;
+	return GraphicsBackend::info();
 }
 
-void Internal::Graphics::shutdown()
+GraphicsRenderer Graphics::renderer()
 {
-	if (device != nullptr && device_info != nullptr)
-	{
-		device->shutdown();
-		device_info->destroy(device);
-		device = nullptr;
-		device_info = nullptr;
-	}
-}
-
-void Internal::Graphics::frame()
-{
-	if (device != nullptr && device->valid)
-		device->update();
-}
-
-void Internal::Graphics::before_render()
-{
-	if (device != nullptr && device->valid)
-		device->before_render();
-}
-
-void Internal::Graphics::after_render()
-{
-	if (device != nullptr && device->valid)
-		device->after_render();
+	return GraphicsBackend::renderer();
 }
 
 TextureRef Graphics::create_texture(const Image& image)
@@ -125,9 +61,8 @@ TextureRef Graphics::create_texture(int width, int height, TextureFormat format)
 {
 	BLAH_ASSERT(width > 0 && height > 0, "Texture width and height must be larger than 0");
 	BLAH_ASSERT((int)format > (int)TextureFormat::None && (int)format < (int)TextureFormat::Count, "Invalid texture format");
-	BLAH_ASSERT(device != nullptr && device->valid, "The graphics device has not been created");
 
-	return device->create_texture(width, height, TextureFilter::Linear, TextureWrap::Repeat, TextureWrap::Repeat, format);
+	return GraphicsBackend::create_texture(width, height, TextureFilter::Linear, TextureWrap::Repeat, TextureWrap::Repeat, format);
 }
 
 TextureRef Graphics::create_texture(Stream& stream)
@@ -171,31 +106,27 @@ FrameBufferRef Graphics::create_framebuffer(int width, int height, const Texture
 	BLAH_ASSERT(attachment_count > 0, "At least one attachment must be provided");
 	for (int i = 0; i < attachment_count; i++)
 		BLAH_ASSERT((int)attachments[i] > (int)TextureFormat::None && (int)attachments[i] < (int)TextureFormat::Count, "Invalid texture format");
-	BLAH_ASSERT(device != nullptr && device->valid, "The graphics device has not been created");
 
-	return device->create_framebuffer(width, height, attachments, attachment_count);
+	return GraphicsBackend::create_framebuffer(width, height, attachments, attachment_count);
 }
 
 ShaderRef Graphics::create_shader(const ShaderData* data)
 {
-	BLAH_ASSERT(device != nullptr && device->valid, "The graphics device has not been created");
-	return device->create_shader(data);
+	return GraphicsBackend::create_shader(data);
 }
 
 MaterialRef Graphics::create_material(const ShaderRef& shader)
 {
-	BLAH_ASSERT(device != nullptr && device->valid, "The graphics device has not been created");
-	BLAH_ASSERT(shader && shader->is_valid(), "The provided shader is invalid");
+	BLAH_ASSERT(shader, "The provided shader is invalid");
 
 	// TODO:
-	// use a pool for Materials
+	// use a pool for Materials?
 	return MaterialRef(new Material(shader));
 }
 
 MeshRef Graphics::create_mesh()
 {
-	BLAH_ASSERT(device != nullptr && device->valid, "Graphics device has not been created");
-	return device->create_mesh();
+	return GraphicsBackend::create_mesh();
 }
 
 RenderCall::RenderCall()
@@ -217,33 +148,24 @@ RenderCall::RenderCall()
 
 void Graphics::render(const RenderCall& render_call)
 {
-	BLAH_ASSERT(device != nullptr && device->valid, "Graphics device has not been created");
-
 	// Validate Material
-	if (!render_call.material || !render_call.material->is_valid())
+	if (!render_call.material)
 	{
 		Log::warn("Trying to draw with an invalid Material");
 		return;
 	}
 
 	// Validate Shader
-	if (!render_call.material->shader() || !render_call.material->shader()->is_valid())
+	if (!render_call.material->shader())
 	{
 		Log::warn("Trying to draw with an invalid Shader");
 		return;
 	}
 
 	// Validate Mesh
-	if (!render_call.mesh || !render_call.mesh->is_valid())
+	if (!render_call.mesh)
 	{
 		Log::warn("Trying to draw with an invalid Mesh");
-		return;
-	}
-
-	// Validate FrameBuffer
-	if (render_call.target && !render_call.target->is_valid())
-	{
-		Log::warn("Trying to draw with an invalid FrameBuffer");
 		return;
 	}
 
@@ -330,11 +252,10 @@ void Graphics::render(const RenderCall& render_call)
 			call.scissor.h = 0;
 	}
 	
-	device->render(&call);
+	GraphicsBackend::render(&call);
 }
 
 void Graphics::clear(const FrameBufferRef& target, uint32_t rgba)
 {
-	BLAH_ASSERT(device != nullptr && device->valid, "Graphics device has not been created");
-	device->clear(target, rgba);
+	GraphicsBackend::clear(target, rgba);
 }

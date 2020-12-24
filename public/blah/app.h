@@ -2,13 +2,6 @@
 
 namespace Blah
 {
-	enum class GfxAPI
-	{
-		Any = -1,
-		OpenGL,
-		Count
-	};
-
 	struct Config
 	{
 		const char* name;
@@ -16,8 +9,6 @@ namespace Blah
 		int height;
 		int max_updates;
 		int target_framerate;
-
-		GfxAPI graphics;
 
 		void (*on_startup)();
 		void (*on_shutdown)();

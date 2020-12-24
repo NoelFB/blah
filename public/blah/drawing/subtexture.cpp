@@ -24,7 +24,7 @@ void Subtexture::update()
 	draw_coords[3].x = -frame.x;
 	draw_coords[3].y = -frame.y + source.h;
 
-	if (texture && texture->is_valid())
+	if (texture)
 	{
 		float uvx = 1.0f / (float)texture->width();
 		float uvy = 1.0f / (float)texture->height();

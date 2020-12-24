@@ -28,16 +28,8 @@ namespace
 
 Material::Material(const ShaderRef& shader)
 {
+	BLAH_ASSERT(shader, "Material is being created with an invalid shader");
 	m_shader = shader;
-	m_data = nullptr;
-	m_disposed = false;
-
-	// invalid shader
-	if (!m_shader || !m_shader->is_valid())
-	{
-		m_disposed = true;
-		return;
-	}
 
 	Uniforms uniforms = shader->uniforms();
 	StackVector<size_t, BLAH_UNIFORMS> float_offsets;
@@ -59,16 +51,9 @@ Material::Material(const ShaderRef& shader)
 		float_size += calc_uniform_size(uniform);
 	}
 
-	m_data = new float[float_size];
-	memset(m_data, 0, sizeof(float) * float_size);
-
+	m_data.expand(float_size);
 	for (auto& it : float_offsets)
-		m_floats.push_back(m_data + it);
-}
-
-Material::~Material()
-{
-	dispose();
+		m_floats.push_back(m_data.begin() + it);
 }
 
 const ShaderRef Material::shader() const
@@ -78,8 +63,7 @@ const ShaderRef Material::shader() const
 
 void Material::set_texture(const char* name, const TextureRef& texture, int index)
 {
-	BLAH_ASSERT(!m_disposed, "Material has been disposed");
-	BLAH_ASSERT(m_shader && m_shader->is_valid(), "Material Shader is invalid");
+	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 
 	if (m_textures.size() > 0)
 	{
@@ -106,8 +90,7 @@ void Material::set_texture(const char* name, const TextureRef& texture, int inde
 
 TextureRef Material::get_texture(const char* name, int index) const
 {
-	BLAH_ASSERT(!m_disposed, "Material has been disposed");
-	BLAH_ASSERT(m_shader && m_shader->is_valid(), "Material Shader is invalid");
+	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 
 	int offset = 0;
 	for (auto& uniform : m_shader->uniforms())
@@ -129,8 +112,7 @@ TextureRef Material::get_texture(const char* name, int index) const
 
 TextureRef Material::get_texture(int slot, int index) const
 {
-	BLAH_ASSERT(!m_disposed, "Material has been disposed");
-	BLAH_ASSERT(m_shader && m_shader->is_valid(), "Material Shader is invalid");
+	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 
 	int offset = 0;
 	int s = 0;
@@ -155,8 +137,7 @@ TextureRef Material::get_texture(int slot, int index) const
 
 void Material::set_value(const char* name, const float* value, int64_t length)
 {
-	BLAH_ASSERT(!m_disposed, "Material has been disposed");
-	BLAH_ASSERT(m_shader && m_shader->is_valid(), "Material Shader is invalid");
+	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 	BLAH_ASSERT(length >= 0, "Length must be >= 0");
 
 	int index = 0;
@@ -186,8 +167,7 @@ void Material::set_value(const char* name, const float* value, int64_t length)
 
 const float* Material::get_value(const char* name, int64_t* length) const
 {
-	BLAH_ASSERT(!m_disposed, "Material has been disposed");
-	BLAH_ASSERT(m_shader && m_shader->is_valid(), "Material Shader is invalid");
+	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 
 	int index = 0;
 	for (auto& uniform : m_shader->uniforms())
@@ -212,8 +192,7 @@ const float* Material::get_value(const char* name, int64_t* length) const
 
 const float* Material::get_value(int slot, int64_t* length) const
 {
-	BLAH_ASSERT(!m_disposed, "Material has been disposed");
-	BLAH_ASSERT(m_shader && m_shader->is_valid(), "Material Shader is invalid");
+	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 
 	int index = 0;
 	int s = 0;
@@ -233,21 +212,7 @@ const float* Material::get_value(int slot, int64_t* length) const
 		s++;
 	}
 
+	Log::warn("No Uniform [%i] exists", slot);
 	*length = 0;
 	return nullptr;
-	Log::warn("No Uniform [%i] exists", slot);
-}
-
-bool Material::is_valid() const
-{
-	return !m_disposed && m_shader && m_shader->is_valid();
-}
-
-void Material::dispose()
-{
-	delete[] m_data;
-	m_data = nullptr;
-	m_shader.reset();
-	m_textures.clear();
-	m_floats.clear();
 }

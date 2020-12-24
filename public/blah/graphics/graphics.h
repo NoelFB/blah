@@ -32,9 +32,17 @@ namespace Blah
 	class Mesh;
 	typedef std::shared_ptr<Mesh> MeshRef;
 
+	enum class GraphicsRenderer
+	{
+		None = -1,
+		OpenGL,
+		D3D11,
+		Metal,
+		Count
+	};
+
 	struct GraphicsInfo
 	{
-		GfxAPI api = GfxAPI::Any;
 		bool instancing = false;
 		bool origin_bottom_left = false;
 		int max_texture_size = 0;
@@ -174,6 +182,7 @@ namespace Blah
 		inline bool operator!=(const BlendMode& rhs) const { return !(*this == rhs); }
 
 		static const BlendMode Normal;
+		static const BlendMode Subtract;
 	};
 
 	enum class UniformType
@@ -299,6 +308,9 @@ namespace Blah
 
 		// Gets graphics information from the graphics device
 		const GraphicsInfo* info();
+
+		// Gets the Renderer implementation type
+		GraphicsRenderer renderer();
 
 		// Creates a new Texture.
 		// If the Texture creation fails, it will return an invalid TextureRef.

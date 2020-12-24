@@ -3,7 +3,7 @@
 #include <blah/time.h>
 #include <blah/log.h>
 #include <blah/math/point.h>
-#include <blah/internal/input.h>
+#include <blah/internal/input_backend.h>
 #include <string.h>
 
 using namespace Blah;
@@ -17,7 +17,7 @@ namespace
 	ControllerState g_empty_controller;
 }
 
-void Internal::Input::init()
+void InputBackend::init()
 {
 	g_empty_controller.name = "Disconnected";
 	for (int i = 0; i < Blah::Input::max_controllers; i++)
@@ -28,7 +28,7 @@ void Internal::Input::init()
 	g_next_state = g_empty_state;
 }
 
-void Internal::Input::frame()
+void InputBackend::frame()
 {
 	// cycle states
 	g_last_state = g_curr_state;
@@ -68,7 +68,7 @@ void Internal::Input::frame()
 	}
 }
 
-void Internal::Input::on_mouse_move(float x, float y)
+void InputBackend::on_mouse_move(float x, float y)
 {
 	g_next_state.mouse.position.x = x;
 	g_next_state.mouse.position.y = y;
@@ -80,13 +80,13 @@ void Internal::Input::on_mouse_move(float x, float y)
 	g_next_state.mouse.draw_position.y = (y / (float)size.y) * draw.y;
 }
 
-void Internal::Input::on_mouse_screen_move(float x, float y)
+void InputBackend::on_mouse_screen_move(float x, float y)
 {
 	g_next_state.mouse.screen_position.x = x;
 	g_next_state.mouse.screen_position.y = y;
 }
 
-void Internal::Input::on_mouse_down(MouseButton button)
+void InputBackend::on_mouse_down(MouseButton button)
 {
 	int i = (int)button;
 	if (i >= 0 && i < Blah::Input::max_mouse_buttons)
@@ -97,7 +97,7 @@ void Internal::Input::on_mouse_down(MouseButton button)
 	}
 }
 
-void Internal::Input::on_mouse_up(MouseButton button)
+void InputBackend::on_mouse_up(MouseButton button)
 {
 	int i = (int)button;
 	if (i >= 0 && i < Blah::Input::max_mouse_buttons)
@@ -107,7 +107,7 @@ void Internal::Input::on_mouse_up(MouseButton button)
 	}
 }
 
-void Internal::Input::on_key_down(Key key)
+void InputBackend::on_key_down(Key key)
 {
 	int i = (int)key;
 	if (i >= 0 && i < Blah::Input::max_keyboard_keys)
@@ -118,12 +118,12 @@ void Internal::Input::on_key_down(Key key)
 	}
 }
 
-void Internal::Input::on_mouse_wheel(Point wheel)
+void InputBackend::on_mouse_wheel(Point wheel)
 {
 	g_next_state.mouse.wheel = wheel;
 }
 
-void Internal::Input::on_key_up(Key key)
+void InputBackend::on_key_up(Key key)
 {
 	int i = (int)key;
 	if (i >= 0 && i < Blah::Input::max_keyboard_keys)
@@ -133,12 +133,12 @@ void Internal::Input::on_key_up(Key key)
 	}
 }
 
-void Internal::Input::on_text_utf8(const char* text)
+void InputBackend::on_text_utf8(const char* text)
 {
 	strncat(g_next_state.keyboard.text, text, Blah::Input::max_text_input);
 }
 
-void Internal::Input::on_controller_connect(int index, const char* name, int is_gamepad, int button_count, int axis_count)
+void InputBackend::on_controller_connect(int index, const char* name, int is_gamepad, int button_count, int axis_count)
 {
 	if (index < Blah::Input::max_controllers)
 	{
@@ -152,13 +152,13 @@ void Internal::Input::on_controller_connect(int index, const char* name, int is_
 	}
 }
 
-void Internal::Input::on_controller_disconnect(int index)
+void InputBackend::on_controller_disconnect(int index)
 {
 	if (index < Blah::Input::max_controllers)
 		g_next_state.controllers[index] = g_empty_controller;
 }
 
-void Internal::Input::on_button_down(int index, int button)
+void InputBackend::on_button_down(int index, int button)
 {
 	if (index < Blah::Input::max_controllers &&
 		button < Blah::Input::max_controller_buttons &&
@@ -171,7 +171,7 @@ void Internal::Input::on_button_down(int index, int button)
 	}
 }
 
-void Internal::Input::on_button_up(int index, int button)
+void InputBackend::on_button_up(int index, int button)
 {
 	if (index < Blah::Input::max_controllers &&
 		button < Blah::Input::max_controller_buttons &&
@@ -183,7 +183,7 @@ void Internal::Input::on_button_up(int index, int button)
 	}
 }
 
-void Internal::Input::on_axis_move(int index, int axis, float value)
+void InputBackend::on_axis_move(int index, int axis, float value)
 {
 	if (index < Blah::Input::max_controllers &&
 		axis < Blah::Input::max_controller_axis &&

@@ -45,12 +45,6 @@ namespace Blah
 
 		// Returns true if the Texture is part of a FrameBuffer
 		virtual bool is_framebuffer() const = 0;
-
-		// Returns true if the Texture
-		virtual bool is_valid() const = 0;
-
-		// Destroys the given Texture
-		virtual void dispose() = 0;
 	};
 
 	typedef std::shared_ptr<Texture> TextureRef;
