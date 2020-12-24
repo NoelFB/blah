@@ -36,5 +36,11 @@ namespace Blah
 
 		// updates the `draw_coords` and `tex_coords`
 		void update();
+
+		// returns resulting source and frame rectangles based on the provided clip rectangle
+		void crop_info(const Rect& clip, Rect* dest_source, Rect* dest_frame) const;
+
+		// returns a subtexture cropped to the provided rectangle
+		Subtexture crop(const Rect& clip) const;
 	};
 }

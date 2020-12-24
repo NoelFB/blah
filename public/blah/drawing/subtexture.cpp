@@ -1,4 +1,5 @@
 #include <blah/drawing/subtexture.h>
+#include <blah/math/calc.h>
 
 using namespace Blah;
 
@@ -41,4 +42,23 @@ void Subtexture::update()
 		tex_coords[3].x = source.x * uvx;
 		tex_coords[3].y = (source.y + source.h) * uvy;
 	}
+}
+
+void Subtexture::crop_info(const Rect& clip, Rect* dest_source, Rect* dest_frame) const
+{
+	*dest_source = (clip + source.top_left() + frame.top_left()).overlap_rect(source);
+
+	dest_frame->x = Calc::min(0, frame.x + clip.x);
+	dest_frame->y = Calc::min(0, frame.y + clip.y);
+	dest_frame->w = clip.w;
+	dest_frame->h = clip.h;
+}
+
+Subtexture Subtexture::crop(const Rect& clip) const
+{
+	Subtexture dst;
+	dst.texture = texture;
+	crop_info(clip, &dst.source, &dst.frame);
+	dst.update();
+	return dst;
 }

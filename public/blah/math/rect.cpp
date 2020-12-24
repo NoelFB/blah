@@ -54,10 +54,169 @@ Rect Rect::scale(float sx, float sy)
 	return *this;
 }
 
-Line Rect::left_line() const { return Line(left(), top(), left(), bottom()); }
-Line Rect::right_line() const { return Line(right(), top(), right(), bottom()); }
-Line Rect::top_line() const { return Line(left(), top(), right(), top()); }
-Line Rect::bottom_line() const { return Line(left(), bottom(), right(), bottom()); }
+float Rect::left() const
+{
+	return x;
+}
+
+float Rect::right() const
+{
+	return x + w;
+}
+
+float Rect::top() const
+{
+	return y;
+}
+
+float Rect::bottom() const
+{
+	return y + h;
+}
+
+Vec2 Rect::center() const
+{
+	return Vec2(x + w / 2, y + h / 2);
+}
+
+float Rect::center_x() const
+{
+	return x + w / 2;
+}
+
+float Rect::center_y() const
+{
+	return y + h / 2;
+}
+
+Vec2 Rect::top_left() const
+{
+	return Vec2(x, y);
+}
+
+Vec2 Rect::top_right() const
+{
+	return Vec2(x + w, y);
+}
+
+Vec2 Rect::bottom_right() const
+{
+	return Vec2(x + w, y + h);
+}
+
+Vec2 Rect::bottom_left() const
+{
+	return Vec2(x, y + h);
+}
+
+Vec2 Rect::center_left() const
+{
+	return Vec2(x, y + h / 2);
+}
+
+Vec2 Rect::center_right() const
+{
+	return Vec2(x + w, y + h / 2);
+}
+
+Vec2 Rect::middle_top() const
+{
+	return Vec2(x + w / 2, y);
+}
+
+Vec2 Rect::middle_bottom() const
+{
+	return Vec2(x + w / 2, y + h);
+}
+
+Line Rect::left_line() const
+{
+	return Line(left(), top(), left(), bottom());
+}
+Line Rect::right_line() const
+{
+	return Line(right(), top(), right(), bottom());
+}
+Line Rect::top_line() const
+{
+	return Line(left(), top(), right(), top());
+}
+Line Rect::bottom_line() const
+{
+	return Line(left(), bottom(), right(), bottom());
+}
+
+bool Rect::contains(const Point& pt) const
+{
+	return pt.x >= x && pt.x < x + w && pt.y >= y && pt.y < y + h;
+}
+
+bool Rect::contains(const Vec2& pt) const
+{
+	return pt.x >= x && pt.x < x + w && pt.y >= y && pt.y < y + h;
+}
+
+Rect Rect::overlap_rect(const Rect& against) const
+{
+	Rect result(0, 0, 0, 0);
+
+	if (x + w >= against.x && x < against.x + against.w)
+	{
+		result.x = Calc::max(x, against.x);
+		result.w = Calc::min(x + w, against.x + against.w) - result.x;
+	}
+
+	if (y + h >= against.y && y < against.y + against.h)
+	{
+		result.y = Calc::max(y, against.y);
+		result.h = Calc::min(y + h, against.y + against.h) - result.y;
+	}
+
+	return result;
+}
+
+bool Rect::intersects(const Line& line) const
+{
+	return line.intersects(*this);
+}
+
+bool Rect::intersects(const Line& line, Vec2* out_intersection_point) const
+{
+	return line.intersects(*this, out_intersection_point);
+}
+
+bool Rect::intersects(const Vec2& line_from, const Vec2& line_to) const
+{
+	return intersects(Line(line_from, line_to));
+}
+
+bool Rect::intersects(const Vec2& line_from, const Vec2& line_to, Vec2* out_intersection_point) const
+{
+	return intersects(Line(line_from, line_to), out_intersection_point);
+}
+
+Vec2 Rect::intersection_point(const Line& line) const
+{
+	Vec2 ret;
+	if (line.intersects(*this, &ret))
+		return ret;
+	else
+		return Vec2::zero;
+}
+
+Vec2 Rect::intersection_point(const Vec2& line_from, const Vec2& line_to) const
+{
+	Vec2 ret;
+	if (Line(line_from, line_to).intersects(*this, &ret))
+		return ret;
+	else
+		return Vec2::zero;
+}
+
+Rect Rect::inflate(float amount) const
+{
+	return Rect(x - amount, y - amount, w + amount * 2, h + amount * 2);
+}
 
 Rect Rect::operator+(const Vec2& rhs) const { return Rect(x + rhs.x, y + rhs.y, w, h); }
 Rect Rect::operator-(const Vec2& rhs) const { return Rect(x - rhs.x, y - rhs.y, w, h); }

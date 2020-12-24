@@ -6,10 +6,10 @@
 using namespace Blah;
 
 Packer::Packer()
-	: max_size(8192), power_of_two(true), spacing(1), padding(1), dirty(false) { }
+	: max_size(8192), power_of_two(true), spacing(1), padding(1), m_dirty(false) { }
 
 Packer::Packer(int max_size, int spacing, bool power_of_two)
-	: max_size(max_size), power_of_two(power_of_two), spacing(spacing), padding(1), dirty(false) { }
+	: max_size(max_size), power_of_two(power_of_two), spacing(spacing), padding(1), m_dirty(false) { }
 
 Packer::Packer(Packer&& src) noexcept
 {
@@ -17,10 +17,10 @@ Packer::Packer(Packer&& src) noexcept
 	power_of_two = src.power_of_two;
 	spacing = src.spacing;
 	padding = src.padding;
-	dirty = src.dirty;
+	m_dirty = src.m_dirty;
 	pages = std::move(src.pages);
 	entries = std::move(src.entries);
-	buffer = std::move(src.buffer);
+	m_buffer = std::move(src.m_buffer);
 }
 
 Packer& Packer::operator=(Packer&& src) noexcept
@@ -29,10 +29,10 @@ Packer& Packer::operator=(Packer&& src) noexcept
 	power_of_two = src.power_of_two;
 	spacing = src.spacing;
 	padding = src.padding;
-	dirty = src.dirty;
+	m_dirty = src.m_dirty;
 	pages = std::move(src.pages);
 	entries = std::move(src.entries);
-	buffer = std::move(src.buffer);
+	m_buffer = std::move(src.m_buffer);
 	return *this;
 }
 
@@ -58,7 +58,7 @@ void Packer::add(uint64_t id, const String& path)
 
 void Packer::add_entry(uint64_t id, int w, int h, const Color* pixels)
 {
-	dirty = true;
+	m_dirty = true;
 
 	Entry entry(id, RectI(0, 0, w, h));
 
@@ -111,17 +111,17 @@ void Packer::add_entry(uint64_t id, int w, int h, const Color* pixels)
 		entry.packed.h = (bottom - top);
 
 		// create pixel data
-		entry.memory_index = buffer.position();
+		entry.memory_index = m_buffer.position();
 
 		// copy pixels over
 		if (entry.packed.w == w && entry.packed.h == h)
 		{
-			buffer.write((char*)pixels, sizeof(Color) * w * h);
+			m_buffer.write((char*)pixels, sizeof(Color) * w * h);
 		}
 		else
 		{
 			for (int i = 0; i < entry.packed.h; i++)
-				buffer.write((char*)(pixels + left + (top + i) * entry.frame.w), sizeof(Color) * entry.packed.w);
+				m_buffer.write((char*)(pixels + left + (top + i) * entry.frame.w), sizeof(Color) * entry.packed.w);
 		}
 	}
 
@@ -130,10 +130,10 @@ void Packer::add_entry(uint64_t id, int w, int h, const Color* pixels)
 
 void Packer::pack()
 {
-	if (!dirty)
+	if (!m_dirty)
 		return;
 
-	dirty = false;
+	m_dirty = false;
 	pages.clear();
 
 	// only if we have stuff to pack
@@ -266,7 +266,7 @@ void Packer::pack()
 					if (!sources[i]->empty)
 					{
 						RectI dst = sources[i]->packed;
-						Color* src = (Color*)(buffer.data() + sources[i]->memory_index);
+						Color* src = (Color*)(m_buffer.data() + sources[i]->memory_index);
 
 						// TODO:
 						// Optimize this?
@@ -293,18 +293,18 @@ void Packer::clear()
 {
 	pages.clear();
 	entries.clear();
-	dirty = false;
+	m_dirty = false;
 }
 
 void Packer::dispose()
 {
 	pages.clear();
 	entries.clear();
-	buffer.close();
+	m_buffer.close();
 	max_size = 0;
 	power_of_two = 0;
 	spacing = 0;
-	dirty = false;
+	m_dirty = false;
 }
 
 Packer::Node::Node()

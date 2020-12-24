@@ -151,16 +151,28 @@ Mat3x2 Batch::pop_matrix()
 	return was;
 }
 
+Mat3x2 Batch::peek_matrix() const
+{
+	return m_matrix;
+}
+
 void Batch::push_scissor(const Rect& scissor)
 {
 	m_scissor_stack.push_back(m_batch.scissor);
 	SET_BATCH_VAR(scissor);
 }
 
-void Batch::pop_scissor()
+Rect Batch::pop_scissor()
 {
+	Rect was = m_batch.scissor;
 	Rect scissor = m_scissor_stack.pop();
 	SET_BATCH_VAR(scissor);
+	return was;
+}
+
+Rect Batch::peek_scissor() const
+{
+	return m_batch.scissor;
 }
 
 void Batch::push_blend(const BlendMode& blend)
@@ -169,10 +181,17 @@ void Batch::push_blend(const BlendMode& blend)
 	SET_BATCH_VAR(blend);
 }
 
-void Batch::pop_blend()
+BlendMode Batch::pop_blend()
 {
+	BlendMode was = m_batch.blend;
 	BlendMode blend = m_blend_stack.pop();
 	SET_BATCH_VAR(blend);
+	return was;
+}
+
+BlendMode Batch::peek_blend() const
+{
+	return m_batch.blend;
 }
 
 void Batch::push_material(const MaterialRef& material)
@@ -181,10 +200,17 @@ void Batch::push_material(const MaterialRef& material)
 	SET_BATCH_VAR(material);
 }
 
-void Batch::pop_material()
+MaterialRef Batch::pop_material()
 {
+	MaterialRef was = m_batch.material;
 	MaterialRef material = m_material_stack.pop();
 	SET_BATCH_VAR(material);
+	return was;
+}
+
+MaterialRef Batch::peek_material() const
+{
+	return m_batch.material;
 }
 
 void Batch::push_layer(int layer)
@@ -193,10 +219,17 @@ void Batch::push_layer(int layer)
 	SET_BATCH_VAR(layer);
 }
 
-void Batch::pop_layer()
+int Batch::pop_layer()
 {
+	int was = m_batch.layer;
 	int layer = m_layer_stack.pop();
 	SET_BATCH_VAR(layer);
+	return was;
+}
+
+int Batch::peek_layer() const
+{
+	return m_batch.layer;
 }
 
 void Batch::push_color_mode(ColorMode mode)
@@ -208,11 +241,18 @@ void Batch::push_color_mode(ColorMode mode)
 	m_tex_wash = (m_color_mode == ColorMode::Wash ? 255 : 0);
 }
 
-void Batch::pop_color_mode()
+ColorMode Batch::pop_color_mode()
 {
+	ColorMode was = m_color_mode;
 	m_color_mode = m_color_mode_stack.pop();
 	m_tex_mult = (m_color_mode == ColorMode::Normal ? 255 : 0);
 	m_tex_wash = (m_color_mode == ColorMode::Wash ? 255 : 0);
+	return was;
+}
+
+ColorMode Batch::peek_color_mode() const
+{
+	return m_color_mode;
 }
 
 void Batch::set_texture(const TextureRef& texture)
@@ -764,9 +804,58 @@ void Batch::arrow_head(const Vec2& point_pos, const Vec2& from_pos, float side_l
 	tri(point_pos, base + perp * side_len / 2, base - perp * side_len / 2, color);
 }
 
-void Batch::tex()
+void Batch::tex(const TextureRef& texture, const Vec2& pos, Color color)
 {
+	set_texture(texture);
 
+	const auto w = texture->width();
+	const auto h = texture->height();
+
+	PUSH_QUAD(
+		pos.x, pos.y, pos.x + w, pos.y, pos.x + w, pos.y + h, pos.x, pos.y + h,
+		0, 0, 1, 0, 1, 1, 0, 1,
+		color, color, color, color,
+		m_tex_mult, m_tex_wash, 0);
+}
+
+void Batch::tex(const TextureRef& texture, const Vec2& pos, const Vec2& origin, const Vec2& scale, float rotation, Color color)
+{
+	push_matrix(Mat3x2::create_transform(pos, origin, scale, rotation));
+
+	set_texture(texture);
+
+	const auto w = texture->width();
+	const auto h = texture->height();
+
+	PUSH_QUAD(
+		0, 0, w, 0, w, h, 0, h,
+		0, 0, 1, 0, 1, 1, 0, 1,
+		color, color, color, color,
+		m_tex_mult, m_tex_wash, 0);
+
+	pop_matrix();
+}
+
+void Batch::tex(const TextureRef& texture, const Rect& clip, const Vec2& pos, const Vec2& origin, const Vec2& scale, float rotation, Color color)
+{
+	push_matrix(Mat3x2::create_transform(pos, origin, scale, rotation));
+
+	set_texture(texture);
+
+	const auto tw = texture->width();
+	const auto th = texture->height();
+	const auto tx0 = clip.x / tw;
+	const auto tx1 = (clip.x + clip.w) / tw;
+	const auto ty0 = clip.y / th;
+	const auto ty1 = (clip.y + clip.h) / th;
+
+	PUSH_QUAD(
+		0, 0, clip.w, 0, clip.w, clip.h, 0, clip.h,
+		tx0, ty0, tx1, ty0, tx1, ty1, tx0, ty1,
+		color, color, color, color,
+		m_tex_mult, m_tex_wash, 0);
+
+	pop_matrix();
 }
 
 void Batch::tex(const Subtexture& sub, const Vec2& pos, Color color)
@@ -833,6 +922,11 @@ void Batch::tex(const Subtexture& sub, const Vec2& pos, const Vec2& origin, cons
 	}
 
 	pop_matrix();
+}
+
+void Batch::tex(const Subtexture& sub, const Rect& clip, const Vec2& pos, const Vec2& origin, const Vec2& scale, float rotation, Color color)
+{
+	tex(sub.crop(clip), pos, origin, scale, rotation, color);
 }
 
 void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, Color color)

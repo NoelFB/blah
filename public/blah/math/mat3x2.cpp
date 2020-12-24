@@ -162,7 +162,7 @@ Mat3x2 Mat3x2::add(const Mat3x2& a, const Mat3x2& b)
 		a.m21 + b.m21,
 		a.m22 + b.m22,
 		a.m31 + b.m31,
-		a.m21 + b.m32);
+		a.m32 + b.m32);
 }
 
 Mat3x2 Mat3x2::subtract(const Mat3x2& a, const Mat3x2& b)
@@ -173,7 +173,7 @@ Mat3x2 Mat3x2::subtract(const Mat3x2& a, const Mat3x2& b)
 		a.m21 - b.m21,
 		a.m22 - b.m22,
 		a.m31 - b.m31,
-		a.m21 - b.m32);
+		a.m32 - b.m32);
 }
 
 Mat3x2 Mat3x2::multiply(const Mat3x2& a, const Mat3x2& b)

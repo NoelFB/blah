@@ -6,11 +6,11 @@
 #include <blah/containers/str.h>
 #include <memory>
 
-#define BLAH_ATTACHMENTS 16
-#define BLAH_UNIFORMS 16
-#define BLAH_ATTRIBUTES 16
-#define BLAH_ATTRIBUTE_NAME 32
-#define BLAH_UNIFORM_NAME 32
+#define BLAH_ATTACHMENTS 5			// 4 color attachments + 1 depth/stencil
+#define BLAH_UNIFORMS 16			// 16 shader uniforms
+#define BLAH_ATTRIBUTES 16			// 16 shader attributes
+#define BLAH_ATTRIBUTE_NAME 32		// max shader attribute name length
+#define BLAH_UNIFORM_NAME 32		// max shader uniform name length
 
 namespace Blah
 {

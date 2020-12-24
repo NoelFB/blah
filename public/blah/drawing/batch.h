@@ -35,6 +35,7 @@ namespace Blah
 	inline TextAlign operator|(TextAlign lhs, TextAlign rhs) { return static_cast<TextAlign>(static_cast<char>(lhs) | static_cast<char>(rhs)); }
 	inline TextAlign operator&(TextAlign lhs, TextAlign rhs) { return static_cast<TextAlign>(static_cast<char>(lhs) & static_cast<char>(rhs)); }
 
+	// A simple 2D sprite batcher, used for drawing shapes and textures
 	class Batch
 	{
 	public:
@@ -57,38 +58,56 @@ namespace Blah
 		// Pops the matrix from the stack
 		Mat3x2 pop_matrix();
 
+		// Gets the current matrix from the top of the stackKO
+		Mat3x2 peek_matrix() const;
+
 		// Pushes a Scissor rectangle. Note this is not transformed by the matrix stack
 		// or other scissors. Each push is screen-space.
 		void push_scissor(const Rect& scissor);
 
 		// Pops a Scissor rectangle from the stack
-		void pop_scissor();
+		Rect pop_scissor();
+
+		// Gets the current Scissor rectangle from the top of the stack
+		Rect peek_scissor() const;
 
 		// Pushes a blend mode
 		void push_blend(const BlendMode& blend);
 
 		// Pops a blend mode
-		void pop_blend();
+		BlendMode pop_blend();
+
+		// Gets the current BlendMode from the top of the stack
+		BlendMode peek_blend() const;
 
 		// Pushes a Material to use for all drawing. Note that the state of the Material
 		// is not copied - it will be drawn with the values of the Material at render.
 		void push_material(const MaterialRef& material);
 
 		// Pops a Material
-		void pop_material();
+		MaterialRef pop_material();
+
+		// Gets the current Material from the top of the stack
+		MaterialRef peek_material() const;
 
 		// Pushes a render layer. Lower values are rendered first. This is not super optimized
 		// and should generally be avoided.
 		void push_layer(int layer);
 
 		// Pops a Layer
-		void pop_layer();
+		int pop_layer();
+
+		// Gets the current Layer from the top of the stack
+		int peek_layer() const;
 
 		// Pushes a Color Mode for drawing Textures
 		void push_color_mode(ColorMode mode);
 
 		// Pops a Color MOde
-		void pop_color_mode();
+		ColorMode pop_color_mode();
+
+		// Gets the current ColorMode from the top of the stack
+		ColorMode peek_color_mode() const;
 
 		// Sets the current texture used for drawing. Note that certain functions will override
 		// this (ex the `str` and `tex` methods)
@@ -143,9 +162,13 @@ namespace Blah
 		void arrow_head(const Vec2& point_pos, float radians, float side_len, Color color);
 		void arrow_head(const Vec2& point_pos, const Vec2& from_pos, float side_len, Color color);
 
-		void tex();
-		void tex(const Subtexture& subtexture, const Vec2& pos, Color color);
+		void tex(const TextureRef& texture, const Vec2& position = Vec2::zero, Color color = Color::white);
+		void tex(const TextureRef& texture, const Vec2& position, const Vec2& origin, const Vec2& scale, float rotation, Color color);
+		void tex(const TextureRef& texture, const Rect& clip, const Vec2& position, const Vec2& origin, const Vec2& scale, float rotation, Color color);
+
+		void tex(const Subtexture& subtexture, const Vec2& position = Vec2::zero, Color color = Color::white);
 		void tex(const Subtexture& subtexture, const Vec2& pos, const Vec2& origin, const Vec2& scale, float rotation, Color color);
+		void tex(const Subtexture& subtexture, const Rect& clip, const Vec2& pos, const Vec2& origin, const Vec2& scale, float rotation, Color color);
 
 		void str(const SpriteFont& font, const String& text, const Vec2& pos, Color color);
 		void str(const SpriteFont& font, const String& text, const Vec2& pos, TextAlign align, float size, Color color);
@@ -161,8 +184,6 @@ namespace Blah
 			uint8_t mult;
 			uint8_t wash;
 			uint8_t fill;
-
-			static VertexAttribute attributes[6];
 		};
 
 		struct DrawBatch

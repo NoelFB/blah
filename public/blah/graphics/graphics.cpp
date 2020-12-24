@@ -62,7 +62,10 @@ TextureRef Graphics::create_texture(int width, int height, TextureFormat format)
 	BLAH_ASSERT(width > 0 && height > 0, "Texture width and height must be larger than 0");
 	BLAH_ASSERT((int)format > (int)TextureFormat::None && (int)format < (int)TextureFormat::Count, "Invalid texture format");
 
-	return GraphicsBackend::create_texture(width, height, TextureFilter::Linear, TextureWrap::Repeat, TextureWrap::Repeat, format);
+	if (width > 0 && height > 0)
+		return GraphicsBackend::create_texture(width, height, TextureFilter::Linear, TextureWrap::Repeat, TextureWrap::Repeat, format);
+
+	return TextureRef();
 }
 
 TextureRef Graphics::create_texture(Stream& stream)
@@ -104,10 +107,27 @@ FrameBufferRef Graphics::create_framebuffer(int width, int height, const Texture
 	BLAH_ASSERT(width > 0 && height > 0, "FrameBuffer width and height must be larger than 0");
 	BLAH_ASSERT(attachment_count <= BLAH_ATTACHMENTS, "Exceeded maximum attachment count");
 	BLAH_ASSERT(attachment_count > 0, "At least one attachment must be provided");
+
+	int color_count = 0;
+	int depth_count = 0;
+
 	for (int i = 0; i < attachment_count; i++)
+	{
 		BLAH_ASSERT((int)attachments[i] > (int)TextureFormat::None && (int)attachments[i] < (int)TextureFormat::Count, "Invalid texture format");
 
-	return GraphicsBackend::create_framebuffer(width, height, attachments, attachment_count);
+		if (attachments[i] == TextureFormat::DepthStencil)
+			depth_count++;
+		else
+			color_count++;
+	}
+
+	BLAH_ASSERT(depth_count <= 1, "FrameBuffer can only have 1 Depth/Stencil Texture");
+	BLAH_ASSERT(color_count <= BLAH_ATTACHMENTS - 1, "Exceeded maximum Color attachment count");
+
+	if (color_count <= BLAH_ATTACHMENTS - 1 && depth_count <= 1 && width > 0 && height > 0)
+		return GraphicsBackend::create_framebuffer(width, height, attachments, attachment_count);
+
+	return FrameBufferRef();
 }
 
 ShaderRef Graphics::create_shader(const ShaderData* data)
@@ -119,9 +139,10 @@ MaterialRef Graphics::create_material(const ShaderRef& shader)
 {
 	BLAH_ASSERT(shader, "The provided shader is invalid");
 
-	// TODO:
-	// use a pool for Materials?
-	return MaterialRef(new Material(shader));
+	if (shader)
+		return MaterialRef(new Material(shader));
+
+	return MaterialRef();
 }
 
 MeshRef Graphics::create_mesh()

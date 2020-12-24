@@ -66,8 +66,8 @@ namespace Blah
 			Node* Reset(const RectI& rect);
 		};
 
-		bool dirty;
-		BufferStream buffer;
+		bool m_dirty;
+		BufferStream m_buffer;
 
 		void add_entry(uint64_t id, int w, int h, const Color* pixels);
 	};
