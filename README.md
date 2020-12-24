@@ -5,17 +5,15 @@ this will likely see breaking changes.
 
 #### prerequisites
  - A C++17 compiler and CMake
- - Only an SDL2 `platform` [is done](https://github.com/NoelFB/blah/blob/master/private/blah/internal/platform_backend_sdl2.cpp). CMake will need to find SDL2 via `SDL2_INCLUDE_DIRS` and `SDL2_LIBRARIES`
- - Only an OpenGL `graphics` [is done](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend_gl.cpp), so it currently requires OpenGL.
+ - Only an SDL2 `platform backend` [is done](https://github.com/NoelFB/blah/blob/master/private/blah/internal/platform_backend_sdl2.cpp). CMake will need to find SDL2 via `SDL2_INCLUDE_DIRS` and `SDL2_LIBRARIES`
+ - Only an OpenGL `graphics backend` [is done](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend_gl.cpp), so it requires OpenGL.
 
 #### notes
- - There are probably lots of small bugs as this is highly untested. Best used as a learning resource for now.
  - There's a custom "Vector" and "StackVector" classes that are not full replacements for std::vector.
  - There's no Shader abstraction, so the [Sprite Batcher](https://github.com/NoelFB/blah/blob/master/public/blah/drawing/batch.h) has hard-coded GLSL. This will need to change.
  - The rendering layer may be replaced with [FNA3D](https://github.com/FNA-XNA/FNA3D), [BGFX](https://github.com/bkaradzic/bgfx), [Sokol](https://github.com/floooh/sokol), or something else.
  - There's no Audio layer implementation yet.
  - No threaded rendering so the OpenGL implementation will explode if you try that
-
 
 #### a sample application
 
