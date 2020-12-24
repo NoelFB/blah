@@ -5,6 +5,7 @@
 #include <blah/graphics/shader.h>
 #include <blah/graphics/material.h>
 #include <blah/math/calc.h>
+#include <blah/app.h>
 
 using namespace Blah;
 

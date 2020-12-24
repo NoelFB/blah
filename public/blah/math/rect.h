@@ -50,7 +50,7 @@ namespace Blah
 		bool contains(const Point& pt) const;
 		bool contains(const Vec2& pt) const;
 
-		bool overlaps(const Rect& rect) const { return x + w >= rect.x && y + h >= rect.y && x < rect.x + rect.w && y < rect.y + rect.h; }
+		bool overlaps(const Rect& rect) const;
 		Rect overlap_rect(const Rect& other) const;
 
 		bool intersects(const Line& line) const;

@@ -1,6 +1,7 @@
 #include <blah/drawing/spritefont.h>
 #include <blah/images/font.h>
 #include <blah/images/packer.h>
+#include <blah/graphics/graphics.h>
 #include <blah/log.h>
 
 using namespace Blah;

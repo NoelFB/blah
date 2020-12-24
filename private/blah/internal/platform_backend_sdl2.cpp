@@ -396,7 +396,6 @@ void PlatformBackend::set_size(int width, int height)
 
 void PlatformBackend::get_draw_size(int* width, int* height)
 {
-	auto config = App::config();
 	if (GraphicsBackend::renderer() == GraphicsRenderer::OpenGL)
 	{
 		SDL_GL_GetDrawableSize(window, width, height);

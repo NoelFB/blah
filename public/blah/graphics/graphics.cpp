@@ -5,6 +5,7 @@
 #include <blah/graphics/material.h>
 #include <blah/graphics/shader.h>
 #include <blah/log.h>
+#include <blah/app.h>
 #include <blah/internal/graphics_backend.h>
 #include <blah/images/image.h>
 #include <string.h>

@@ -1,9 +1,33 @@
 #pragma once
-#include <blah/graphics/graphics.h>
 #include <memory>
 
 namespace Blah
 {
+	enum class TextureFilter
+	{
+		None,
+		Linear,
+		Nearest
+	};
+
+	enum class TextureWrap
+	{
+		None,
+		Clamp,
+		Repeat
+	};
+
+	enum class TextureFormat
+	{
+		None,
+		R,
+		RG,
+		RGB,
+		RGBA,
+		DepthStencil,
+		Count
+	};
+
 	class Texture
 	{
 	public:

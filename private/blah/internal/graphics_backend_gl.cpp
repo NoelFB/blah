@@ -1,14 +1,10 @@
 #ifdef BLAH_USE_OPENGL
+
 #include <blah/graphics/graphics.h>
 #include <blah/internal/graphics_backend.h>
 #include <blah/internal/platform_backend.h>
-#include <blah/graphics/texture.h>
-#include <blah/graphics/framebuffer.h>
-#include <blah/graphics/mesh.h>
-#include <blah/graphics/shader.h>
-#include <blah/graphics/material.h>
-#include <blah/containers/stackvector.h>
 #include <blah/log.h>
+#include <blah/app.h>
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
@@ -346,25 +342,29 @@ typedef void (APIENTRY* DEBUGPROC)(GLenum source,
 
 namespace Blah
 {
-	// GL function pointers
-	struct GL
+	struct State
 	{
+		// GL function pointers
 		#define GL_FUNC(name, ret, ...) typedef ret (*name ## Func) (__VA_ARGS__); name ## Func name;
 		GL_FUNCTIONS
 		#undef GL_FUNC
+
+		// state
+		void* context;
+
+		// info
+		int max_color_attachments;
+		int max_element_indices;
+		int max_element_vertices;
+		int max_renderbuffer_size;
+		int max_samples;
+		int max_texture_image_units;
+		int max_texture_size;
+		GraphicsInfo info;
 	};
 
 	// static state
-	GL gl;
-	void* gl_context;
-	int gl_max_color_attachments;
-	int gl_max_element_indices;
-	int gl_max_element_vertices;
-	int gl_max_renderbuffer_size;
-	int gl_max_samples;
-	int gl_max_texture_image_units;
-	int gl_max_texture_size;
-	GraphicsInfo gl_info;
+	State gl;
 
 	// debug callback
 	void APIENTRY gl_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
@@ -537,9 +537,9 @@ namespace Blah
 			m_gl_format = GL_RED;
 			m_gl_type = GL_UNSIGNED_BYTE;
 
-			if (width > gl_max_texture_size || height > gl_max_texture_size)
+			if (width > gl.max_texture_size || height > gl.max_texture_size)
 			{
-				Log::error("Exceeded Max Texture Size of %i", gl_max_texture_size);
+				Log::error("Exceeded Max Texture Size of %i", gl.max_texture_size);
 				return;
 			}
 
@@ -757,11 +757,10 @@ namespace Blah
 	{
 	private:
 		GLuint m_id;
-		Attributes m_attributes;
-		Uniforms m_uniforms;
+		Vector<UniformInfo> m_uniforms;
 
 	public:
-		GLint uniforms_loc[BLAH_UNIFORMS] = { 0 };
+		Vector<GLint> uniform_locations;
 
 		OpenGL_Shader(const ShaderData* data)
 		{
@@ -833,56 +832,25 @@ namespace Blah
 			// ready to go
 			m_id = id;
 
-			// get attributes
-			{
-				GLint active_attributes = 0;
-				gl.GetProgramiv(id, GL_ACTIVE_ATTRIBUTES, &active_attributes);
-				if (active_attributes > BLAH_ATTRIBUTES)
-				{
-					Log::warn("Exceeding maximum shader attributes (%i / %i)", active_attributes, BLAH_ATTRIBUTES);
-					active_attributes = BLAH_ATTRIBUTES;
-				}
-
-				for (int i = 0; i < active_attributes; i++)
-				{
-					GLsizei length;
-					GLsizei size;
-					GLenum type;
-					GLchar name[BLAH_ATTRIBUTE_NAME];
-
-					gl.GetActiveAttrib(id, i, BLAH_ATTRIBUTE_NAME - 1, &length, &size, &type, name);
-					name[length] = '\0';
-
-					ShaderAttribute attr;
-					attr.name = name;
-					attr.semantic_name = "";
-					attr.semantic_location = 0;
-					m_attributes.push_back(attr);
-				}
-			}
-
 			// get uniforms
 			{
+				const int max_name_length = 256;
+
 				GLint active_uniforms = 0;
 				gl.GetProgramiv(id, GL_ACTIVE_UNIFORMS, &active_uniforms);
-				if (active_uniforms > BLAH_UNIFORMS)
-				{
-					Log::warn("Exceeding maximum shader uniforms (%i / %i)", active_uniforms, BLAH_ATTRIBUTES);
-					active_uniforms = BLAH_UNIFORMS;
-				}
 
 				for (int i = 0; i < active_uniforms; i++)
 				{
 					GLsizei length;
 					GLsizei size;
 					GLenum type;
-					GLchar name[BLAH_UNIFORM_NAME];
+					GLchar name[max_name_length + 1];
 
-					gl.GetActiveUniform(id, i, BLAH_UNIFORM_NAME - 1, &length, &size, &type, name);
+					gl.GetActiveUniform(id, i, max_name_length, &length, &size, &type, name);
 					name[length] = '\0';
 
 					// array names end with "[0]", and we don't want that
-					for (int n = 0; n < BLAH_UNIFORM_NAME; n++)
+					for (int n = 0; n < max_name_length; n++)
 						if (name[n] == '[')
 						{
 							if (name[n + 1] == '0' && name[n + 2] == ']')
@@ -892,11 +860,11 @@ namespace Blah
 							}
 						}
 
-					ShaderUniform uniform;
+					UniformInfo uniform;
 					uniform.name = name;
 					uniform.type = UniformType::None;
 					uniform.array_length = size;
-					uniforms_loc[i] = gl.GetUniformLocation(id, name);
+					uniform_locations.push_back(gl.GetUniformLocation(id, name));
 
 					if (type == GL_FLOAT)
 						uniform.type = UniformType::Float;
@@ -935,24 +903,14 @@ namespace Blah
 			return m_id;
 		}
 
-		virtual Uniforms& uniforms() override
+		virtual Vector<UniformInfo>& uniforms() override
 		{
 			return m_uniforms;
 		}
 
-		virtual const Uniforms& uniforms() const override
+		virtual const Vector<UniformInfo>& uniforms() const override
 		{
 			return m_uniforms;
-		}
-
-		virtual Attributes& attributes() override
-		{
-			return m_attributes;
-		}
-
-		virtual const Attributes& attributes() const override
-		{
-			return m_attributes;
 		}
 	};
 
@@ -970,8 +928,8 @@ namespace Blah
 		uint16_t m_instance_size;
 		uint8_t m_vertex_attribs_enabled;
 		uint8_t m_instance_attribs_enabled;
-		GLuint m_vertex_attribs[BLAH_ATTRIBUTES];
-		GLuint m_instance_attribs[BLAH_ATTRIBUTES];
+		Vector<GLuint> m_vertex_attribs;
+		Vector<GLuint> m_instance_attribs;
 
 	public:
 
@@ -988,8 +946,6 @@ namespace Blah
 			m_instance_size = 0;
 			m_vertex_attribs_enabled = 0;
 			m_instance_attribs_enabled = 0;
-			m_vertex_attribs[0] = 0;
-			m_instance_attribs[0] = 0;
 
 			gl.GenVertexArrays(1, &m_id);
 		}
@@ -1107,17 +1063,19 @@ namespace Blah
 
 	bool GraphicsBackend::init()
 	{
+		gl = State();
+
 		// create gl context
-		gl_context = PlatformBackend::gl_context_create();
-		if (gl_context == nullptr)
+		gl.context = PlatformBackend::gl_context_create();
+		if (gl.context == nullptr)
 		{
 			Log::error("Failed to create OpenGL Context");
 			return false;
 		}
-		PlatformBackend::gl_context_make_current(gl_context);
+		PlatformBackend::gl_context_make_current(gl.context);
 
 		// bind opengl functions
-		#define GL_FUNC(name, ...) gl.name = (GL::name ## Func)(PlatformBackend::gl_get_func("gl" #name));
+		#define GL_FUNC(name, ...) gl.name = (State::name ## Func)(PlatformBackend::gl_get_func("gl" #name));
 		GL_FUNCTIONS
 		#undef GL_FUNC
 
@@ -1130,13 +1088,13 @@ namespace Blah
 		}
 
 		// get opengl info
-		gl.GetIntegerv(0x8CDF, &gl_max_color_attachments);
-		gl.GetIntegerv(0x80E9, &gl_max_element_indices);
-		gl.GetIntegerv(0x80E8, &gl_max_element_vertices);
-		gl.GetIntegerv(0x84E8, &gl_max_renderbuffer_size);
-		gl.GetIntegerv(0x8D57, &gl_max_samples);
-		gl.GetIntegerv(0x8872, &gl_max_texture_image_units);
-		gl.GetIntegerv(0x0D33, &gl_max_texture_size);
+		gl.GetIntegerv(0x8CDF, &gl.max_color_attachments);
+		gl.GetIntegerv(0x80E9, &gl.max_element_indices);
+		gl.GetIntegerv(0x80E8, &gl.max_element_vertices);
+		gl.GetIntegerv(0x84E8, &gl.max_renderbuffer_size);
+		gl.GetIntegerv(0x8D57, &gl.max_samples);
+		gl.GetIntegerv(0x8872, &gl.max_texture_image_units);
+		gl.GetIntegerv(0x0D33, &gl.max_texture_size);
 
 		// log
 		Log::print("OpenGL %s, %s",
@@ -1148,9 +1106,9 @@ namespace Blah
 		gl.PixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 		// assign info
-		gl_info.instancing = true;
-		gl_info.origin_bottom_left = true;
-		gl_info.max_texture_size = gl_max_texture_size;
+		gl.info.instancing = true;
+		gl.info.origin_bottom_left = true;
+		gl.info.max_texture_size = gl.max_texture_size;
 
 		return true;
 	}
@@ -1162,13 +1120,13 @@ namespace Blah
 
 	void GraphicsBackend::shutdown()
 	{
-		PlatformBackend::gl_context_destroy(gl_context);
-		gl_context = nullptr;
+		PlatformBackend::gl_context_destroy(gl.context);
+		gl.context = nullptr;
 	}
 
 	const GraphicsInfo* GraphicsBackend::info()
 	{
-		return &gl_info;
+		return &gl.info;
 	}
 
 	void GraphicsBackend::frame() {}
@@ -1261,7 +1219,7 @@ namespace Blah
 			auto& uniforms = shader->uniforms();
 			for (int i = 0; i < uniforms.size(); i++)
 			{
-				auto location = shader->uniforms_loc[i];
+				auto location = shader->uniform_locations[i];
 				auto& uniform = uniforms[i];
 
 				// Sampler 2D
@@ -1339,7 +1297,6 @@ namespace Blah
 				((int)call.blend.mask & (int)BlendMask::Green),
 				((int)call.blend.mask & (int)BlendMask::Blue),
 				((int)call.blend.mask & (int)BlendMask::Alpha));
-
 
 			unsigned char r = call.blend.rgba >> 24;
 			unsigned char g = call.blend.rgba >> 16;

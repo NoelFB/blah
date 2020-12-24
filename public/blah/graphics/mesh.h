@@ -1,10 +1,49 @@
 #pragma once
 #include <inttypes.h>
-#include <blah/graphics/graphics.h>
 #include <memory>
 
 namespace Blah
 {
+	enum class VertexSemantics
+	{
+		None,
+		Position,
+		Normal,
+		Bitangent,
+		Color0,
+		Color1,
+		Color2,
+		Color3,
+		Indices,
+		Weight,
+		Texcoord0,
+		Texcoord1,
+		Texcoord2,
+		Texcoord3,
+		Texcoord4,
+		Texcoord5,
+		Texcoord6,
+		Texcoord7
+	};
+
+	enum class VertexAttributeType
+	{
+		None,
+		Byte,
+		Short,
+		Int,
+		Float
+	};
+
+	struct VertexAttribute
+	{
+		int index;
+		VertexSemantics semantics;
+		VertexAttributeType type;
+		int components;
+		bool normalized;
+	};
+
 	class Mesh
 	{
 	public:

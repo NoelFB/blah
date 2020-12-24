@@ -1,8 +1,10 @@
 #pragma once
-#include <blah/graphics/graphics.h>
 #include <blah/graphics/texture.h>
 #include <blah/containers/stackvector.h>
 #include <memory>
+
+// 4 color attachments + 1 depth/stencil
+#define BLAH_ATTACHMENTS 5
 
 namespace Blah
 {

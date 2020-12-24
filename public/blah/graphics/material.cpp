@@ -5,7 +5,7 @@ using namespace Blah;
 
 namespace
 {
-	int calc_uniform_size(const ShaderUniform& uniform)
+	int calc_uniform_size(const UniformInfo& uniform)
 	{
 		int components = 0;
 
@@ -31,8 +31,8 @@ Material::Material(const ShaderRef& shader)
 	BLAH_ASSERT(shader, "Material is being created with an invalid shader");
 	m_shader = shader;
 
-	Uniforms uniforms = shader->uniforms();
-	StackVector<size_t, BLAH_UNIFORMS> float_offsets;
+	auto& uniforms = shader->uniforms();
+	Vector<size_t> float_offsets;
 	size_t float_size = 0;
 
 	for (auto& uniform : uniforms)

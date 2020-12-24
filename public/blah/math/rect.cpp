@@ -156,6 +156,11 @@ bool Rect::contains(const Vec2& pt) const
 	return pt.x >= x && pt.x < x + w && pt.y >= y && pt.y < y + h;
 }
 
+bool Rect::overlaps(const Rect& rect) const
+{
+	return x + w >= rect.x && y + h >= rect.y && x < rect.x + rect.w && y < rect.y + rect.h;
+}
+
 Rect Rect::overlap_rect(const Rect& against) const
 {
 	Rect result(0, 0, 0, 0);

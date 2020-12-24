@@ -1,77 +1,18 @@
 #pragma once
 #include <inttypes.h>
-#include <blah/app.h>
-#include <blah/math/point.h>
 #include <blah/math/rect.h>
 #include <blah/containers/str.h>
+#include <blah/graphics/texture.h>
+#include <blah/graphics/framebuffer.h>
+#include <blah/graphics/mesh.h>
+#include <blah/graphics/shader.h>
+#include <blah/graphics/material.h>
 #include <memory>
-
-#define BLAH_ATTACHMENTS 5			// 4 color attachments + 1 depth/stencil
-#define BLAH_UNIFORMS 16			// 16 shader uniforms
-#define BLAH_ATTRIBUTES 16			// 16 shader attributes
-#define BLAH_ATTRIBUTE_NAME 32		// max shader attribute name length
-#define BLAH_UNIFORM_NAME 32		// max shader uniform name length
 
 namespace Blah
 {
 	class Stream;
 	class Image;
-
-	class Texture;
-	typedef std::shared_ptr<Texture> TextureRef;
-
-	class FrameBuffer;
-	typedef std::shared_ptr<FrameBuffer> FrameBufferRef;
-
-	class Material;
-	typedef std::shared_ptr<Material> MaterialRef;
-
-	class Shader;
-	typedef std::shared_ptr<Shader> ShaderRef;
-
-	class Mesh;
-	typedef std::shared_ptr<Mesh> MeshRef;
-
-	enum class GraphicsRenderer
-	{
-		None = -1,
-		OpenGL,
-		D3D11,
-		Metal,
-		Count
-	};
-
-	struct GraphicsInfo
-	{
-		bool instancing = false;
-		bool origin_bottom_left = false;
-		int max_texture_size = 0;
-	};
-
-	enum class TextureFilter
-	{
-		None,
-		Linear,
-		Nearest
-	};
-
-	enum class TextureWrap
-	{
-		None,
-		Clamp,
-		Repeat
-	};
-
-	enum class TextureFormat
-	{
-		None,
-		R,
-		RG,
-		RGB,
-		RGBA,
-		DepthStencil,
-		Count
-	};
 
 	enum class Compare
 	{
@@ -129,11 +70,11 @@ namespace Blah
 	enum class BlendMask
 	{
 		None	= 0,
-		Red	 = 1,
+		Red		= 1,
 		Green   = 2,
 		Blue	= 4,
 		Alpha   = 8,
-		RGB	 = Red | Green | Blue,
+		RGB		= Red | Green | Blue,
 		RGBA	= Red | Green | Blue | Alpha,
 	};
 
@@ -185,78 +126,6 @@ namespace Blah
 		static const BlendMode Subtract;
 	};
 
-	enum class UniformType
-	{
-		None,
-		Float,
-		Float2,
-		Float3,
-		Float4,
-		Mat3x2,
-		Mat4x4,
-		Texture
-	};
-
-	enum class VertexSemantics
-	{
-		None,
-		Position,
-		Normal,
-		Bitangent,
-		Color0,
-		Color1,
-		Color2,
-		Color3,
-		Indices,
-		Weight,
-		Texcoord0,
-		Texcoord1,
-		Texcoord2,
-		Texcoord3,
-		Texcoord4,
-		Texcoord5,
-		Texcoord6,
-		Texcoord7
-	};
-
-	enum class VertexAttributeType
-	{
-		None,
-		Byte,
-		Short,
-		Int,
-		Float
-	};
-
-	struct VertexAttribute
-	{
-		int index;
-		VertexSemantics semantics;
-		VertexAttributeType type;
-		int components;
-		bool normalized;
-	};
-
-	struct ShaderData
-	{
-		const char* vertex;
-		const char* fragment;
-	};
-
-	struct ShaderUniform
-	{
-		StrOf<BLAH_UNIFORM_NAME> name;
-		UniformType type;
-		int array_length;
-	};
-
-	struct ShaderAttribute
-	{
-		StrOf<BLAH_ATTRIBUTE_NAME> name;
-		StrOf<BLAH_ATTRIBUTE_NAME> semantic_name;
-		int semantic_location;
-	};
-
 	struct RenderCall
 	{
 		// Framebuffer to draw to
@@ -300,6 +169,22 @@ namespace Blah
 
 		// Initializes a default Render Call
 		RenderCall();
+	};
+
+	enum class GraphicsRenderer
+	{
+		None = -1,
+		OpenGL,
+		D3D11,
+		Metal,
+		Count
+	};
+
+	struct GraphicsInfo
+	{
+		bool instancing = false;
+		bool origin_bottom_left = false;
+		int max_texture_size = 0;
 	};
 
 	namespace Graphics

@@ -1,12 +1,34 @@
 #pragma once
-#include <blah/graphics/graphics.h>
 #include <blah/containers/stackvector.h>
+#include <blah/containers/str.h>
 #include <memory>
 
 namespace Blah
 {
-	typedef StackVector<ShaderUniform, BLAH_UNIFORMS> Uniforms;
-	typedef StackVector<ShaderAttribute, BLAH_ATTRIBUTES> Attributes;
+	enum class UniformType
+	{
+		None,
+		Float,
+		Float2,
+		Float3,
+		Float4,
+		Mat3x2,
+		Mat4x4,
+		Texture
+	};
+
+	struct UniformInfo
+	{
+		String name;
+		UniformType type;
+		int array_length;
+	};
+
+	struct ShaderData
+	{
+		const char* vertex;
+		const char* fragment;
+	};
 
 	class Shader
 	{
@@ -14,16 +36,10 @@ namespace Blah
 		virtual ~Shader() = default;
 
 		// Gets a list of Shader Uniforms from Shader
-		virtual Uniforms& uniforms() = 0;
+		virtual Vector<UniformInfo>& uniforms() = 0;
 
 		// Gets a list of Shader Uniforms from Shader
-		virtual const Uniforms& uniforms() const = 0;
-
-		// Gets a list of Shader Attributes from Shader
-		virtual Attributes& attributes() = 0;
-
-		// Gets a list of Shader Attributes from Shader
-		virtual const Attributes& attributes() const = 0;
+		virtual const Vector<UniformInfo>& uniforms() const = 0;
 	};
 
 	typedef std::shared_ptr<Shader> ShaderRef;
