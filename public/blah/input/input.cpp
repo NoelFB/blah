@@ -138,7 +138,7 @@ void InputBackend::on_text_utf8(const char* text)
 	strncat(g_next_state.keyboard.text, text, Blah::Input::max_text_input);
 }
 
-void InputBackend::on_controller_connect(int index, const char* name, int is_gamepad, int button_count, int axis_count)
+void InputBackend::on_controller_connect(int index, const char* name, int is_gamepad, int button_count, int axis_count, uint16_t vendor, uint16_t product, uint16_t version)
 {
 	if (index < Blah::Input::max_controllers)
 	{
@@ -149,6 +149,9 @@ void InputBackend::on_controller_connect(int index, const char* name, int is_gam
 		controller->is_gamepad = is_gamepad;
 		controller->button_count = button_count;
 		controller->axis_count = axis_count;
+		controller->vendor = vendor;
+		controller->product = product;
+		controller->version = version;
 	}
 }
 

@@ -30,9 +30,9 @@ using namespace Blah;
 
 namespace
 {
-	SDL_Window*	window = nullptr;
+	SDL_Window* window = nullptr;
 	SDL_Joystick* joysticks[Blah::Input::max_controllers];
-	SDL_GameController*	gamepads[Blah::Input::max_controllers];
+	SDL_GameController* gamepads[Blah::Input::max_controllers];
 	char* basePath = nullptr;
 	char* userPath = nullptr;
 	bool displayed = false;
@@ -235,8 +235,11 @@ void PlatformBackend::frame()
 				const char* name = SDL_JoystickName(ptr);
 				int button_count = SDL_JoystickNumButtons(ptr);
 				int axis_count = SDL_JoystickNumAxes(ptr);
+				uint16_t vendor = SDL_JoystickGetVendor(ptr);
+				uint16_t product = SDL_JoystickGetProduct(ptr);
+				uint16_t version = SDL_JoystickGetProductVersion(ptr);
 
-				InputBackend::on_controller_connect(index, name, 0, button_count, axis_count);
+				InputBackend::on_controller_connect(index, name, 0, button_count, axis_count, vendor, product, version);
 			}
 		}
 		else if (event.type == SDL_JOYDEVICEREMOVED)
@@ -280,7 +283,11 @@ void PlatformBackend::frame()
 			Sint32 index = event.cdevice.which;
 			SDL_GameController* ptr = gamepads[index] = SDL_GameControllerOpen(index);
 			const char* name = SDL_GameControllerName(ptr);
-			InputBackend::on_controller_connect(index, name, 1, 15, 6);
+			uint16_t vendor = SDL_GameControllerGetVendor(ptr);
+			uint16_t product = SDL_GameControllerGetProduct(ptr);
+			uint16_t version = SDL_GameControllerGetProductVersion(ptr);
+
+			InputBackend::on_controller_connect(index, name, 1, 15, 6, vendor, product, version);
 		}
 		else if (event.type == SDL_CONTROLLERDEVICEREMOVED)
 		{

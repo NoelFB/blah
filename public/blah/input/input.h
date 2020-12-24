@@ -298,6 +298,14 @@ namespace Blah
 		// Timestamp, in milliseconds, since each axis last had a value set
 		uint64_t axis_timestamp[Input::max_controller_axis];
 
+		// The USB Vendor ID
+		uint16_t vendor;
+
+		// The USB Product ID
+		uint16_t product;
+
+		// the Product Version
+		uint16_t version;
 	};
 
 	struct KeyboardState
