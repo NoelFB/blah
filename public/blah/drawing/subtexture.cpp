@@ -2,10 +2,13 @@
 
 using namespace Blah;
 
-Subtexture::Subtexture()
-{
+Subtexture::Subtexture() {}
 
-}
+Subtexture::Subtexture(const TextureRef& texture)
+	: Subtexture(texture, Rect(0, 0, texture->width(), texture->height())) {}
+
+Subtexture::Subtexture(const TextureRef& texture, Rect source)
+	: Subtexture(texture, source, Rect(0, 0, source.w, source.h)) {}
 
 Subtexture::Subtexture(const TextureRef& texture, Rect source, Rect frame)
 	: texture(texture), source(source), frame(frame)

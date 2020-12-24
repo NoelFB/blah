@@ -12,7 +12,6 @@
 
 namespace Blah
 {
-
 	enum class ColorMode
 	{
 		Normal,
@@ -39,30 +38,72 @@ namespace Blah
 	class Batch
 	{
 	public:
+
+		// The name of the Matrix Uniform in the Shader
+		const char* matrix_uniform;
+
+		// The name of the Texture Uniform in the Shader
+		const char* texture_uniform;
+
 		Batch();
 		Batch(const Batch& other) = delete;
 		Batch& operator=(const Batch& other) = delete;
 		~Batch();
 
+		// Pushes a new matrix onto the stack, and uses it for transforming all drawing.
+		// `absolute` means the matrix provided will not be transformed by the current stack.
 		void push_matrix(const Mat3x2& matrix, bool absolute = false);
+
+		// Pops the matrix from the stack
 		Mat3x2 pop_matrix();
+
+		// Pushes a Scissor rectangle. Note this is not transformed by the matrix stack
+		// or other scissors. Each push is screen-space.
 		void push_scissor(const Rect& scissor);
+
+		// Pops a Scissor rectangle from the stack
 		void pop_scissor();
+
+		// Pushes a blend mode
 		void push_blend(const BlendMode& blend);
+
+		// Pops a blend mode
 		void pop_blend();
+
+		// Pushes a Material to use for all drawing. Note that the state of the Material
+		// is not copied - it will be drawn with the values of the Material at render.
 		void push_material(const MaterialRef& material);
+
+		// Pops a Material
 		void pop_material();
+
+		// Pushes a render layer. Lower values are rendered first. This is not super optimized
+		// and should generally be avoided.
 		void push_layer(int layer);
+
+		// Pops a Layer
 		void pop_layer();
+
+		// Pushes a Color Mode for drawing Textures
 		void push_color_mode(ColorMode mode);
+
+		// Pops a Color MOde
 		void pop_color_mode();
 
+		// Sets the current texture used for drawing. Note that certain functions will override
+		// this (ex the `str` and `tex` methods)
 		void set_texture(const TextureRef& texture);
 
+		// Draws the batch to the given target
 		void render(const FrameBufferRef& target);
+
+		// Draws the batch to the given target, with the provided matrix
 		void render(const FrameBufferRef& target, const Mat4x4& matrix);
 
+		// Clears the batch
 		void clear();
+
+		// Clears and disposes all resources that the batch is using
 		void dispose();
 
 		void line(const Vec2& from, const Vec2& to, float t, Color color);
@@ -105,11 +146,9 @@ namespace Blah
 		void tex();
 		void tex(const Subtexture& subtexture, const Vec2& pos, Color color);
 		void tex(const Subtexture& subtexture, const Vec2& pos, const Vec2& origin, const Vec2& scale, float rotation, Color color);
+
 		void str(const SpriteFont& font, const String& text, const Vec2& pos, Color color);
 		void str(const SpriteFont& font, const String& text, const Vec2& pos, TextAlign align, float size, Color color);
-
-		const char* matrix_uniform;
-		const char* texture_uniform;
 
 	private:
 

@@ -6,19 +6,35 @@ namespace Blah
 {
 	struct Subtexture
 	{
-		TextureRef	texture;
-		Rect		source;
-		Rect		frame;
-		Vec2		draw_coords[4];	// draw coords are automatically assigned through Update method
-		Vec2		tex_coords[4];	// tex coords are automatically assigned through Update method
+		// Reference to our Texture
+		TextureRef texture;
+
+		// Source rectangle, in pixels
+		Rect source;
+
+		// Frame rectangle, in pixels. This describes padding around the image.
+		// This is useful for drawing images that have been trimmed. Ex. if the source
+		// is 32,32, but the original image was 64,64, the frame could be -16,-16,64,64
+		Rect frame;
+
+		// `draw_coords` are automatically assigned through `update` method
+		Vec2 draw_coords[4];
+
+		// `tex_coords` are automatically assigned through the `update` method
+		Vec2 tex_coords[4];
 
 		Subtexture();
+		Subtexture(const TextureRef& texture);
+		Subtexture(const TextureRef& texture, Rect source);
 		Subtexture(const TextureRef& texture, Rect source, Rect frame);
 
+		// Returns the width of the image
 		float width() const { return frame.w; }
+
+		// Returns the height of the image
 		float height() const { return frame.h; }
 
-		// updates the draw and tex coords
+		// updates the `draw_coords` and `tex_coords`
 		void update();
 	};
 }
