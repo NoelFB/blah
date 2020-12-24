@@ -5,8 +5,8 @@ this will likely see breaking changes.
 
 #### prerequisites
  - A C++17 compiler and CMake
- - Only an SDL2 `platform` [is done](https://github.com/NoelFB/blah/blob/master/private/blah/internal/platform_sdl2.cpp). CMake will need to find SDL2 via `SDL2_INCLUDE_DIRS` and `SDL2_LIBRARIES`
- - Only an OpenGL `graphics` [is done](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_opengl.cpp), so it currently requires OpenGL.
+ - Only an SDL2 `platform` [is done](https://github.com/NoelFB/blah/blob/master/private/blah/internal/platform_backend_sdl2.cpp). CMake will need to find SDL2 via `SDL2_INCLUDE_DIRS` and `SDL2_LIBRARIES`
+ - Only an OpenGL `graphics` [is done](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend_gl.cpp), so it currently requires OpenGL.
 
 #### notes
  - There are probably lots of small bugs as this is highly untested. Best used as a learning resource for now.
