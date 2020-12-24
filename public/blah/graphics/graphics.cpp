@@ -221,59 +221,31 @@ void Graphics::render(const RenderCall& render_call)
 		call.instance_count = instance_count;
 	}
 
+	// get the total drawable size
+	Point draw_size;
+	if (!call.target)
+		draw_size = Point(App::draw_width(), App::draw_height());
+	else
+		draw_size = Point(call.target->width(), call.target->height());
+
 	// Validate Viewport
 	if (!call.has_viewport)
 	{
-		Point drawSize;
-
-		if (!call.target)
-			drawSize = Point(App::draw_width(), App::draw_height());
-		else
-			drawSize = Point(call.target->width(), call.target->height());
-
 		call.viewport.x = 0;
 		call.viewport.y = 0;
-		call.viewport.w = (float)drawSize.x;
-		call.viewport.h = (float)drawSize.y;
+		call.viewport.w = (float)draw_size.x;
+		call.viewport.h = (float)draw_size.y;
 	}
 	else
 	{
-		if (call.viewport.x < 0)
-		{
-			call.viewport.w += call.viewport.x;
-			call.viewport.x = 0;
-		}
-		if (call.viewport.y < 0)
-		{
-			call.viewport.h += call.viewport.y;
-			call.viewport.y = 0;
-		}
-		if (call.viewport.w < 0)
-			call.viewport.w = 0;
-		if (call.viewport.h < 0)
-			call.viewport.h = 0;
+		call.viewport = call.viewport.overlap_rect(Rect(0, 0, draw_size.x, draw_size.y));
 	}
 
 	// Validate Scissor
 	if (call.has_scissor)
-	{
-		if (call.scissor.x < 0)
-		{
-			call.scissor.w += call.scissor.x;
-			call.scissor.x = 0;
-		}
-		if (call.scissor.y < 0)
-		{
-			call.scissor.h += call.scissor.y;
-			call.scissor.y = 0;
-		}
-		if (call.scissor.w < 0)
-			call.scissor.w = 0;
-		if (call.scissor.h < 0)
-			call.scissor.h = 0;
-	}
+		call.scissor = call.scissor.overlap_rect(Rect(0, 0, draw_size.x, draw_size.y));
 	
-	GraphicsBackend::render(&call);
+	GraphicsBackend::render(call);
 }
 
 void Graphics::clear(const FrameBufferRef& target, uint32_t rgba)

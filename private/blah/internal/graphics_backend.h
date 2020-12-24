@@ -29,7 +29,7 @@ namespace Blah
 		void after_render();
 
 		// Performs a draw call
-		void render(RenderCall* call);
+		void render(const RenderCall& call);
 
 		// Clears a buffer
 		void clear(const FrameBufferRef& target, uint32_t rgba);
