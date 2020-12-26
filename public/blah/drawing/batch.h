@@ -1,5 +1,4 @@
 #pragma once
-#include <blah/graphics/graphics.h>
 #include <blah/containers/str.h>
 #include <blah/math/vec2.h>
 #include <blah/math/rect.h>
@@ -9,6 +8,9 @@
 #include <blah/drawing/subtexture.h>
 #include <blah/drawing/spritefont.h>
 #include <blah/containers/vector.h>
+#include <blah/graphics/blend.h>
+#include <blah/graphics/renderpass.h>
+#include <blah/app.h>
 
 namespace Blah
 {
@@ -114,7 +116,7 @@ namespace Blah
 		void set_texture(const TextureRef& texture);
 
 		// Draws the batch to the given target
-		void render(const FrameBufferRef& target);
+		void render(const FrameBufferRef& target = App::backbuffer);
 
 		// Draws the batch to the given target, with the provided matrix
 		void render(const FrameBufferRef& target, const Mat4x4& matrix);
@@ -224,6 +226,6 @@ namespace Blah
 		Vector<int>				m_layer_stack;
 		Vector<DrawBatch>		m_batches;
 
-		void render_single_batch(RenderCall& call, const DrawBatch& b, const Mat4x4& matrix);
+		void render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4x4& matrix);
 	};
 }

@@ -1,6 +1,5 @@
 #ifdef BLAH_USE_OPENGL
 
-#include <blah/graphics/graphics.h>
 #include <blah/internal/graphics_backend.h>
 #include <blah/internal/platform_backend.h>
 #include <blah/log.h>
@@ -360,7 +359,7 @@ namespace Blah
 		int max_samples;
 		int max_texture_image_units;
 		int max_texture_size;
-		GraphicsInfo info;
+		RendererFeatures features;
 	};
 
 	// static state
@@ -691,7 +690,7 @@ namespace Blah
 
 			for (int i = 0; i < attachmentCount; i++)
 			{
-				auto tex = Graphics::create_texture(width, height, attachments[i]);
+				auto tex = Texture::create(width, height, attachments[i]);
 				auto gltex = ((OpenGL_Texture*)tex.get());
 
 				gltex->framebuffer_parent = true;
@@ -750,6 +749,20 @@ namespace Blah
 		virtual int height() const override
 		{
 			return m_height;
+		}
+
+		virtual void clear(Color color) override
+		{
+			auto rgba = color.to_rgba();
+			unsigned char r = rgba >> 24;
+			unsigned char g = rgba >> 16;
+			unsigned char b = rgba >> 8;
+			unsigned char a = rgba;
+
+			gl.BindFramebuffer(GL_FRAMEBUFFER, m_id);
+			gl.Disable(GL_SCISSOR_TEST);
+			gl.ClearColor(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+			gl.Clear(GL_COLOR_BUFFER_BIT);
 		}
 	};
 
@@ -1106,16 +1119,16 @@ namespace Blah
 		gl.PixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 		// assign info
-		gl.info.instancing = true;
-		gl.info.origin_bottom_left = true;
-		gl.info.max_texture_size = gl.max_texture_size;
+		gl.features.instancing = true;
+		gl.features.origin_bottom_left = true;
+		gl.features.max_texture_size = gl.max_texture_size;
 
 		return true;
 	}
 
-	GraphicsRenderer GraphicsBackend::renderer()
+	Renderer GraphicsBackend::renderer()
 	{
-		return GraphicsRenderer::OpenGL;
+		return Renderer::OpenGL;
 	}
 
 	void GraphicsBackend::shutdown()
@@ -1124,9 +1137,9 @@ namespace Blah
 		gl.context = nullptr;
 	}
 
-	const GraphicsInfo* GraphicsBackend::info()
+	const RendererFeatures& GraphicsBackend::features()
 	{
-		return &gl.info;
+		return gl.features;
 	}
 
 	void GraphicsBackend::frame() {}
@@ -1185,27 +1198,27 @@ namespace Blah
 		return MeshRef(resource);
 	}
 
-	void GraphicsBackend::render(const RenderCall& call)
+	void GraphicsBackend::render(const RenderPass& pass)
 	{
 		// Bind the Target
 		Point size;
-		if (!call.target)
+		if (pass.target == App::backbuffer)
 		{
 			gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
 			size.x = App::draw_width();
 			size.y = App::draw_height();
 		}
-		else
+		else if (pass.target)
 		{
-			auto framebuffer = (OpenGL_FrameBuffer*)call.target.get();
+			auto framebuffer = (OpenGL_FrameBuffer*)pass.target.get();
 			gl.BindFramebuffer(GL_FRAMEBUFFER, framebuffer->gl_id());
-			size.x = call.target->width();
-			size.y = call.target->height();
+			size.x = pass.target->width();
+			size.y = pass.target->height();
 		}
 
-		auto shader_ref = call.material->shader();
+		auto shader_ref = pass.material->shader();
 		auto shader = (OpenGL_Shader*)shader_ref.get();
-		auto mesh = (OpenGL_Mesh*)call.mesh.get();
+		auto mesh = (OpenGL_Mesh*)pass.mesh.get();
 
 		// Use the Shader
 		// TODO: I don't love how material values are assigned or set here
@@ -1227,7 +1240,7 @@ namespace Blah
 				{
 					for (int n = 0; n < uniform.array_length; n++)
 					{
-						auto tex = call.material->get_texture(i, n);
+						auto tex = pass.material->get_texture(i, n);
 
 						gl.ActiveTexture(GL_TEXTURE0 + texture_slot);
 
@@ -1249,59 +1262,59 @@ namespace Blah
 				// Float
 				else if (uniform.type == UniformType::Float)
 				{
-					gl.Uniform1fv(location, (GLint)uniform.array_length, (const GLfloat*)call.material->get_value(i));
+					gl.Uniform1fv(location, (GLint)uniform.array_length, (const GLfloat*)pass.material->get_value(i));
 				}
 				// Float2
 				else if (uniform.type == UniformType::Float2)
 				{
-					gl.Uniform2fv(location, (GLint)uniform.array_length, (const GLfloat*)call.material->get_value(i));
+					gl.Uniform2fv(location, (GLint)uniform.array_length, (const GLfloat*)pass.material->get_value(i));
 				}
 				// Float3
 				else if (uniform.type == UniformType::Float3)
 				{
-					gl.Uniform3fv(location, (GLint)uniform.array_length, (const GLfloat*)call.material->get_value(i));
+					gl.Uniform3fv(location, (GLint)uniform.array_length, (const GLfloat*)pass.material->get_value(i));
 				}
 				// Float4
 				else if (uniform.type == UniformType::Float4)
 				{
-					gl.Uniform4fv(location, (GLint)uniform.array_length, (const GLfloat*)call.material->get_value(i));
+					gl.Uniform4fv(location, (GLint)uniform.array_length, (const GLfloat*)pass.material->get_value(i));
 				}
 				// Matrix3x2
 				else if (uniform.type == UniformType::Mat3x2)
 				{
-					gl.UniformMatrix3x2fv(location, (GLint)uniform.array_length, 0, (const GLfloat*)call.material->get_value(i));
+					gl.UniformMatrix3x2fv(location, (GLint)uniform.array_length, 0, (const GLfloat*)pass.material->get_value(i));
 				}
 				// Matrix4x4
 				else if (uniform.type == UniformType::Mat4x4)
 				{
-					gl.UniformMatrix4fv(location, (GLint)uniform.array_length, 0, (const GLfloat*)call.material->get_value(i));
+					gl.UniformMatrix4fv(location, (GLint)uniform.array_length, 0, (const GLfloat*)pass.material->get_value(i));
 				}
 			}
 		}
 
 		// Blend Mode
 		{
-			GLenum colorOp = gl_get_blend_func(call.blend.colorOp);
-			GLenum alphaOp = gl_get_blend_func(call.blend.alphaOp);
-			GLenum colorSrc = gl_get_blend_factor(call.blend.colorSrc);
-			GLenum colorDst = gl_get_blend_factor(call.blend.colorDst);
-			GLenum alphaSrc = gl_get_blend_factor(call.blend.alphaSrc);
-			GLenum alphaDst = gl_get_blend_factor(call.blend.alphaDst);
+			GLenum colorOp = gl_get_blend_func(pass.blend.colorOp);
+			GLenum alphaOp = gl_get_blend_func(pass.blend.alphaOp);
+			GLenum colorSrc = gl_get_blend_factor(pass.blend.colorSrc);
+			GLenum colorDst = gl_get_blend_factor(pass.blend.colorDst);
+			GLenum alphaSrc = gl_get_blend_factor(pass.blend.alphaSrc);
+			GLenum alphaDst = gl_get_blend_factor(pass.blend.alphaDst);
 
 			gl.Enable(GL_BLEND);
 			gl.BlendEquationSeparate(colorOp, alphaOp);
 			gl.BlendFuncSeparate(colorSrc, colorDst, alphaSrc, alphaDst);
 
 			gl.ColorMask(
-				((int)call.blend.mask & (int)BlendMask::Red),
-				((int)call.blend.mask & (int)BlendMask::Green),
-				((int)call.blend.mask & (int)BlendMask::Blue),
-				((int)call.blend.mask & (int)BlendMask::Alpha));
+				((int)pass.blend.mask & (int)BlendMask::Red),
+				((int)pass.blend.mask & (int)BlendMask::Green),
+				((int)pass.blend.mask & (int)BlendMask::Blue),
+				((int)pass.blend.mask & (int)BlendMask::Alpha));
 
-			unsigned char r = call.blend.rgba >> 24;
-			unsigned char g = call.blend.rgba >> 16;
-			unsigned char b = call.blend.rgba >> 8;
-			unsigned char a = call.blend.rgba;
+			unsigned char r = pass.blend.rgba >> 24;
+			unsigned char g = pass.blend.rgba >> 16;
+			unsigned char b = pass.blend.rgba >> 8;
+			unsigned char a = pass.blend.rgba;
 
 			gl.BlendColor(
 				r / 255.0f,
@@ -1312,7 +1325,7 @@ namespace Blah
 
 		// Depth Function
 		{
-			if (call.depth == Compare::None)
+			if (pass.depth == Compare::None)
 			{
 				gl.Disable(GL_DEPTH_TEST);
 			}
@@ -1320,7 +1333,7 @@ namespace Blah
 			{
 				gl.Enable(GL_DEPTH_TEST);
 
-				switch (call.depth)
+				switch (pass.depth)
 				{
 				case Compare::None: break;
 				case Compare::Always:
@@ -1353,7 +1366,7 @@ namespace Blah
 
 		// Cull Mode
 		{
-			if (call.cull == Cull::None)
+			if (pass.cull == Cull::None)
 			{
 				gl.Disable(GL_CULL_FACE);
 			}
@@ -1361,9 +1374,9 @@ namespace Blah
 			{
 				gl.Enable(GL_CULL_FACE);
 
-				if (call.cull == Cull::Back)
+				if (pass.cull == Cull::Back)
 					gl.CullFace(GL_BACK);
-				else if (call.cull == Cull::Front)
+				else if (pass.cull == Cull::Front)
 					gl.CullFace(GL_FRONT);
 				else
 					gl.CullFace(GL_FRONT_AND_BACK);
@@ -1372,7 +1385,7 @@ namespace Blah
 
 		// Viewport
 		{
-			Rect viewport = call.viewport;
+			Rect viewport = pass.viewport;
 			viewport.y = size.y - viewport.y - viewport.h;
 
 			gl.Viewport((GLint)viewport.x, (GLint)viewport.y, (GLint)viewport.w, (GLint)viewport.h);
@@ -1380,13 +1393,13 @@ namespace Blah
 
 		// Scissor
 		{
-			if (!call.has_scissor)
+			if (!pass.has_scissor)
 			{
 				gl.Disable(GL_SCISSOR_TEST);
 			}
 			else
 			{
-				Rect scissor = call.scissor;
+				Rect scissor = pass.scissor;
 				scissor.y = size.y - scissor.y - scissor.h;
 
 				if (scissor.w < 0)
@@ -1403,46 +1416,37 @@ namespace Blah
 		{
 			gl.BindVertexArray(mesh->gl_id());
 
-			if (call.instance_count > 0)
+			if (pass.instance_count > 0)
 			{
 				gl.DrawElementsInstanced(
 					GL_TRIANGLES,
-					(GLint)(call.index_count),
+					(GLint)(pass.index_count),
 					GL_UNSIGNED_INT,
-					(void*)(sizeof(int) * call.index_start),
-					(GLint)call.instance_count);
+					(void*)(sizeof(int) * pass.index_start),
+					(GLint)pass.instance_count);
 			}
 			else
 			{
 				gl.DrawElements(
 					GL_TRIANGLES,
-					(GLint)(call.index_count),
+					(GLint)(pass.index_count),
 					GL_UNSIGNED_INT,
-					(void*)(sizeof(int) * call.index_start));
+					(void*)(sizeof(int) * pass.index_start));
 			}
 
 			gl.BindVertexArray(0);
 		}
 	}
 
-	void GraphicsBackend::clear(const FrameBufferRef& target, uint32_t rgba)
+	void GraphicsBackend::clear_backbuffer(Color color)
 	{
-		if (!target)
-		{
-			gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
-		}
-		else
-		{
-			auto framebuffer = (OpenGL_FrameBuffer*)target.get();
-			if (framebuffer != nullptr)
-				gl.BindFramebuffer(GL_FRAMEBUFFER, framebuffer->gl_id());
-		}
-
+		auto rgba = color.to_rgba();
 		unsigned char r = rgba >> 24;
 		unsigned char g = rgba >> 16;
 		unsigned char b = rgba >> 8;
 		unsigned char a = rgba;
 
+		gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
 		gl.Disable(GL_SCISSOR_TEST);
 		gl.ClearColor(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 		gl.Clear(GL_COLOR_BUFFER_BIT);

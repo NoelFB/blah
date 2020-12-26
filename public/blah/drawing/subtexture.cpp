@@ -6,7 +6,7 @@ using namespace Blah;
 Subtexture::Subtexture() {}
 
 Subtexture::Subtexture(const TextureRef& texture)
-	: Subtexture(texture, Rect(0, 0, texture->width(), texture->height())) {}
+	: Subtexture(texture, Rect(0, 0, (float)texture->width(), (float)texture->height())) {}
 
 Subtexture::Subtexture(const TextureRef& texture, Rect source)
 	: Subtexture(texture, source, Rect(0, 0, source.w, source.h)) {}
@@ -48,8 +48,8 @@ void Subtexture::crop_info(const Rect& clip, Rect* dest_source, Rect* dest_frame
 {
 	*dest_source = (clip + source.top_left() + frame.top_left()).overlap_rect(source);
 
-	dest_frame->x = Calc::min(0, frame.x + clip.x);
-	dest_frame->y = Calc::min(0, frame.y + clip.y);
+	dest_frame->x = Calc::min(0.0f, frame.x + clip.x);
+	dest_frame->y = Calc::min(0.0f, frame.y + clip.y);
 	dest_frame->w = clip.w;
 	dest_frame->h = clip.h;
 }

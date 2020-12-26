@@ -1,4 +1,5 @@
 #pragma once
+#include <blah/graphics/framebuffer.h>
 
 namespace Blah
 {
@@ -21,6 +22,22 @@ namespace Blah
 		void (*on_error)(const char* text);
 
 		Config();
+	};
+
+	enum class Renderer
+	{
+		None = -1,
+		OpenGL,
+		D3D11,
+		Metal,
+		Count
+	};
+
+	struct RendererFeatures
+	{
+		bool instancing = false;
+		bool origin_bottom_left = false;
+		int max_texture_size = 0;
 	};
 
 	namespace App
@@ -60,5 +77,14 @@ namespace Blah
 
 		// Toggles fullscreen
 		void fullscreen(bool enabled);
+
+		// Returns the Rendering API in use
+		Renderer renderer();
+
+		// Retrieves the Renderer Features
+		const RendererFeatures& renderer_features();
+
+		// Reference to the window's back buffer
+		extern const FrameBufferRef backbuffer;
 	}
 }

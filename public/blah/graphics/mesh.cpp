@@ -1,6 +1,12 @@
 #include "mesh.h"
+#include <blah/internal/graphics_backend.h>
 
 using namespace Blah;
+
+MeshRef Mesh::create()
+{
+	return GraphicsBackend::create_mesh();
+}
 
 void Mesh::vertex_format(const VertexAttribute* attributes, int attribute_count, int stride)
 {

@@ -17,17 +17,21 @@ add_library(blah
 	public/blah/time.cpp
 	public/blah/time.h
 
-	public/blah/graphics/graphics.h
-	public/blah/graphics/graphics.cpp
-	public/blah/graphics/texture.h
+	public/blah/graphics/blend.h
+	public/blah/graphics/blend.cpp
 	public/blah/graphics/framebuffer.h
-	public/blah/graphics/shader.h
-	public/blah/graphics/mesh.h
-	public/blah/graphics/mesh.cpp
+	public/blah/graphics/framebuffer.cpp
 	public/blah/graphics/material.h
 	public/blah/graphics/material.cpp
+	public/blah/graphics/mesh.h
+	public/blah/graphics/mesh.cpp
+	public/blah/graphics/renderpass.h
+	public/blah/graphics/renderpass.cpp
+	public/blah/graphics/shader.h
+	public/blah/graphics/shader.cpp
+	public/blah/graphics/texture.h
+	public/blah/graphics/texture.cpp
 
-	public/blah/input/input.h
 	public/blah/input/input.cpp
 	public/blah/input/virtual_stick.cpp
 	public/blah/input/virtual_stick.h
@@ -94,15 +98,15 @@ add_library(blah
 	public/blah/streams/stream.cpp
 	public/blah/streams/stream.h
 
+	private/blah/third_party/stb_image.h
+	private/blah/third_party/stb_image_write.h
+	private/blah/third_party/stb_truetype.h
 	private/blah/internal/graphics_backend.h
 	private/blah/internal/graphics_backend_gl.cpp
 	private/blah/internal/input_backend.h
 	private/blah/internal/platform_backend.h
 	private/blah/internal/platform_backend_sdl2.cpp
-	
-	private/blah/third_party/stb_image.h
-	private/blah/third_party/stb_image_write.h
-	private/blah/third_party/stb_truetype.h)
+)
 
 target_include_directories(blah
 	PUBLIC

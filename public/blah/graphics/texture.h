@@ -28,9 +28,35 @@ namespace Blah
 		Count
 	};
 
+	class Image;
+	class Stream;
+	class Texture;
+	typedef std::shared_ptr<Texture> TextureRef;
+
 	class Texture
 	{
 	public:
+
+		// Creates a new Texture.
+		// If the Texture creation fails, it will return an invalid TextureRef.
+		static TextureRef create(const Image& image);
+
+		// Creates a new Texture.
+		// If the Texture creation fails, it will return an invalid TextureRef.
+		static TextureRef create(int width, int height, unsigned char* rgba);
+
+		// Creates a new Texture.
+		// If the Texture creation fails, it will return an invalid TextureRef.
+		static TextureRef create(int width, int height, TextureFormat format);
+
+		// Creates a new Texture from a Stream.
+		// If the Texture creation fails, it will return an invalid TextureRef.
+		static TextureRef create(Stream& stream);
+
+		// Creates a new Texture from a File.
+		// If the Texture creation fails, it will return an invalid TextureRef.
+		static TextureRef create(const char* file);
+
 		virtual ~Texture() = default;
 
 		// gets the width of the texture
@@ -70,6 +96,4 @@ namespace Blah
 		// Returns true if the Texture is part of a FrameBuffer
 		virtual bool is_framebuffer() const = 0;
 	};
-
-	typedef std::shared_ptr<Texture> TextureRef;
 }

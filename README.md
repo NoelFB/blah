@@ -6,8 +6,8 @@ this will likely see breaking changes.
 
 #### building
  - Requires C++17 and CMake
- - The [SDL2 platform backend](https://github.com/NoelFB/blah/blob/master/private/blah/internal/platform_backend_sdl2.cpp) can be enabled in CMake with `BLAH_USE_SDL2`, and setting `SDL2_INCLUDE_DIRS` and `SDL2_LIBRARIES`
- - The [OpenGL graphics backend](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend_gl.cpp) can be enabled in CMake with `BLAH_USE_OPENGL`.
+ - The [SDL2 platform backend](https://github.com/NoelFB/blah/blob/master/private/blah/internal/platform_backend_sdl2.cpp) can be enabled in CMake with `SDL2_ENABLED`, and setting `SDL2_INCLUDE_DIRS` and `SDL2_LIBRARIES`
+ - The [OpenGL graphics backend](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend_gl.cpp) can be enabled in CMake with `OPENGL_ENABLED`.
  - Other backends can be added by implementing the [Platform Backend](https://github.com/NoelFB/blah/blob/master/private/blah/internal/platform_backend.h) or [Graphics Backend](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend.h).
 
 #### notes
@@ -26,17 +26,17 @@ Batch batch;
 
 void render()
 {
-	Graphics::clear(Graphics::backbuffer, 0x00000000);
+	App::backbuffer->clear(Color::black);
 	
-	Vec2 center = Vec2(App::draw_width(), App::draw_height()) / 2;
-	float rotation = Time::elapsed * Calc::TAU;
-	Mat3x2 transform = Mat3x2::create_transform(center, Vec2::zero, Vec2::one, rotation);
+	auto center = Vec2(App::backbuffer->width(), App::backbuffer->height()) / 2;
+	auto rotation = Time::elapsed * Calc::TAU;
+	auto transform = Mat3x2::create_transform(center, Vec2::zero, Vec2::one, rotation);
 
 	batch.push_matrix(transform);
-	batch.rect(Rect(-32, -32, 64, 64), 0xff0000);
+	batch.rect(Rect(-32, -32, 64, 64), Color::red);
 	batch.pop_matrix();
 	
-	batch.render(Graphics::backbuffer);
+	batch.render();
 	batch.clear();
 }
 

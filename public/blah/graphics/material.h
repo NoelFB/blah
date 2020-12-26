@@ -6,14 +6,22 @@
 
 namespace Blah
 {
+	class Material;
+	typedef std::shared_ptr<Material> MaterialRef;
+
 	class Material
 	{
-	public:
+	private:
 		Material(const ShaderRef& shader);
 		Material(const Material& src) = delete;
 		Material(Material&& src) = delete;
 		Material& operator=(const Material& src) = delete;
 		Material& operator=(Material&& src) = delete;
+
+	public:
+		// Creates a new Material from the given Shader.
+		// If the Shader is invalid, it will return an invalid MaterialRef.
+		static MaterialRef create(const ShaderRef& shader);
 
 		// Returns the Shader assigned to the Material.
 		const ShaderRef shader() const;
@@ -52,6 +60,4 @@ namespace Blah
 		Vector<float*> m_floats;
 		Vector<float> m_data;
 	};
-
-	typedef std::shared_ptr<Material> MaterialRef;
 }

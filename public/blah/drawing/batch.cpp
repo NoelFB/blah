@@ -268,7 +268,7 @@ void Batch::set_texture(const TextureRef& texture)
 	if (m_batch.texture != texture)
 	{
 		m_batch.texture = texture;
-		m_batch.flip_vertically = Graphics::info()->origin_bottom_left && texture && texture->is_framebuffer();
+		m_batch.flip_vertically = App::renderer_features().origin_bottom_left && texture && texture->is_framebuffer();
 	}
 }
 
@@ -293,53 +293,53 @@ void Batch::render(const FrameBufferRef& target, const Mat4x4& matrix)
 	{
 		if (!m_mesh)
 		{
-			m_mesh = Graphics::create_mesh();
+			m_mesh = Mesh::create();
 			m_mesh->vertex_format(attributes, 4, sizeof(Vertex));
 		}
 
 		if (!m_default_shader)
-			m_default_shader = Graphics::create_shader(&data);
+			m_default_shader = Shader::create(&data);
 
 		if (!m_default_material)
-			m_default_material = Graphics::create_material(m_default_shader);
+			m_default_material = Material::create(m_default_shader);
 	}
 
 	// upload data
 	m_mesh->index_data(m_indices.data(), m_indices.size());
 	m_mesh->vertex_data(m_vertices.data(), m_vertices.size());
 
-	RenderCall call;
-	call.target = target;
-	call.mesh = m_mesh;
-	call.has_viewport = false;
-	call.viewport = Rect();
-	call.instance_count = 0;
-	call.depth = Compare::None;
-	call.cull = Cull::None;
+	RenderPass pass;
+	pass.target = target;
+	pass.mesh = m_mesh;
+	pass.has_viewport = false;
+	pass.viewport = Rect();
+	pass.instance_count = 0;
+	pass.depth = Compare::None;
+	pass.cull = Cull::None;
 
 	for (auto& b : m_batches)
-		render_single_batch(call, b, matrix);
+		render_single_batch(pass, b, matrix);
 
 	if (m_batch.elements > 0)
-		render_single_batch(call, m_batch, matrix);
+		render_single_batch(pass, m_batch, matrix);
 }
 
-void Batch::render_single_batch(RenderCall& call, const DrawBatch& b, const Mat4x4& matrix)
+void Batch::render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4x4& matrix)
 {
-	call.material = b.material;
-	if (!call.material)
-		call.material = m_default_material;
+	pass.material = b.material;
+	if (!pass.material)
+		pass.material = m_default_material;
 
-	call.material->set_texture(texture_uniform, b.texture, 0);
-	call.material->set_value(matrix_uniform, &matrix.m11, 16);
+	pass.material->set_texture(texture_uniform, b.texture, 0);
+	pass.material->set_value(matrix_uniform, &matrix.m11, 16);
 	
-	call.blend = b.blend;
-	call.has_scissor = b.scissor.w >= 0 && b.scissor.h >= 0;
-	call.scissor = b.scissor;
-	call.index_start = (int64_t)b.offset * 3;
-	call.index_count = (int64_t)b.elements * 3;
+	pass.blend = b.blend;
+	pass.has_scissor = b.scissor.w >= 0 && b.scissor.h >= 0;
+	pass.scissor = b.scissor;
+	pass.index_start = (int64_t)b.offset * 3;
+	pass.index_count = (int64_t)b.elements * 3;
 
-	Graphics::render(call);
+	pass.perform();
 }
 
 void Batch::clear()

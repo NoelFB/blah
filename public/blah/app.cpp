@@ -11,9 +11,9 @@ using namespace Blah;
 
 namespace
 {
-	static Config app_config;
-	static bool app_is_running = false;
-	static bool app_is_exiting = false;
+	Config app_config;
+	bool app_is_running = false;
+	bool app_is_exiting = false;
 }
 
 Config::Config()
@@ -231,3 +231,64 @@ void App::fullscreen(bool enabled)
 {
 	PlatformBackend::set_fullscreen(enabled);
 }
+
+Renderer App::renderer()
+{
+	return GraphicsBackend::renderer();
+}
+
+const RendererFeatures& Blah::App::renderer_features()
+{
+	return GraphicsBackend::features();
+}
+
+namespace
+{
+	class BackBuffer final : public FrameBuffer
+	{
+		Attachments empty_attachments;
+		TextureRef empty_texture;
+
+		virtual Attachments& attachments() override
+		{
+			BLAH_ASSERT(false, "Backbuffer doesn't have any attachments");
+			return empty_attachments;
+		}
+
+		virtual const Attachments& attachments() const override
+		{
+			BLAH_ASSERT(false, "Backbuffer doesn't have any attachments");
+			return empty_attachments;
+		}
+
+		virtual TextureRef& attachment(int index) override
+		{
+			BLAH_ASSERT(false, "Backbuffer doesn't have any attachments");
+			return empty_texture;
+		}
+
+		virtual const TextureRef& attachment(int index) const override
+		{
+			BLAH_ASSERT(false, "Backbuffer doesn't have any attachments");
+			return empty_texture;
+		}
+
+		virtual int width() const override
+		{
+			return App::draw_width();
+		}
+
+		virtual int height() const override
+		{
+			return App::draw_height();
+		}
+
+		virtual void clear(Color color) override
+		{
+			GraphicsBackend::clear_backbuffer(color);
+		}
+	};
+
+}
+
+extern const FrameBufferRef App::backbuffer = FrameBufferRef(new BackBuffer());

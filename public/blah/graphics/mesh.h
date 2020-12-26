@@ -44,9 +44,16 @@ namespace Blah
 		bool normalized;
 	};
 
+	class Mesh;
+	typedef std::shared_ptr<Mesh> MeshRef;
+
 	class Mesh
 	{
 	public:
+		// Creates a new Mesh.
+		// If the Mesh creation fails, it will return an invalid Mesh.
+		static MeshRef create();
+
 		virtual ~Mesh() = default;
 
 		// Sets the Vertex Format of the Mesh
@@ -79,6 +86,4 @@ namespace Blah
 		virtual void vertex_format_internal(const VertexAttribute* attributes, int count, int stride) = 0;
 		virtual void instance_format_internal(const VertexAttribute* attributes, int count, int stride) = 0;
 	};
-
-	typedef std::shared_ptr<Mesh> MeshRef;
 }

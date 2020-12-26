@@ -26,14 +26,24 @@ namespace
 	}
 }
 
+MaterialRef Material::create(const ShaderRef& shader)
+{
+	BLAH_ASSERT(shader, "The provided shader is invalid");
+
+	if (shader)
+		return MaterialRef(new Material(shader));
+
+	return MaterialRef();
+}
+
 Material::Material(const ShaderRef& shader)
 {
 	BLAH_ASSERT(shader, "Material is being created with an invalid shader");
 	m_shader = shader;
 
 	auto& uniforms = shader->uniforms();
-	Vector<size_t> float_offsets;
-	size_t float_size = 0;
+	Vector<int> float_offsets;
+	int float_size = 0;
 
 	for (auto& uniform : uniforms)
 	{

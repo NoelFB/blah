@@ -76,7 +76,7 @@ bool PlatformBackend::init(const Config* config)
 	int flags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE;
 
 	// GL Attributes
-	if (GraphicsBackend::renderer() == GraphicsRenderer::OpenGL)
+	if (App::renderer() == Renderer::OpenGL)
 	{
 		flags |= SDL_WINDOW_OPENGL;
 
@@ -135,7 +135,7 @@ bool PlatformBackend::init(const Config* config)
 void PlatformBackend::ready()
 {
 	// enable V-Sync
-	if (GraphicsBackend::renderer() == GraphicsRenderer::OpenGL)
+	if (App::renderer() == Renderer::OpenGL)
 		SDL_GL_SetSwapInterval(1);
 }
 
@@ -342,7 +342,7 @@ void PlatformBackend::sleep(int milliseconds)
 
 void PlatformBackend::present()
 {
-	if (GraphicsBackend::renderer() == GraphicsRenderer::OpenGL)
+	if (App::renderer() == Renderer::OpenGL)
 	{
 		SDL_GL_SwapWindow(window);
 	}
@@ -396,7 +396,7 @@ void PlatformBackend::set_size(int width, int height)
 
 void PlatformBackend::get_draw_size(int* width, int* height)
 {
-	if (GraphicsBackend::renderer() == GraphicsRenderer::OpenGL)
+	if (App::renderer() == Renderer::OpenGL)
 	{
 		SDL_GL_GetDrawableSize(window, width, height);
 	}

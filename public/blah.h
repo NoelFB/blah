@@ -14,10 +14,11 @@
 #include <blah/drawing/spritefont.h>
 #include <blah/drawing/subtexture.h>
 
+#include <blah/graphics/blend.h>
 #include <blah/graphics/framebuffer.h>
-#include <blah/graphics/graphics.h>
 #include <blah/graphics/material.h>
 #include <blah/graphics/mesh.h>
+#include <blah/graphics/renderpass.h>
 #include <blah/graphics/shader.h>
 #include <blah/graphics/texture.h>
 

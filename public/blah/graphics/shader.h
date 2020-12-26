@@ -30,9 +30,17 @@ namespace Blah
 		const char* fragment;
 	};
 
+	class Shader;
+	typedef std::shared_ptr<Shader> ShaderRef;
+
 	class Shader
 	{
 	public:
+
+		// Creates a Shader with the given Shader Data.
+		// If the Shader creation fails, it will return an invalid ShaderRef.
+		static ShaderRef create(const ShaderData* data);
+
 		virtual ~Shader() = default;
 
 		// Gets a list of Shader Uniforms from Shader
@@ -42,5 +50,4 @@ namespace Blah
 		virtual const Vector<UniformInfo>& uniforms() const = 0;
 	};
 
-	typedef std::shared_ptr<Shader> ShaderRef;
 }

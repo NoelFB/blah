@@ -1,7 +1,6 @@
 #include <blah/drawing/spritefont.h>
 #include <blah/images/font.h>
 #include <blah/images/packer.h>
-#include <blah/graphics/graphics.h>
 #include <blah/log.h>
 
 using namespace Blah;
@@ -199,7 +198,7 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 	packer.pack();
 
 	for (auto& it : packer.pages)
-		m_atlas.push_back(Graphics::create_texture(it));
+		m_atlas.push_back(Texture::create(it));
 
 	// add character subtextures
 	for (auto& it : packer.entries)

@@ -1,5 +1,12 @@
 #pragma once
-#include <blah/graphics/graphics.h>
+#include <blah/app.h>
+#include <blah/graphics/renderpass.h>
+#include <blah/graphics/texture.h>
+#include <blah/graphics/framebuffer.h>
+#include <blah/graphics/shader.h>
+#include <blah/graphics/mesh.h>
+#include <blah/graphics/material.h>
+#include <blah/math/color.h>
 
 namespace Blah
 {
@@ -14,10 +21,10 @@ namespace Blah
 		void shutdown();
 
 		// Returns info about the renderer
-		const GraphicsInfo* info();
+		const RendererFeatures& features();
 
 		// Returns the renderer type
-		GraphicsRenderer renderer();
+		Renderer renderer();
 
 		// Called once per frame
 		void frame();
@@ -29,10 +36,10 @@ namespace Blah
 		void after_render();
 
 		// Performs a draw call
-		void render(const RenderCall& call);
+		void render(const RenderPass& pass);
 
-		// Clears a buffer
-		void clear(const FrameBufferRef& target, uint32_t rgba);
+		// Clears the backbuffer
+		void clear_backbuffer(Color color);
 
 		// Creates a new Texture.
 		// if the Texture is invalid, this should return an empty reference.
