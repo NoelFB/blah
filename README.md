@@ -1,18 +1,19 @@
 ## blah
 a small C++ game framework for 2D games.
+goal is to be simple and use as few dependencies as possible, to maintain easy building and portability.
 
 this will likely see breaking changes.
 
-#### prerequisites
- - A C++17 compiler and CMake
- - Only an SDL2 `platform backend` [is done](https://github.com/NoelFB/blah/blob/master/private/blah/internal/platform_backend_sdl2.cpp). CMake will need to find SDL2 via `SDL2_INCLUDE_DIRS` and `SDL2_LIBRARIES`
- - Only an OpenGL `graphics backend` [is done](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend_gl.cpp), so it requires OpenGL.
+#### building
+ - Requires C++17 and CMake
+ - The [SDL2 platform backend](https://github.com/NoelFB/blah/blob/master/private/blah/internal/platform_backend_sdl2.cpp) can be enabled in CMake with `BLAH_USE_SDL2`, and setting `SDL2_INCLUDE_DIRS` and `SDL2_LIBRARIES`
+ - The [OpenGL graphics backend](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend_gl.cpp) can be enabled in CMake with `BLAH_USE_OPENGL`.
+ - Other backends can be added by implementing the [Platform Backend](https://github.com/NoelFB/blah/blob/master/private/blah/internal/platform_backend.h) or [Graphics Backend](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend.h).
 
 #### notes
- - There's a custom "Vector" and "StackVector" classes that are not full replacements for std::vector.
  - There's no Shader abstraction, so the [Sprite Batcher](https://github.com/NoelFB/blah/blob/master/public/blah/drawing/batch.h) has hard-coded GLSL. This will need to change.
- - The rendering layer may be replaced with [FNA3D](https://github.com/FNA-XNA/FNA3D), [BGFX](https://github.com/bkaradzic/bgfx), [Sokol](https://github.com/floooh/sokol), or something else.
- - There's no Audio layer implementation yet.
+ - The rendering layer may be replaced with [FNA3D](https://github.com/FNA-XNA/FNA3D), [BGFX](https://github.com/bkaradzic/bgfx), [Sokol](https://github.com/floooh/sokol), etc, or I may attempt to write custom backends for D3D11/Metal/Vulkan myself, like the OpenGL backend.
+ - There's no Audio API or backend implementation yet.
  - No threaded rendering so the OpenGL implementation will explode if you try that
 
 #### a sample application
