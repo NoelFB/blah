@@ -35,7 +35,18 @@ namespace Blah
 
 	class Texture
 	{
+	protected:
+		Texture() = default;
+
 	public:
+		// Copy / Moves not allowed
+		Texture(const Texture&) = delete;
+		Texture(Texture&&) = delete;
+		Texture& operator=(const Texture&) = delete;
+		Texture& operator=(Texture&&) = delete;
+
+		// Default Destructor
+		virtual ~Texture() = default;
 
 		// Creates a new Texture.
 		// If the Texture creation fails, it will return an invalid TextureRef.
@@ -56,8 +67,6 @@ namespace Blah
 		// Creates a new Texture from a File.
 		// If the Texture creation fails, it will return an invalid TextureRef.
 		static TextureRef create(const char* file);
-
-		virtual ~Texture() = default;
 
 		// gets the width of the texture
 		virtual int width() const = 0;

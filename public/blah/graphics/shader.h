@@ -35,13 +35,22 @@ namespace Blah
 
 	class Shader
 	{
+	protected:
+		Shader() = default;
+
 	public:
+		// Copy / Moves not allowed
+		Shader(const Shader&) = delete;
+		Shader(Shader&&) = delete;
+		Shader& operator=(const Shader&) = delete;
+		Shader& operator=(Shader&&) = delete;
+
+		// Default Destructor
+		virtual ~Shader() = default;
 
 		// Creates a Shader with the given Shader Data.
 		// If the Shader creation fails, it will return an invalid ShaderRef.
 		static ShaderRef create(const ShaderData* data);
-
-		virtual ~Shader() = default;
 
 		// Gets a list of Shader Uniforms from Shader
 		virtual Vector<UniformInfo>& uniforms() = 0;

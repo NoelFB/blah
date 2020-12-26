@@ -9,16 +9,21 @@ namespace Blah
 	class Material;
 	typedef std::shared_ptr<Material> MaterialRef;
 
-	class Material
+	class Material final
 	{
 	private:
 		Material(const ShaderRef& shader);
-		Material(const Material& src) = delete;
-		Material(Material&& src) = delete;
-		Material& operator=(const Material& src) = delete;
-		Material& operator=(Material&& src) = delete;
 
 	public:
+		// Copy / Moves not allowed
+		Material(const Material&) = delete;
+		Material(Material&&) = delete;
+		Material& operator=(const Material&) = delete;
+		Material& operator=(Material&&) = delete;
+
+		// Default destructor
+		~Material() = default;
+
 		// Creates a new Material from the given Shader.
 		// If the Shader is invalid, it will return an invalid MaterialRef.
 		static MaterialRef create(const ShaderRef& shader);

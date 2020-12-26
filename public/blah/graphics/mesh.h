@@ -49,12 +49,22 @@ namespace Blah
 
 	class Mesh
 	{
+	protected:
+		Mesh() = default;
+
 	public:
+		// Copy / Moves not allowed
+		Mesh(const Mesh&) = delete;
+		Mesh(Mesh&&) = delete;
+		Mesh& operator=(const Mesh&) = delete;
+		Mesh& operator=(Mesh&&) = delete;
+
+		// Default Destructor
+		virtual ~Mesh() = default;
+
 		// Creates a new Mesh.
 		// If the Mesh creation fails, it will return an invalid Mesh.
 		static MeshRef create();
-
-		virtual ~Mesh() = default;
 
 		// Sets the Vertex Format of the Mesh
 		void vertex_format(const VertexAttribute* attributes, int attribute_count, int stride = -1);

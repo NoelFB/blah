@@ -48,12 +48,18 @@ namespace Blah
 
 	struct BlendMode
 	{
-		BlendOp colorOp;
-		BlendFactor colorSrc;
-		BlendFactor colorDst;
-		BlendOp alphaOp;
-		BlendFactor alphaSrc;
-		BlendFactor alphaDst;
+		// Normal, pre-multiplied, Blend Mode
+		static const BlendMode Normal;
+
+		// Subtractive Blend Mode
+		static const BlendMode Subtract;
+
+		BlendOp color_op;
+		BlendFactor color_src;
+		BlendFactor color_dst;
+		BlendOp alpha_op;
+		BlendFactor alpha_src;
+		BlendFactor alpha_dst;
 		BlendMask mask;
 		uint32_t rgba;
 
@@ -61,36 +67,39 @@ namespace Blah
 
 		BlendMode(BlendOp op, BlendFactor src, BlendFactor dst)
 		{
-			colorOp = op;
-			colorSrc = src;
-			colorDst = dst;
-			alphaOp = op;
-			alphaSrc = src;
-			alphaDst = dst;
+			color_op = op;
+			color_src = src;
+			color_dst = dst;
+			alpha_op = op;
+			alpha_src = src;
+			alpha_dst = dst;
 			mask = BlendMask::RGBA;
 			rgba = 0xffffffff;
 		}
 
 		BlendMode(BlendOp rgbOp, BlendFactor rgbSrc, BlendFactor rgbDst, BlendOp aOp, BlendFactor aSrc, BlendFactor aDst, BlendMask blendMask, uint32_t blendColor)
 		{
-			colorOp = rgbOp;
-			colorSrc = rgbSrc;
-			colorDst = rgbDst;
-			alphaOp = aOp;
-			alphaSrc = aSrc;
-			alphaDst = aDst;
+			color_op = rgbOp;
+			color_src = rgbSrc;
+			color_dst = rgbDst;
+			alpha_op = aOp;
+			alpha_src = aSrc;
+			alpha_dst = aDst;
 			mask = blendMask;
 			rgba = blendColor;
 		}
 
-		inline bool operator==(const BlendMode& rhs) const {
-			return colorOp == rhs.colorOp && colorSrc == rhs.colorSrc && colorDst == rhs.colorDst &&
-				alphaOp == rhs.alphaOp && alphaSrc == rhs.alphaSrc && alphaDst == rhs.alphaDst &&
+		inline bool operator==(const BlendMode& rhs) const
+		{
+			return
+				color_op == rhs.color_op && color_src == rhs.color_src && color_dst == rhs.color_dst &&
+				alpha_op == rhs.alpha_op && alpha_src == rhs.alpha_src && alpha_dst == rhs.alpha_dst &&
 				mask == rhs.mask && rgba == rhs.rgba;
 		}
-		inline bool operator!=(const BlendMode& rhs) const { return !(*this == rhs); }
 
-		static const BlendMode Normal;
-		static const BlendMode Subtract;
+		inline bool operator!=(const BlendMode& rhs) const
+		{
+			return !(*this == rhs);
+		}
 	};
 }

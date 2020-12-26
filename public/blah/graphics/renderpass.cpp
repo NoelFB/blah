@@ -26,21 +26,21 @@ void RenderPass::perform()
 	// Validate Material
 	if (!material)
 	{
-		Log::warn("Trying to draw with an invalid Material");
+		Log::warn("Trying to draw with an invalid Material; skipping render pass");
 		return;
 	}
 
 	// Validate Shader
 	if (!material->shader())
 	{
-		Log::warn("Trying to draw with an invalid Shader");
+		Log::warn("Trying to draw with an invalid Shader; skipping render pass");
 		return;
 	}
 
 	// Validate Mesh
 	if (!mesh)
 	{
-		Log::warn("Trying to draw with an invalid Mesh");
+		Log::warn("Trying to draw with an invalid Mesh; skipping render pass");
 		return;
 	}
 
@@ -59,7 +59,7 @@ void RenderPass::perform()
 	if (pass.index_start + pass.index_count > index_count)
 	{
 		Log::warn(
-			"Trying to draw more indices than exist in the index buffer (%i-%i / %i)",
+			"Trying to draw more indices than exist in the index buffer (%i-%i / %i); trimming extra indices",
 			pass.index_start,
 			pass.index_start + pass.index_count,
 			index_count);
@@ -75,7 +75,7 @@ void RenderPass::perform()
 	if (pass.instance_count > instance_count)
 	{
 		Log::warn(
-			"Trying to draw more instances than exist in the index buffer (%i / %i)",
+			"Trying to draw more instances than exist in the index buffer (%i / %i); trimming extra instances",
 			pass.instance_count,
 			instance_count);
 

@@ -16,7 +16,18 @@ namespace Blah
 
 	class FrameBuffer
 	{
+	protected:
+		FrameBuffer() = default;
+
 	public:
+		// Copy / Moves not allowed
+		FrameBuffer(const FrameBuffer&) = delete;
+		FrameBuffer(FrameBuffer&&) = delete;
+		FrameBuffer& operator=(const FrameBuffer&) = delete;
+		FrameBuffer& operator=(FrameBuffer&&) = delete;
+
+		// Default Destructor
+		virtual ~FrameBuffer() = default;
 
 		// Creates a new FrameBuffer with a single Color attachment
 		// If the FrameBuffer creation fails, it will return an invalid FrameBufferRef.
@@ -25,8 +36,6 @@ namespace Blah
 		// Creates a new FrameBuffer with the given Texture Attachments. You must provide at least one Attachment.
 		// If the FrameBuffer creation fails, it will return an invalid FrameBufferRef.
 		static FrameBufferRef create(int width, int height, const TextureFormat* attachments, int attachmentCount);
-
-		virtual ~FrameBuffer() = default;
 
 		// Gets the list of Attachments from the FrameBuffer
 		virtual Attachments& attachments() = 0;

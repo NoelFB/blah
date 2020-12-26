@@ -1294,12 +1294,12 @@ namespace Blah
 
 		// Blend Mode
 		{
-			GLenum colorOp = gl_get_blend_func(pass.blend.colorOp);
-			GLenum alphaOp = gl_get_blend_func(pass.blend.alphaOp);
-			GLenum colorSrc = gl_get_blend_factor(pass.blend.colorSrc);
-			GLenum colorDst = gl_get_blend_factor(pass.blend.colorDst);
-			GLenum alphaSrc = gl_get_blend_factor(pass.blend.alphaSrc);
-			GLenum alphaDst = gl_get_blend_factor(pass.blend.alphaDst);
+			GLenum colorOp = gl_get_blend_func(pass.blend.color_op);
+			GLenum alphaOp = gl_get_blend_func(pass.blend.alpha_op);
+			GLenum colorSrc = gl_get_blend_factor(pass.blend.color_src);
+			GLenum colorDst = gl_get_blend_factor(pass.blend.color_dst);
+			GLenum alphaSrc = gl_get_blend_factor(pass.blend.alpha_src);
+			GLenum alphaDst = gl_get_blend_factor(pass.blend.alpha_dst);
 
 			gl.Enable(GL_BLEND);
 			gl.BlendEquationSeparate(colorOp, alphaOp);
