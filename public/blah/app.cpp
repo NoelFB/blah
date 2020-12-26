@@ -244,6 +244,8 @@ const RendererFeatures& Blah::App::renderer_features()
 
 namespace
 {
+	// A dummy Frame Buffer that represents the Back Buffer
+	// it doesn't actually contain any textures or details.
 	class BackBuffer final : public FrameBuffer
 	{
 		Attachments empty_attachments;
