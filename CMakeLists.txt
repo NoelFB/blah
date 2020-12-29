@@ -130,7 +130,7 @@ if (OPENGL_ENABLED)
 	add_compile_definitions(BLAH_USE_OPENGL)
 endif()
 
-# add D3D11 definition if we're using OpenGL
+# add D3D11 definition if we're using D3D11
 if (D3D11_ENABLED)
 	add_compile_definitions(BLAH_USE_D3D11)
 	set(LIBS ${LIBS} d3d11.lib dxguid.lib D3Dcompiler.lib)
