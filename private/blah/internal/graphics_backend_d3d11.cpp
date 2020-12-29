@@ -1,5 +1,10 @@
 #ifdef BLAH_USE_D3D11
 
+// TODO:
+// Note the D3D11 Implementation is super WIP
+// A bunch of rendering features aren't implemented at all
+// and some stuff is .... ugly
+
 #include <blah/internal/graphics_backend.h>
 #include <blah/internal/platform_backend.h>
 #include <blah/log.h>
