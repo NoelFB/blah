@@ -10,7 +10,7 @@ this will likely see breaking changes.
 	- [SDL2](https://github.com/NoelFB/blah/blob/master/private/blah/internal/platform_backend_sdl2.cpp) can be enabled in CMake with `SDL2_ENABLED`, and setting `SDL2_INCLUDE_DIRS` and `SDL2_LIBRARIES`
  - Graphics Backend
 	- [OpenGL](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend_gl.cpp) can be enabled in CMake with `OPENGL_ENABLED`.
-	- [D3D11](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend_d3d11.cpp) can be enabled in CMake with `D3D11_ENABLED`.
+	- [D3D11](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend_d3d11.cpp) (unfinished) can be enabled in CMake with `D3D11_ENABLED`.
  - Other backends can be added by implementing the [Platform Backend](https://github.com/NoelFB/blah/blob/master/private/blah/internal/platform_backend.h) or [Graphics Backend](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend.h).
 
 #### notes
