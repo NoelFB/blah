@@ -45,9 +45,6 @@ namespace Blah
 		// The name of the Matrix Uniform in the Shader
 		const char* matrix_uniform;
 
-		// The name of the Texture Uniform in the Shader
-		const char* texture_uniform;
-
 		Batch();
 		Batch(const Batch& other) = delete;
 		Batch& operator=(const Batch& other) = delete;
@@ -186,6 +183,7 @@ namespace Blah
 			uint8_t mult;
 			uint8_t wash;
 			uint8_t fill;
+			uint8_t pad;
 		};
 
 		struct DrawBatch
@@ -217,7 +215,7 @@ namespace Blah
 		uint8_t					m_tex_wash;
 		DrawBatch				m_batch;
 		Vector<Vertex>			m_vertices;
-		Vector<int>				m_indices;
+		Vector<uint32_t>		m_indices;
 		Vector<Mat3x2>			m_matrix_stack;
 		Vector<Rect>			m_scissor_stack;
 		Vector<BlendMode>		m_blend_stack;

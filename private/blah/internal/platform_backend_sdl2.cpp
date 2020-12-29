@@ -10,6 +10,7 @@
 
 #include <SDL.h>
 #include <SDL_vulkan.h>
+#include <SDL_syswm.h>
 
 #if _WIN32
 // on Windows we're using the C++ <filesystem> API for now
@@ -75,7 +76,7 @@ bool PlatformBackend::init(const Config* config)
 
 	int flags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE;
 
-	// GL Attributes
+	// enable OpenGL
 	if (App::renderer() == Renderer::OpenGL)
 	{
 		flags |= SDL_WINDOW_OPENGL;
@@ -92,6 +93,11 @@ bool PlatformBackend::init(const Config* config)
 		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+	}
+	// enable DirectX
+	else if (App::renderer() == Renderer::D3D11)
+	{
+
 	}
 
 	// create the window
@@ -641,6 +647,14 @@ void PlatformBackend::gl_context_make_current(void* context)
 void PlatformBackend::gl_context_destroy(void* context)
 {
 	SDL_GL_DeleteContext(context);
+}
+
+void* PlatformBackend::d3d11_get_hwnd()
+{
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	SDL_GetWindowWMInfo(window, &info);
+	return info.info.win.window;
 }
 
 #endif // BLAH_USE_SDL2

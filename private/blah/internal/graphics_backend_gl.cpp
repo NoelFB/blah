@@ -406,7 +406,7 @@ namespace Blah
 	}
 
 	// assign attributes
-	GLuint gl_mesh_assign_attributes(GLuint buffer, GLenum buffer_type, const VertexAttribute* vertex_attributes, int vertex_attribute_count, int stride, GLint divisor)
+	GLuint gl_mesh_assign_attributes(GLuint buffer, GLenum buffer_type, const VertexFormat& format, GLint divisor)
 	{
 		// bind
 		gl.BindBuffer(buffer_type, buffer);
@@ -417,49 +417,83 @@ namespace Blah
 
 		// enable attributes
 		size_t ptr = 0;
-		for (int n = 0; n < vertex_attribute_count; n++)
+		for (int n = 0; n < format.attributes.size(); n++)
 		{
-			const VertexAttribute* attrib = (vertex_attributes + n);
+			auto& attribute = format.attributes[n];
+			GLenum type = GL_UNSIGNED_BYTE;
+			size_t component_size = 0;
+			int components = 1;
 
-			for (int i = 0, loc = 0; i < (int)attrib->components; i += 4, loc++)
+			if (attribute.type == VertexType::Float)
 			{
-				int components = attrib->components - i;
-				if (components > 4)
-					components = 4;
-
-				GLenum type = GL_UNSIGNED_BYTE;
-				size_t component_size = 0;
-				if (attrib->type == VertexAttributeType::Byte)
-				{
-					type = GL_UNSIGNED_BYTE;
-					component_size = 1;
-				}
-				else if (attrib->type == VertexAttributeType::Short)
-				{
-					type = GL_SHORT;
-					component_size = 2;
-				}
-				else if (attrib->type == VertexAttributeType::Int)
-				{
-					type = GL_INT;
-					component_size = 4;
-				}
-				else if (attrib->type == VertexAttributeType::Float)
-				{
-					type = GL_FLOAT;
-					component_size = 4;
-				}
-
-				uint32_t location = (uint32_t)(attrib->index + loc);
-				gl.EnableVertexAttribArray(location);
-				gl.VertexAttribPointer(location, components, type, attrib->normalized, stride, (void*)ptr);
-				gl.VertexAttribDivisor(location, divisor);
-
-				ptr += components * component_size;
+				type = GL_FLOAT;
+				component_size = 4;
+				components = 1;
 			}
+			else if (attribute.type == VertexType::Float2)
+			{
+				type = GL_FLOAT;
+				component_size = 4;
+				components = 2;
+			}
+			else if (attribute.type == VertexType::Float3)
+			{
+				type = GL_FLOAT;
+				component_size = 4;
+				components = 3;
+			}
+			else if (attribute.type == VertexType::Float4)
+			{
+				type = GL_FLOAT;
+				component_size = 4;
+				components = 4;
+			}
+			else if (attribute.type == VertexType::Byte4)
+			{
+				type = GL_BYTE;
+				component_size = 1;
+				components = 4;
+			}
+			else if (attribute.type == VertexType::UByte4)
+			{
+				type = GL_UNSIGNED_BYTE;
+				component_size = 1;
+				components = 4;
+			}
+			else if (attribute.type == VertexType::Short2)
+			{
+				type = GL_SHORT;
+				component_size = 2;
+				components = 2;
+			}
+			else if (attribute.type == VertexType::UShort2)
+			{
+				type = GL_UNSIGNED_SHORT;
+				component_size = 2;
+				components = 2;
+			}
+			else if (attribute.type == VertexType::Short4)
+			{
+				type = GL_SHORT;
+				component_size = 2;
+				components = 4;
+			}
+			else if (attribute.type == VertexType::UShort4)
+			{
+				type = GL_UNSIGNED_SHORT;
+				component_size = 2;
+				components = 4;
+			}
+
+			uint32_t location = (uint32_t)(attribute.index);
+			gl.EnableVertexAttribArray(location);
+			gl.VertexAttribPointer(location, components, type, attribute.normalized, format.stride, (void*)ptr);
+			gl.VertexAttribDivisor(location, divisor);
+
+			ptr += components * component_size;
 		}
 
-		return stride;
+		return format.stride;
 	}
 
 	// convert blend op enum
@@ -552,12 +586,6 @@ namespace Blah
 			{
 				m_gl_internal_format = GL_RG;
 				m_gl_format = GL_RG;
-				m_gl_type = GL_UNSIGNED_BYTE;
-			}
-			else if (format == TextureFormat::RGB)
-			{
-				m_gl_internal_format = GL_RGB;
-				m_gl_format = GL_RGB;
 				m_gl_type = GL_UNSIGNED_BYTE;
 			}
 			else if (format == TextureFormat::RGBA)
@@ -779,7 +807,6 @@ namespace Blah
 		{
 			m_id = 0;
 
-			// vertex shader
 			if (data->vertex == nullptr)
 			{
 				Log::error("Vertex Shader is required");
@@ -819,33 +846,32 @@ namespace Blah
 
 				if (log_length > 0)
 				{
+					gl.DeleteShader(vertex_shader);
 					gl.DeleteShader(fragment_shader);
 					Log::error(log);
 					return;
 				}
 			}
 
+			// create actual shader program
 			GLuint id = gl.CreateProgram();
 			gl.AttachShader(id, vertex_shader);
 			gl.AttachShader(id, fragment_shader);
 			gl.LinkProgram(id);
 			gl.GetProgramInfoLog(id, 1024, &log_length, log);
+			gl.DetachShader(id, vertex_shader);
+			gl.DetachShader(id, fragment_shader);
+			gl.DeleteShader(vertex_shader);
+			gl.DeleteShader(fragment_shader);
 
 			if (log_length > 0)
 			{
-				gl.DetachShader(id, vertex_shader);
-				gl.DetachShader(id, fragment_shader);
-				gl.DeleteShader(vertex_shader);
-				gl.DeleteShader(fragment_shader);
-
 				Log::error(log);
 				return;
 			}
 
-			// ready to go
-			m_id = id;
-
 			// get uniforms
+			bool valid_uniforms = true;
 			{
 				const int max_name_length = 256;
 
@@ -876,32 +902,48 @@ namespace Blah
 					UniformInfo uniform;
 					uniform.name = name;
 					uniform.type = UniformType::None;
+					uniform.buffer_index = 0;
 					uniform.array_length = size;
 					uniform_locations.push_back(gl.GetUniformLocation(id, name));
 
-					if (type == GL_FLOAT)
-						uniform.type = UniformType::Float;
-					else if (type == GL_FLOAT_VEC2)
-						uniform.type = UniformType::Float2;
-					else if (type == GL_FLOAT_VEC3)
-						uniform.type = UniformType::Float3;
-					else if (type == GL_FLOAT_VEC4)
-						uniform.type = UniformType::Float4;
-					else if (type == GL_FLOAT_MAT3x2)
-						uniform.type = UniformType::Mat3x2;
-					else if (type == GL_FLOAT_MAT4)
-						uniform.type = UniformType::Mat4x4;
-					else if (type == GL_SAMPLER_2D)
+					if (type == GL_SAMPLER_2D)
+					{
 						uniform.type = UniformType::Texture;
+						uniform.shader = ShaderType::Fragment;
+					}
 					else
 					{
-						Log::error("Unsupported Uniform Type. Must be either FLOAT, MAT3x2, MAT4, or SAMPLER_2D");
-						break;
+						uniform.shader = (ShaderType)((int)ShaderType::Vertex | (int)ShaderType::Fragment);
+
+						if (type == GL_FLOAT)
+							uniform.type = UniformType::Float;
+						else if (type == GL_FLOAT_VEC2)
+							uniform.type = UniformType::Float2;
+						else if (type == GL_FLOAT_VEC3)
+							uniform.type = UniformType::Float3;
+						else if (type == GL_FLOAT_VEC4)
+							uniform.type = UniformType::Float4;
+						else if (type == GL_FLOAT_MAT3x2)
+							uniform.type = UniformType::Mat3x2;
+						else if (type == GL_FLOAT_MAT4)
+							uniform.type = UniformType::Mat4x4;
+						else
+						{
+							valid_uniforms = false;
+							Log::error("Unsupported Uniform Type");
+							break;
+						}
 					}
 
 					m_uniforms.push_back(uniform);
 				}
 			}
+
+			// assign ID if the uniforms were valid
+			if (!valid_uniforms)
+				gl.DeleteProgram(id);
+			else
+				m_id = id;
 		}
 
 		~OpenGL_Shader()
@@ -943,6 +985,8 @@ namespace Blah
 		uint8_t m_instance_attribs_enabled;
 		Vector<GLuint> m_vertex_attribs;
 		Vector<GLuint> m_instance_attribs;
+		GLenum m_index_format;
+		int m_index_size;
 
 	public:
 
@@ -981,31 +1025,17 @@ namespace Blah
 			return m_id;
 		}
 
-		virtual void vertex_format_internal(const VertexAttribute* attributes, int attribute_count, int stride = -1) override
+		GLenum gl_index_format() const
 		{
-			gl.BindVertexArray(m_id);
-			{
-				if (m_vertex_buffer == 0)
-					gl.GenBuffers(1, &(m_vertex_buffer));
-
-				m_vertex_size = gl_mesh_assign_attributes(m_vertex_buffer, GL_ARRAY_BUFFER, attributes, attribute_count, stride, 0);
-			}
-			gl.BindVertexArray(0);
+			return m_index_format;
 		}
 
-		virtual void instance_format_internal(const VertexAttribute* attributes, int attribute_count, int stride = -1) override
+		int gl_index_size() const
 		{
-			gl.BindVertexArray(m_id);
-			{
-				if (m_instance_buffer == 0)
-					gl.GenBuffers(1, &(m_instance_buffer));
-
-				m_instance_size = gl_mesh_assign_attributes(m_instance_buffer, GL_ARRAY_BUFFER, attributes, attribute_count, stride, 1);
-			}
-			gl.BindVertexArray(0);
+			return m_index_size;
 		}
 
-		virtual void index_data(const void* indices, int64_t count) override
+		virtual void index_data(IndexFormat format, const void* indices, int64_t count) override
 		{
 			m_index_count = count;
 
@@ -1014,48 +1044,64 @@ namespace Blah
 				if (m_index_buffer == 0)
 					gl.GenBuffers(1, &(m_index_buffer));
 
+				switch (format)
+				{
+				case IndexFormat::UInt16:
+					m_index_format = GL_UNSIGNED_SHORT;
+					m_index_size = 2;
+					break;
+				case IndexFormat::UInt32:
+					m_index_format = GL_UNSIGNED_INT;
+					m_index_size = 4;
+					break;
+				}
+
 				gl.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index_buffer);
-				gl.BufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * count, indices, GL_DYNAMIC_DRAW);
+				gl.BufferData(GL_ELEMENT_ARRAY_BUFFER, m_index_size * count, indices, GL_DYNAMIC_DRAW);
 			}
 			gl.BindVertexArray(0);
 		}
 
-		virtual void vertex_data(const void* vertices, int64_t count) override
+		virtual void vertex_data(const VertexFormat& format, const void* vertices, int64_t count) override
 		{
-			if (m_vertex_buffer == 0 || m_vertex_size <= 0)
-			{
-				Log::error("You must assign a Vertex Format before setting Vertex Data");
-			}
-			else
-			{
-				m_vertex_count = count;
+			m_vertex_count = count;
 
-				gl.BindVertexArray(m_id);
-				{
-					gl.BindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
-					gl.BufferData(GL_ARRAY_BUFFER, m_vertex_size * count, vertices, GL_DYNAMIC_DRAW);
-				}
-				gl.BindVertexArray(0);
+			gl.BindVertexArray(m_id);
+			{
+				// Create Buffer if it doesn't exist yet
+				if (m_vertex_buffer == 0)
+					gl.GenBuffers(1, &(m_vertex_buffer));
+
+				// TODO:
+				// Cache this
+				m_vertex_size = gl_mesh_assign_attributes(m_vertex_buffer, GL_ARRAY_BUFFER, format, 0);
+
+				// Upload Buffer
+				gl.BindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
+				gl.BufferData(GL_ARRAY_BUFFER, m_vertex_size * count, vertices, GL_DYNAMIC_DRAW);
 			}
+			gl.BindVertexArray(0);
 		}
 
-		virtual void instance_data(const void* instances, int64_t count) override
+		virtual void instance_data(const VertexFormat& format, const void* instances, int64_t count) override
 		{
-			if (m_instance_buffer == 0 || m_instance_size <= 0)
-			{
-				Log::error("You must assign an Instance Format before setting Instance Data");
-			}
-			else
-			{
-				m_instance_count = count;
+			m_instance_count = count;
 
-				gl.BindVertexArray(m_id);
-				{
-					gl.BindBuffer(GL_ARRAY_BUFFER, m_instance_buffer);
-					gl.BufferData(GL_ARRAY_BUFFER, m_instance_size * count, instances, GL_DYNAMIC_DRAW);
-				}
-				gl.BindVertexArray(0);
+			gl.BindVertexArray(m_id);
+			{
+				// Create Buffer if it doesn't exist yet
+				if (m_instance_buffer == 0)
+					gl.GenBuffers(1, &(m_instance_buffer));
+
+				// TODO:
+				// Cache this
+				m_instance_size = gl_mesh_assign_attributes(m_instance_buffer, GL_ARRAY_BUFFER, format, 1);
+
+				// Upload Buffer
+				gl.BindBuffer(GL_ARRAY_BUFFER, m_instance_buffer);
+				gl.BufferData(GL_ARRAY_BUFFER, m_instance_size * count, instances, GL_DYNAMIC_DRAW);
 			}
+			gl.BindVertexArray(0);
 		}
 
 		virtual int64_t index_count() const override
@@ -1222,6 +1268,7 @@ namespace Blah
 
 		// Use the Shader
 		// TODO: I don't love how material values are assigned or set here
+		// TODO: this should be cached?
 		{
 			gl.UseProgram(shader->gl_id());
 
@@ -1230,6 +1277,8 @@ namespace Blah
 			GLint texture_ids[64];
 
 			auto& uniforms = shader->uniforms();
+			auto data = pass.material->data();
+
 			for (int i = 0; i < uniforms.size(); i++)
 			{
 				auto location = shader->uniform_locations[i];
@@ -1258,36 +1307,44 @@ namespace Blah
 					}
 
 					gl.Uniform1iv(location, (GLint)uniform.array_length, &texture_ids[0]);
+					continue;
 				}
+
 				// Float
-				else if (uniform.type == UniformType::Float)
+				if (uniform.type == UniformType::Float)
 				{
-					gl.Uniform1fv(location, (GLint)uniform.array_length, (const GLfloat*)pass.material->get_value(i));
+					gl.Uniform1fv(location, (GLint)uniform.array_length, data);
+					data += uniform.array_length;
 				}
 				// Float2
 				else if (uniform.type == UniformType::Float2)
 				{
-					gl.Uniform2fv(location, (GLint)uniform.array_length, (const GLfloat*)pass.material->get_value(i));
+					gl.Uniform2fv(location, (GLint)uniform.array_length, data);
+					data += 2 * uniform.array_length;
 				}
 				// Float3
 				else if (uniform.type == UniformType::Float3)
 				{
-					gl.Uniform3fv(location, (GLint)uniform.array_length, (const GLfloat*)pass.material->get_value(i));
+					gl.Uniform3fv(location, (GLint)uniform.array_length, data);
+					data += 3 * uniform.array_length;
 				}
 				// Float4
 				else if (uniform.type == UniformType::Float4)
 				{
-					gl.Uniform4fv(location, (GLint)uniform.array_length, (const GLfloat*)pass.material->get_value(i));
+					gl.Uniform4fv(location, (GLint)uniform.array_length, data);
+					data += 4 * uniform.array_length;
 				}
 				// Matrix3x2
 				else if (uniform.type == UniformType::Mat3x2)
 				{
-					gl.UniformMatrix3x2fv(location, (GLint)uniform.array_length, 0, (const GLfloat*)pass.material->get_value(i));
+					gl.UniformMatrix3x2fv(location, (GLint)uniform.array_length, 0, data);
+					data += 6 * uniform.array_length;
 				}
 				// Matrix4x4
 				else if (uniform.type == UniformType::Mat4x4)
 				{
-					gl.UniformMatrix4fv(location, (GLint)uniform.array_length, 0, (const GLfloat*)pass.material->get_value(i));
+					gl.UniformMatrix4fv(location, (GLint)uniform.array_length, 0, data);
+					data += 16 * uniform.array_length;
 				}
 			}
 		}
@@ -1416,13 +1473,16 @@ namespace Blah
 		{
 			gl.BindVertexArray(mesh->gl_id());
 
+			GLenum index_format = mesh->gl_index_format();
+			int index_size = mesh->gl_index_size();
+
 			if (pass.instance_count > 0)
 			{
 				gl.DrawElementsInstanced(
 					GL_TRIANGLES,
 					(GLint)(pass.index_count),
-					GL_UNSIGNED_INT,
-					(void*)(sizeof(int) * pass.index_start),
+					index_format,
+					(void*)(index_size* pass.index_start),
 					(GLint)pass.instance_count);
 			}
 			else
@@ -1430,8 +1490,8 @@ namespace Blah
 				gl.DrawElements(
 					GL_TRIANGLES,
 					(GLint)(pass.index_count),
-					GL_UNSIGNED_INT,
-					(void*)(sizeof(int) * pass.index_start));
+					index_format,
+					(void*)(index_size * pass.index_start));
 			}
 
 			gl.BindVertexArray(0);

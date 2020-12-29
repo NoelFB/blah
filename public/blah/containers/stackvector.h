@@ -15,8 +15,10 @@ namespace Blah
 		int m_count;
 
 	public:
+		static inline constexpr size_t MaxCapacity = Capacity;
 
 		StackVector();
+		StackVector(const std::initializer_list<T>& init);
 		StackVector(const StackVector& src);
 		StackVector(StackVector&& src) noexcept;
 		~StackVector();
@@ -57,6 +59,14 @@ namespace Blah
 	inline StackVector<T, Capacity>::StackVector()
 	{
 		m_count = 0;
+	}
+
+	template<class T, size_t Capacity>
+	inline StackVector<T, Capacity>::StackVector(const std::initializer_list<T>& init)
+	{
+		m_count = 0;
+		for (auto& it : init)
+			push_back(it);
 	}
 
 	template<class T, size_t Capacity>

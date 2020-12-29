@@ -9,14 +9,16 @@ using namespace Blah;
 TextureRef Texture::create(const Image& image)
 {
 	auto tex = create(image.width, image.height, TextureFormat::RGBA);
-	tex->set_data((unsigned char*)image.pixels);
+	if (tex)
+		tex->set_data((unsigned char*)image.pixels);
 	return tex;
 }
 
 TextureRef Texture::create(int width, int height, unsigned char* rgba)
 {
 	auto tex = create(width, height, TextureFormat::RGBA);
-	tex->set_data(rgba);
+	if (tex)
+		tex->set_data(rgba);
 	return tex;
 }
 
@@ -35,10 +37,11 @@ TextureRef Texture::create(Stream& stream)
 {
 	Image img = Image(stream);
 
-	if (img.pixels != nullptr && img.width > 0 && img.height > 0)
+	if (img.pixels && img.width > 0 && img.height > 0)
 	{
 		auto tex = create(img.width, img.height, TextureFormat::RGBA);
-		tex->set_data((unsigned char*)img.pixels);
+		if (tex)
+			tex->set_data((unsigned char*)img.pixels);
 		return tex;
 	}
 
@@ -49,10 +52,11 @@ TextureRef Texture::create(const char* file)
 {
 	Image img = Image(file);
 
-	if (img.pixels != nullptr)
+	if (img.pixels)
 	{
 		auto tex = create(img.width, img.height, TextureFormat::RGBA);
-		tex->set_data((unsigned char*)img.pixels);
+		if (tex)
+			tex->set_data((unsigned char*)img.pixels);
 		return tex;
 	}
 

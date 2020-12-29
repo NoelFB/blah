@@ -8,52 +8,121 @@
 #include <blah/app.h>
 
 using namespace Blah;
+namespace
+{
 
-// TODO:
-// This shader needs to be graphics API agnostic
+	// TODO:
+	// This shader needs to be graphics API agnostic
 
-const ShaderData data = {
-	// vertex shader
-	"#version 330\n"
-	"uniform mat4 u_matrix;\n"
-	"layout(location=0) in vec2 a_position;\n"
-	"layout(location=1) in vec2 a_tex;\n"
-	"layout(location=2) in vec4 a_color;\n"
-	"layout(location=3) in vec3 a_type;\n"
-	"out vec2 v_tex;\n"
-	"out vec4 v_col;\n"
-	"out vec3 v_type;\n"
-	"void main(void)\n"
-	"{\n"
-	"	gl_Position = u_matrix * vec4(a_position.xy, 0, 1);\n"
-	"	v_tex = a_tex;\n"
-	"	v_col = a_color;\n"
-	"	v_type = a_type;\n"
-	"}",
+#ifdef BLAH_USE_OPENGL
 
-	// fragment shader
-	"#version 330\n"
-	"uniform sampler2D u_texture;\n"
-	"in vec2 v_tex;\n"
-	"in vec4 v_col;\n"
-	"in vec3 v_type;\n"
-	"out vec4 o_color;\n"
-	"void main(void)\n"
-	"{\n"
-	"	vec4 color = texture(u_texture, v_tex);\n"
-	"	o_color = \n"
-	"		v_type.x * color * v_col + \n"
-	"		v_type.y * color.a * v_col + \n"
-	"		v_type.z * v_col;\n"
-	"}"
-};
+	const ShaderData shader_data = {
+		// vertex shader
+		"#version 330\n"
+		"uniform mat4 u_matrix;\n"
+		"layout(location=0) in vec2 a_position;\n"
+		"layout(location=1) in vec2 a_tex;\n"
+		"layout(location=2) in vec4 a_color;\n"
+		"layout(location=3) in vec4 a_type;\n"
+		"out vec2 v_tex;\n"
+		"out vec4 v_col;\n"
+		"out vec4 v_type;\n"
+		"void main(void)\n"
+		"{\n"
+		"	gl_Position = u_matrix * vec4(a_position.xy, 0, 1);\n"
+		"	v_tex = a_tex;\n"
+		"	v_col = a_color;\n"
+		"	v_type = a_type;\n"
+		"}",
 
-const VertexAttribute attributes[4] = {
-	{ 0, VertexSemantics::Position, VertexAttributeType::Float, 2, false },
-	{ 1, VertexSemantics::Texcoord0, VertexAttributeType::Float, 2, false },
-	{ 2, VertexSemantics::Color0, VertexAttributeType::Byte, 4, true },
-	{ 3, VertexSemantics::Texcoord1, VertexAttributeType::Byte, 3, true },
-};
+		// fragment shader
+		"#version 330\n"
+		"uniform sampler2D u_texture;\n"
+		"in vec2 v_tex;\n"
+		"in vec4 v_col;\n"
+		"in vec4 v_type;\n"
+		"out vec4 o_color;\n"
+		"void main(void)\n"
+		"{\n"
+		"	vec4 color = texture(u_texture, v_tex);\n"
+		"	o_color = \n"
+		"		v_type.x * color * v_col + \n"
+		"		v_type.y * color.a * v_col + \n"
+		"		v_type.z * v_col;\n"
+		"}"
+	};
+
+#elif BLAH_USE_D3D11
+
+	const char* d3d11_shader = ""
+		"cbuffer constants : register(b0)\n"
+		"{\n"
+		"	row_major float4x4 u_matrix;\n"
+		"}\n"
+
+		"struct vs_in\n"
+		"{\n"
+		"	float2 position : POS;\n"
+		"	float2 texcoord : TEX;\n"
+		"	float4 color : COL;\n"
+		"	float4 mask : MASK;\n"
+		"};\n"
+
+		"struct vs_out\n"
+		"{\n"
+		"	float4 position : SV_POSITION;\n"
+		"	float2 texcoord : TEX;\n"
+		"	float4 color : COL;\n"
+		"	float4 mask : MASK;\n"
+		"};\n"
+
+		"Texture2D    u_texture : register(t0);\n"
+		"SamplerState u_sampler : register(s0);\n"
+
+		"vs_out vs_main(vs_in input)\n"
+		"{\n"
+		"	vs_out output;\n"
+
+		"	output.position = mul(float4(input.position, 0.0f, 1.0f), u_matrix);\n"
+		"	output.texcoord = input.texcoord;\n"
+		"	output.color = input.color;\n"
+		"	output.mask = input.mask;\n"
+
+		"	return output;\n"
+		"}\n"
+
+		"float4 ps_main(vs_out input) : SV_TARGET\n"
+		"{\n"
+		"	float4 color = u_texture.Sample(u_sampler, input.texcoord);\n"
+		"	return\n"
+		"		input.mask.x * color * input.color + \n"
+		"		input.mask.y * color.a * input.color + \n"
+		"		input.mask.z * input.color;\n"
+		"}\n";
+
+	const ShaderData shader_data = {
+		d3d11_shader,
+		d3d11_shader,
+		{
+			{ "POS", 0 },
+			{ "TEX", 0 },
+			{ "COL", 0 },
+			{ "MASK", 0 },
+		}
+	};
+
+#else
+	const ShaderData shader_data;
+#endif
+
+	const VertexFormat format = VertexFormat(
+		{
+			{ 0, VertexType::Float2, false },
+			{ 1, VertexType::Float2, false },
+			{ 2, VertexType::UByte4, true },
+			{ 3, VertexType::UByte4, true },
+		});
+}
 
 namespace
 {
@@ -84,13 +153,13 @@ namespace
 #define PUSH_QUAD(px0, py0, px1, py1, px2, py2, px3, py3, tx0, ty0, tx1, ty1, tx2, ty2, tx3, ty3, col0, col1, col2, col3, mult, fill, wash) \
 	{ \
 		m_batch.elements += 2; \
-		int* _i = m_indices.expand(6); \
-		*_i++ = (int)m_vertices.size() + 0; \
-		*_i++ = (int)m_vertices.size() + 1; \
-		*_i++ = (int)m_vertices.size() + 2; \
-		*_i++ = (int)m_vertices.size() + 0; \
-		*_i++ = (int)m_vertices.size() + 2; \
-		*_i++ = (int)m_vertices.size() + 3; \
+		auto _i = m_indices.expand(6); \
+		*_i++ = (uint32_t)m_vertices.size() + 0; \
+		*_i++ = (uint32_t)m_vertices.size() + 1; \
+		*_i++ = (uint32_t)m_vertices.size() + 2; \
+		*_i++ = (uint32_t)m_vertices.size() + 0; \
+		*_i++ = (uint32_t)m_vertices.size() + 2; \
+		*_i++ = (uint32_t)m_vertices.size() + 3; \
 		Vertex* _v = m_vertices.expand(4); \
 		MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash); _v++; \
 		MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash); _v++; \
@@ -101,10 +170,10 @@ namespace
 #define PUSH_TRIANGLE(px0, py0, px1, py1, px2, py2, tx0, ty0, tx1, ty1, tx2, ty2, col0, col1, col2, mult, fill, wash) \
 	{ \
 		m_batch.elements += 1; \
-		int* _i = m_indices.expand(3); \
-		*_i++ = (int)m_vertices.size() + 0; \
-		*_i++ = (int)m_vertices.size() + 1; \
-		*_i++ = (int)m_vertices.size() + 2; \
+		auto* _i = m_indices.expand(3); \
+		*_i++ = (uint32_t)m_vertices.size() + 0; \
+		*_i++ = (uint32_t)m_vertices.size() + 1; \
+		*_i++ = (uint32_t)m_vertices.size() + 2; \
 		Vertex* _v = m_vertices.expand(3); \
 		MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash); _v++; \
 		MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash); _v++; \
@@ -126,8 +195,6 @@ ShaderRef Batch::m_default_shader;
 Batch::Batch()
 {
 	matrix_uniform = "u_matrix";
-	texture_uniform = "u_texture";
-
 	clear();
 }
 
@@ -292,21 +359,18 @@ void Batch::render(const FrameBufferRef& target, const Mat4x4& matrix)
 	// define defaults
 	{
 		if (!m_mesh)
-		{
 			m_mesh = Mesh::create();
-			m_mesh->vertex_format(attributes, 4, sizeof(Vertex));
-		}
 
 		if (!m_default_shader)
-			m_default_shader = Shader::create(&data);
+			m_default_shader = Shader::create(&shader_data);
 
 		if (!m_default_material)
 			m_default_material = Material::create(m_default_shader);
 	}
 
 	// upload data
-	m_mesh->index_data(m_indices.data(), m_indices.size());
-	m_mesh->vertex_data(m_vertices.data(), m_vertices.size());
+	m_mesh->index_data(IndexFormat::UInt32, m_indices.data(), m_indices.size());
+	m_mesh->vertex_data(format, m_vertices.data(), m_vertices.size());
 
 	RenderPass pass;
 	pass.target = target;
@@ -330,7 +394,7 @@ void Batch::render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4
 	if (!pass.material)
 		pass.material = m_default_material;
 
-	pass.material->set_texture(texture_uniform, b.texture, 0);
+	pass.material->set_texture(0, b.texture, 0);
 	pass.material->set_value(matrix_uniform, &matrix.m11, 16);
 	
 	pass.blend = b.blend;

@@ -22,7 +22,6 @@ namespace Blah
 		None,
 		R,
 		RG,
-		RGB,
 		RGBA,
 		DepthStencil,
 		Count

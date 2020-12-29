@@ -3,55 +3,38 @@
 
 using namespace Blah;
 
+
 MeshRef Mesh::create()
 {
 	return GraphicsBackend::create_mesh();
 }
 
-void Mesh::vertex_format(const VertexAttribute* attributes, int attribute_count, int stride)
+VertexFormat::VertexFormat(std::initializer_list<VertexAttribute> attributes, int stride)
 {
-	if (stride < 0)
+	for (auto& it : attributes)
+		this->attributes.push_back(it);
+
+	if (stride <= 0)
 	{
 		stride = 0;
 
-		for (int n = 0; n < attribute_count; n++)
+		for (auto& it : attributes)
 		{
-			const VertexAttribute* attrib = (attributes + n);
-
-			if (attrib->type == VertexAttributeType::Byte)
-				stride += attrib->components * 1;
-			else if (attrib->type == VertexAttributeType::Short)
-				stride += attrib->components * 2;
-			else if (attrib->type == VertexAttributeType::Int)
-				stride += attrib->components * 4;
-			else if (attrib->type == VertexAttributeType::Float)
-				stride += attrib->components * 4;
+			switch (it.type)
+			{
+			case VertexType::Float: stride += 4; break;
+			case VertexType::Float2: stride += 8; break;
+			case VertexType::Float3: stride += 12; break;
+			case VertexType::Float4: stride += 16; break;
+			case VertexType::Byte4: stride += 4; break;
+			case VertexType::UByte4: stride += 4; break;
+			case VertexType::Short2: stride += 4; break;
+			case VertexType::UShort2: stride += 4; break;
+			case VertexType::Short4: stride += 8; break;
+			case VertexType::UShort4: stride += 8; break;
+			}
 		}
 	}
 
-	vertex_format_internal(attributes, attribute_count, stride);
-}
-
-void Mesh::instance_format(const VertexAttribute* attributes, int attribute_count, int stride)
-{
-	if (stride < 0)
-	{
-		stride = 0;
-
-		for (int n = 0; n < attribute_count; n++)
-		{
-			const VertexAttribute* attrib = (attributes + n);
-
-			if (attrib->type == VertexAttributeType::Byte)
-				stride += attrib->components * 1;
-			else if (attrib->type == VertexAttributeType::Short)
-				stride += attrib->components * 2;
-			else if (attrib->type == VertexAttributeType::Int)
-				stride += attrib->components * 4;
-			else if (attrib->type == VertexAttributeType::Float)
-				stride += attrib->components * 4;
-		}
-	}
-
-	instance_format_internal(attributes, attribute_count, stride);
+	this->stride = stride;
 }

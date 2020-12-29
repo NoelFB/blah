@@ -103,12 +103,13 @@ add_library(blah
 	private/blah/third_party/stb_truetype.h
 	private/blah/internal/graphics_backend.h
 	private/blah/internal/graphics_backend_gl.cpp
+	private/blah/internal/graphics_backend_d3d11.cpp
 	private/blah/internal/input_backend.h
 	private/blah/internal/platform_backend.h
 	private/blah/internal/platform_backend_sdl2.cpp
 )
 
-target_include_directories(blah
+target_include_directories(blah 
 	PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
 	PRIVATE
@@ -119,16 +120,27 @@ target_include_directories(blah
 set(SDL2_ENABLED true CACHE BOOL "Use SDL2 as the System implementation")
 set(SDL2_INCLUDE_DIRS "" CACHE FILEPATH "SDL2 Headers")
 set(SDL2_LIBRARIES "" CACHE FILEPATH "SDL2 Headers")
-set(OPENGL_ENABLED true CACHE BOOL "Include OpenGL graphics implementation")
+set(OPENGL_ENABLED true CACHE BOOL "Use OpenGL graphics implementation")
+set(D3D11_ENABLED false CACHE BOOL "Use D3D11 graphics implementation")
+
+set(LIBS "")
 
 # add OpenGL definition if we're using OpenGL
 if (OPENGL_ENABLED)
 	add_compile_definitions(BLAH_USE_OPENGL)
 endif()
 
+# add D3D11 definition if we're using OpenGL
+if (D3D11_ENABLED)
+	add_compile_definitions(BLAH_USE_D3D11)
+	set(LIBS ${LIBS} d3d11.lib dxguid.lib D3Dcompiler.lib)
+endif()
+
 # Link and create SDL2 Definition if we're using SDL2
 if (SDL2_ENABLED)
 	add_compile_definitions(BLAH_USE_SDL2)
 	target_include_directories(blah PUBLIC "$<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>")
-	target_link_libraries(blah PUBLIC ${SDL2_LIBRARIES})
+	set(LIBS ${LIBS} ${SDL2_LIBRARIES})
 endif()
+
+target_link_libraries(blah PUBLIC ${LIBS})

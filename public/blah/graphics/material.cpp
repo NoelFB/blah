@@ -42,7 +42,6 @@ Material::Material(const ShaderRef& shader)
 	m_shader = shader;
 
 	auto& uniforms = shader->uniforms();
-	Vector<int> float_offsets;
 	int float_size = 0;
 
 	for (auto& uniform : uniforms)
@@ -57,13 +56,10 @@ Material::Material(const ShaderRef& shader)
 			continue;
 		}
 
-		float_offsets.push_back(float_size);
 		float_size += calc_uniform_size(uniform);
 	}
 
 	m_data.expand(float_size);
-	for (auto& it : float_offsets)
-		m_floats.push_back(m_data.begin() + it);
 }
 
 const ShaderRef Material::shader() const
@@ -75,27 +71,48 @@ void Material::set_texture(const char* name, const TextureRef& texture, int inde
 {
 	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 
-	if (m_textures.size() > 0)
+	int offset = 0;
+	for (auto& uniform : m_shader->uniforms())
 	{
-		int offset = 0;
-		for (auto& uniform : m_shader->uniforms())
+		if (uniform.type != UniformType::Texture)
+			continue;
+
+		if (strcmp(uniform.name, name) == 0)
 		{
-			if (uniform.type != UniformType::Texture)
-				continue;
-
-			if (strcmp(uniform.name, name) == 0)
-			{
-				m_textures[offset + index] = texture;
-				return;
-			}
-
-			offset += uniform.array_length;
-			if (offset + index >= m_textures.size())
-				break;
+			m_textures[offset + index] = texture;
+			return;
 		}
+
+		offset += uniform.array_length;
+		if (offset + index >= m_textures.size())
+			break;
 	}
 
 	Log::warn("No Texture Uniform '%s' at index [%i] exists", name, index);
+}
+
+void Material::set_texture(int slot, const TextureRef& texture, int index)
+{
+	BLAH_ASSERT(m_shader, "Material Shader is invalid");
+
+	int s = 0;
+	int offset = 0;
+	for (auto& uniform : m_shader->uniforms())
+	{
+		if (uniform.type == UniformType::Texture)
+		{
+			if (s == slot)
+			{
+				if (index > uniform.array_length)
+					break;
+
+				m_textures[offset + index] = texture;
+				break;
+			}
+			offset += uniform.array_length;
+			s++;
+		}
+	}
 }
 
 TextureRef Material::get_texture(const char* name, int index) const
@@ -124,14 +141,19 @@ TextureRef Material::get_texture(int slot, int index) const
 {
 	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 
-	int offset = 0;
 	int s = 0;
+	int offset = 0;
 	for (auto& uniform : m_shader->uniforms())
 	{
 		if (uniform.type == UniformType::Texture)
 		{
 			if (s == slot)
+			{
+				if (index > uniform.array_length)
+					break;
+
 				return m_textures[offset + index];
+			}
 
 			offset += uniform.array_length;
 			if (offset + index >= m_textures.size())
@@ -151,6 +173,7 @@ void Material::set_value(const char* name, const float* value, int64_t length)
 	BLAH_ASSERT(length >= 0, "Length must be >= 0");
 
 	int index = 0;
+	int offset = 0;
 	for (auto& uniform : m_shader->uniforms())
 	{
 		if (uniform.type == UniformType::Texture || uniform.type == UniformType::None)
@@ -165,10 +188,11 @@ void Material::set_value(const char* name, const float* value, int64_t length)
 				length = max;
 			}
 
-			memcpy(m_floats[index], value, sizeof(float) * length);
+			memcpy(m_data.begin() + offset, value, sizeof(float) * length);
 			return;
 		}
 
+		offset += calc_uniform_size(uniform);
 		index++;
 	}
 
@@ -180,6 +204,7 @@ const float* Material::get_value(const char* name, int64_t* length) const
 	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 
 	int index = 0;
+	int offset = 0;
 	for (auto& uniform : m_shader->uniforms())
 	{
 		if (uniform.type == UniformType::Texture || uniform.type == UniformType::None)
@@ -189,10 +214,11 @@ const float* Material::get_value(const char* name, int64_t* length) const
 		{
 			if (length != nullptr)
 				*length = calc_uniform_size(uniform);
-			return m_floats[index];
+			return m_data.begin() + offset;
 		}
 
 		index++;
+		offset += calc_uniform_size(uniform);
 	}
 
 	*length = 0;
@@ -200,29 +226,12 @@ const float* Material::get_value(const char* name, int64_t* length) const
 	Log::warn("No Uniform '%s' exists", name);
 }
 
-const float* Material::get_value(int slot, int64_t* length) const
+const Vector<TextureRef>& Material::textures() const
 {
-	BLAH_ASSERT(m_shader, "Material Shader is invalid");
+	return m_textures;
+}
 
-	int index = 0;
-	int s = 0;
-	for (auto& uniform : m_shader->uniforms())
-	{
-		if (uniform.type != UniformType::Texture && uniform.type != UniformType::None)
-		{
-			if (index == slot)
-			{
-				if (length != nullptr)
-					*length = calc_uniform_size(uniform);
-				return m_floats[index];
-			}
-			index++;
-		}
-
-		s++;
-	}
-
-	Log::warn("No Uniform [%i] exists", slot);
-	*length = 0;
-	return nullptr;
+const float* Material::data() const
+{
+	return m_data.begin();
 }

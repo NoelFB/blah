@@ -5,6 +5,7 @@
 
 namespace Blah
 {
+	// Supported Uniform Types
 	enum class UniformType
 	{
 		None,
@@ -17,17 +18,54 @@ namespace Blah
 		Texture
 	};
 
+	// Supported Shader Types
+	enum class ShaderType
+	{
+		None		= 0,
+		Vertex		= 1 << 0,
+		Fragment	= 1 << 1
+	};
+
+	// Uniform Info, provided by the Shader
 	struct UniformInfo
 	{
+		// Name of the Uniform
 		String name;
+
+		// The Value type of the Uniform
 		UniformType type;
+
+		// The Shader type the Uniform is a part of
+		ShaderType shader;
+
+		// Some rendering APIs have uniform buffers. The `buffer_index`
+		// specifies which buffer the uniform belongs to
+		int buffer_index;
+
+		// Array length of the Uniform (ex. a vec2[4] would be 4)
 		int array_length;
 	};
 
+	// Data to be passed to the shader to construct it
 	struct ShaderData
 	{
+		struct HLSL_Attribute
+		{
+			// Semantic Name
+			const char* semantic_name = nullptr;
+
+			// (optional) Semantic Index
+			int semantic_index = 0;
+		};
+
+		// Vertex Shader Program data
 		const char* vertex;
+
+		// Fragment Shader Program data
 		const char* fragment;
+
+		// HLSL Attributes - required for D3D11
+		StackVector<HLSL_Attribute, 16> hlsl_attributes;
 	};
 
 	class Shader;

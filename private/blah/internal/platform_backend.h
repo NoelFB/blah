@@ -113,5 +113,8 @@ namespace Blah
 		void* gl_context_create();
 		void gl_context_make_current(void* context);
 		void gl_context_destroy(void* context);
+
+		// D3D11 Methods
+		void* d3d11_get_hwnd();
 	}
 }
