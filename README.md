@@ -6,15 +6,18 @@ this will likely see breaking changes.
 
 #### building
  - Requires C++17 and CMake
- - The [SDL2 platform backend](https://github.com/NoelFB/blah/blob/master/private/blah/internal/platform_backend_sdl2.cpp) can be enabled in CMake with `SDL2_ENABLED`, and setting `SDL2_INCLUDE_DIRS` and `SDL2_LIBRARIES`
- - The [OpenGL graphics backend](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend_gl.cpp) can be enabled in CMake with `OPENGL_ENABLED`.
+ - Platform Backend
+	- [SDL2](https://github.com/NoelFB/blah/blob/master/private/blah/internal/platform_backend_sdl2.cpp) can be enabled in CMake with `SDL2_ENABLED`, and setting `SDL2_INCLUDE_DIRS` and `SDL2_LIBRARIES`
+ - Graphics Backend
+	- [OpenGL](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend_gl.cpp) can be enabled in CMake with `OPENGL_ENABLED`.
+	- [D3D11](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend_d3d11.cpp) can be enabled in CMake with `D3D11_ENABLED`.
  - Other backends can be added by implementing the [Platform Backend](https://github.com/NoelFB/blah/blob/master/private/blah/internal/platform_backend.h) or [Graphics Backend](https://github.com/NoelFB/blah/blob/master/private/blah/internal/graphics_backend.h).
 
 #### notes
- - There's no Shader abstraction, so the [Sprite Batcher](https://github.com/NoelFB/blah/blob/master/public/blah/drawing/batch.h) has hard-coded GLSL. This will need to change.
- - The rendering layer may be replaced with [FNA3D](https://github.com/FNA-XNA/FNA3D), [BGFX](https://github.com/bkaradzic/bgfx), [Sokol](https://github.com/floooh/sokol), etc, or I may attempt to write custom backends for D3D11/Metal/Vulkan myself, like the OpenGL backend.
+ - There's no Shader abstraction, so the [Sprite Batcher](https://github.com/NoelFB/blah/blob/master/public/blah/drawing/batch.h) has hard-coded GLSL/HLSL. This will need to change.
+ - Only floatN/mat3x2/mat4x4 uniforms are supported.
  - There's no Audio API or backend implementation yet.
- - No threaded rendering so the OpenGL implementation will explode if you try that
+ - No threaded rendering so it will explode if you try that.
 
 #### a sample application
 
