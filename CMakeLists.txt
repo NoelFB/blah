@@ -104,6 +104,7 @@ add_library(blah
 	private/blah/internal/graphics_backend.h
 	private/blah/internal/graphics_backend_gl.cpp
 	private/blah/internal/graphics_backend_d3d11.cpp
+	private/blah/internal/graphics_backend_dummy.cpp
 	private/blah/internal/input_backend.h
 	private/blah/internal/platform_backend.h
 	private/blah/internal/platform_backend_sdl2.cpp
