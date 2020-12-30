@@ -807,13 +807,13 @@ namespace Blah
 		{
 			m_id = 0;
 
-			if (data->vertex == nullptr)
+			if (data->vertex.length() <= 0)
 			{
 				Log::error("Vertex Shader is required");
 				return;
 			}
 
-			if (data->fragment == nullptr)
+			if (data->fragment.length() <= 0)
 			{
 				Log::error("Fragment Shader is required");
 				return;
@@ -824,7 +824,7 @@ namespace Blah
 
 			GLuint vertex_shader = gl.CreateShader(GL_VERTEX_SHADER);
 			{
-				const GLchar* source = (const GLchar*)data->vertex;
+				const GLchar* source = (const GLchar*)data->vertex.cstr();
 				gl.ShaderSource(vertex_shader, 1, &source, nullptr);
 				gl.CompileShader(vertex_shader);
 				gl.GetShaderInfoLog(vertex_shader, 1024, &log_length, log);
@@ -839,7 +839,7 @@ namespace Blah
 
 			GLuint fragment_shader = gl.CreateShader(GL_FRAGMENT_SHADER);
 			{
-				const GLchar* source = (const GLchar*)data->fragment;
+				const GLchar* source = (const GLchar*)data->fragment.cstr();
 				gl.ShaderSource(fragment_shader, 1, &source, nullptr);
 				gl.CompileShader(fragment_shader);
 				gl.GetShaderInfoLog(fragment_shader, 1024, &log_length, log);

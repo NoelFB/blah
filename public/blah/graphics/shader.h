@@ -59,10 +59,10 @@ namespace Blah
 		};
 
 		// Vertex Shader Program data
-		const char* vertex;
+		String vertex;
 
 		// Fragment Shader Program data
-		const char* fragment;
+		String fragment;
 
 		// HLSL Attributes - required for D3D11
 		StackVector<HLSL_Attribute, 16> hlsl_attributes;

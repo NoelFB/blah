@@ -24,34 +24,63 @@ namespace Blah
 
 	struct D3D11
 	{
+		// main resources
 		ID3D11Device* device = nullptr;
 		ID3D11DeviceContext* context = nullptr;
 		IDXGISwapChain* swap_chain = nullptr;
 		ID3D11RenderTargetView* backbuffer = nullptr;
-		ID3D11RasterizerState* rasterizer = nullptr;
-		ID3D11SamplerState* sampler = nullptr;
-		ID3D11DepthStencilState* depth_state = nullptr;
+
+		// supported renderer features
 		RendererFeatures features;
+
+		// last backbuffer size
 		Point last_size;
 
-		struct InputLayoutEntry
+		struct StoredInputLayout
 		{
 			uint32_t shader_hash;
 			VertexFormat format;
 			ID3D11InputLayout* layout;
 		};
 
-		struct BlendStateEntry
+		struct StoredBlendState
 		{
 			BlendMode blend;
 			ID3D11BlendState* state;
 		};
 
-		Vector<InputLayoutEntry> layout_cache;
-		Vector<BlendStateEntry> blend_cache;
+		struct StoredRasterizer
+		{
+			Cull cull;
+			bool has_scissor;
+			ID3D11RasterizerState* state;
+		};
+
+		struct StoredSampler
+		{
+			TextureFilter filter;
+			TextureWrap wrap_x;
+			TextureWrap wrap_y;
+			ID3D11SamplerState* state;
+		};
+
+		struct StoredDepthStencil
+		{
+			Compare depth;
+			ID3D11DepthStencilState* state;
+		};
+
+		Vector<StoredInputLayout> layout_cache;
+		Vector<StoredBlendState> blend_cache;
+		Vector<StoredRasterizer> rasterizer_cache;
+		Vector<StoredSampler> sampler_cache;
+		Vector<StoredDepthStencil> depthstencil_cache;
 
 		ID3D11InputLayout* get_layout(D3D11_Shader* shader, const VertexFormat& format);
 		ID3D11BlendState* get_blend(const BlendMode& blend);
+		ID3D11RasterizerState* get_rasterizer(const RenderPass& pass);
+		ID3D11SamplerState* get_sampler(const TextureRef& texture);
+		ID3D11DepthStencilState* get_depthstencil(const RenderPass& pass);
 	};
 
 	D3D11 state;
@@ -338,7 +367,7 @@ namespace Blah
 
 		virtual void get_data(unsigned char* data) override
 		{
-
+			BLAH_ASSERT(false, "Not Implemented Yet");
 		}
 
 		virtual bool is_framebuffer() const override
@@ -451,8 +480,8 @@ namespace Blah
 			// compile vertex shader
 			{
 				hr = D3DCompile(
-					data->vertex,
-					strlen(data->vertex),
+					data->vertex.cstr(),
+					data->vertex.length(),
 					nullptr,
 					nullptr,
 					nullptr,
@@ -478,8 +507,8 @@ namespace Blah
 			// compile fragment shader
 			{
 				hr = D3DCompile(
-					data->fragment,
-					strlen(data->fragment),
+					data->fragment.cstr(),
+					data->fragment.length(),
 					nullptr,
 					nullptr,
 					nullptr,
@@ -744,9 +773,9 @@ namespace Blah
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
 		desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		desc.BufferCount = 2;
+		desc.BufferCount = 1;
 		desc.OutputWindow = (HWND)PlatformBackend::d3d11_get_hwnd();
-		desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+		//desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		desc.Windowed = true;
 
 		D3D_FEATURE_LEVEL feature_level;
@@ -938,28 +967,27 @@ namespace Blah
 			}
 
 			// Depth
-			// TODO: Doesn't actually assign proper values
-			// TODO: Cache this
 			{
-				if (state.depth_state)
-					state.depth_state->Release();
-
-				D3D11_DEPTH_STENCIL_DESC desc = {};
-				desc.DepthEnable = FALSE;
-				desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-				desc.DepthFunc = D3D11_COMPARISON_NEVER;
-
-				state.device->CreateDepthStencilState(&desc, &state.depth_state);
-				ctx->OMSetDepthStencilState(state.depth_state, 0);
+				auto depthstencil = state.get_depthstencil(pass);
+				if (depthstencil)
+					ctx->OMSetDepthStencilState(depthstencil, 0);
 			}
 
 			// Blend Mode
 			{
 				auto blend = state.get_blend(pass.blend);
-				auto color = Color::from_rgba(pass.blend.rgba);
-				float factor[4]{ color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f };
-				auto mask = 0xffffffff;
-				ctx->OMSetBlendState(blend, factor, mask);
+				if (blend)
+				{
+					auto color = Color::from_rgba(pass.blend.rgba);
+					float factor[4]{ color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f };
+					auto mask = 0xffffffff;
+					ctx->OMSetBlendState(blend, factor, mask);
+				}
+				else
+				{
+					// if we failed to create a blend mode for some reason
+					ctx->OMSetBlendState(nullptr, nullptr, 0);
+				}
 			}
 		}
 
@@ -1027,21 +1055,24 @@ namespace Blah
 			}
 
 			// Sampler
-			// TODO: Doesn't actually assign proper values
-			// TODO: Cache this
+
+			// TODO:
+			// This is incorrect! Textures and Samplers are separate in HLSL.
+			// For now, just assuming there's only 1 Sampler and we set it to
+			// the properties of the first Texture ...
+
+			// I think most modern APIs separate these, where as OpenGL makes
+			// them the same (afaik). Either we need to separate these in our
+			// API, or find some work around here.
+			
+			// I think our API should change to add Samplers as a unique resource,
+			// which matches D3D11 (and I assume Metal / Vulkan)
+
+			if (textures.size() > 0 && textures[0])
 			{
-				if (state.sampler)
-					state.sampler->Release();
-
-				D3D11_SAMPLER_DESC samplerDesc = {};
-				samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-				samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-				samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-				samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-				samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-
-				state.device->CreateSamplerState(&samplerDesc, &state.sampler);
-				ctx->PSSetSamplers(0, 1, &state.sampler);
+				auto sampler = state.get_sampler(textures[0]);
+				if (sampler)
+					ctx->PSSetSamplers(0, 1, &sampler);
 			}
 		}
 
@@ -1072,26 +1103,10 @@ namespace Blah
 			}
 
 			// Rasterizer
-			// TODO: Doesn't actually assign proper values
-			// TODO: Cache this
 			{
-				if (state.rasterizer)
-					state.rasterizer->Release();
-
-				D3D11_RASTERIZER_DESC rasterizerDesc = {};
-				rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-				rasterizerDesc.CullMode = D3D11_CULL_NONE;
-				rasterizerDesc.FrontCounterClockwise = true;
-				rasterizerDesc.DepthBias = 0;
-				rasterizerDesc.DepthBiasClamp = 0;
-				rasterizerDesc.SlopeScaledDepthBias = 0;
-				rasterizerDesc.DepthClipEnable = false;
-				rasterizerDesc.ScissorEnable = pass.has_scissor;
-				rasterizerDesc.MultisampleEnable = false;
-				rasterizerDesc.AntialiasedLineEnable = false;
-
-				state.device->CreateRasterizerState(&rasterizerDesc, &state.rasterizer);
-				ctx->RSSetState(state.rasterizer);
+				auto rasterizer = state.get_rasterizer(pass);
+				if (rasterizer)
+					ctx->RSSetState(rasterizer);
 			}
 		}
 
@@ -1251,6 +1266,136 @@ namespace Blah
 			entry->blend = blend;
 			entry->state = blend_state;
 			return blend_state;
+		}
+
+		return nullptr;
+	}
+
+	ID3D11SamplerState* D3D11::get_sampler(const TextureRef& texture)
+	{
+		auto filter = texture->get_filter();
+		auto wrap_x = texture->get_wrap_x();
+		auto wrap_y = texture->get_wrap_y();
+
+		for (auto& it : sampler_cache)
+			if (it.filter == filter && it.wrap_x == wrap_x && it.wrap_y == wrap_y)
+				return it.state;
+
+		D3D11_SAMPLER_DESC desc = {};
+		desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+		desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+
+		switch (filter)
+		{
+		case TextureFilter::Nearest: desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT; break;
+		case TextureFilter::Linear: desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; break;
+		}
+
+		switch (wrap_x)
+		{
+		case TextureWrap::Clamp: desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP; break;
+		case TextureWrap::Repeat: desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP; break;
+		}
+
+		switch (wrap_y)
+		{
+		case TextureWrap::Clamp: desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP; break;
+		case TextureWrap::Repeat: desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP; break;
+		}
+		
+		ID3D11SamplerState* result;
+		auto hr = state.device->CreateSamplerState(&desc, &result);
+
+		if (SUCCEEDED(hr))
+		{
+			auto entry = sampler_cache.expand();
+			entry->filter = filter;
+			entry->wrap_x = wrap_x;
+			entry->wrap_y = wrap_y;
+			entry->state = result;
+			return result;
+		}
+
+		return nullptr;
+	}
+
+	ID3D11RasterizerState* D3D11::get_rasterizer(const RenderPass& pass)
+	{
+		for (auto& it : rasterizer_cache)
+			if (it.cull == pass.cull && it.has_scissor == pass.has_scissor)
+				return it.state;
+
+		D3D11_RASTERIZER_DESC desc = {};
+		desc.FillMode = D3D11_FILL_SOLID;
+		desc.CullMode = D3D11_CULL_NONE;
+
+		switch (pass.cull)
+		{
+		case Cull::None: desc.CullMode = D3D11_CULL_NONE; break;
+		case Cull::Front: desc.CullMode = D3D11_CULL_FRONT; break;
+		case Cull::Back: desc.CullMode = D3D11_CULL_BACK; break;
+		}
+
+		desc.FrontCounterClockwise = true;
+		desc.DepthBias = 0;
+		desc.DepthBiasClamp = 0;
+		desc.SlopeScaledDepthBias = 0;
+		desc.DepthClipEnable = false;
+		desc.ScissorEnable = pass.has_scissor;
+		desc.MultisampleEnable = false;
+		desc.AntialiasedLineEnable = false;
+
+		ID3D11RasterizerState* result;
+		auto hr = state.device->CreateRasterizerState(&desc, &result);
+
+		if (SUCCEEDED(hr))
+		{
+			auto entry = rasterizer_cache.expand();
+			entry->cull = pass.cull;
+			entry->has_scissor = pass.has_scissor;
+			entry->state = result;
+			return result;
+		}
+
+		return nullptr;
+	}
+
+	ID3D11DepthStencilState* D3D11::get_depthstencil(const RenderPass& pass)
+	{
+		for (auto& it : depthstencil_cache)
+			if (it.depth == pass.depth)
+				return it.state;
+
+		D3D11_DEPTH_STENCIL_DESC desc = {};
+		desc.DepthEnable = pass.depth != Compare::None;
+		desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		desc.DepthFunc = D3D11_COMPARISON_NEVER;
+
+		switch (pass.depth)
+		{
+			case Compare::None: desc.DepthFunc = D3D11_COMPARISON_NEVER; break;
+			case Compare::Always: desc.DepthFunc = D3D11_COMPARISON_ALWAYS; break;
+			case Compare::Never: desc.DepthFunc = D3D11_COMPARISON_NEVER; break;
+			case Compare::Less: desc.DepthFunc = D3D11_COMPARISON_LESS; break;
+			case Compare::Equal: desc.DepthFunc = D3D11_COMPARISON_EQUAL; break;
+			case Compare::LessOrEqual: desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; break;
+			case Compare::Greater: desc.DepthFunc = D3D11_COMPARISON_GREATER; break;
+			case Compare::NotEqual: desc.DepthFunc = D3D11_COMPARISON_NOT_EQUAL; break;
+			case Compare::GreatorOrEqual: desc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL; break;
+		}
+
+		ID3D11DepthStencilState* result;
+		auto hr = state.device->CreateDepthStencilState(&desc, &result);
+
+		if (SUCCEEDED(hr))
+		{
+			auto entry = depthstencil_cache.expand();
+			entry->depth = pass.depth;
+			entry->state = result;
+			return result;
 		}
 
 		return nullptr;

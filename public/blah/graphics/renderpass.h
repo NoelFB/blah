@@ -29,7 +29,6 @@ namespace Blah
 		None = 0,
 		Front = 1,
 		Back = 2,
-		Both = 3
 	};
 
 	struct RenderPass
