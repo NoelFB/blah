@@ -26,6 +26,12 @@ this will likely see breaking changes.
 using namespace Blah;
 
 Batch batch;
+TextureRef tex;
+
+void startup()
+{
+	tex = Texture::create("player.png");
+}
 
 void render()
 {
@@ -37,6 +43,7 @@ void render()
 
 	batch.push_matrix(transform);
 	batch.rect(Rect(-32, -32, 64, 64), Color::red);
+	batch.tex(tex, Vec2(64, 0), Color::white);
 	batch.pop_matrix();
 	
 	batch.render();
@@ -49,6 +56,7 @@ int main()
 	config.name = "blah app";
 	config.width = 1280;
 	config.height = 720;
+	config.on_startup = startup;
 	config.on_render = render;
 	
 	App::run(&config);
