@@ -766,6 +766,7 @@ namespace Blah
 		state = D3D11();
 		state.last_size = Point(App::draw_width(), App::draw_height());
 
+		// Define Swap Chain
 		DXGI_SWAP_CHAIN_DESC desc = { 0 };
 		desc.BufferDesc.RefreshRate.Numerator = 0;
 		desc.BufferDesc.RefreshRate.Denominator = 1;
@@ -778,8 +779,14 @@ namespace Blah
 		//desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		desc.Windowed = true;
 
+		// Creation Flags
+		UINT flags = D3D11_CREATE_DEVICE_SINGLETHREADED;
+#if defined(DEBUG) || defined(_DEBUG)
+		flags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
+		// Create D3D device & context & swap cahin
 		D3D_FEATURE_LEVEL feature_level;
-		UINT flags = D3D11_CREATE_DEVICE_SINGLETHREADED | D3D11_CREATE_DEVICE_DEBUG;
 		HRESULT hr = D3D11CreateDeviceAndSwapChain(
 			NULL,
 			D3D_DRIVER_TYPE_HARDWARE,
@@ -794,10 +801,11 @@ namespace Blah
 			&feature_level,
 			&state.context);
 
-		if (hr != S_OK || !state.swap_chain || !state.device || !state.context)
+		// Exit out if it's not OK
+		if (!SUCCEEDED(hr) || !state.swap_chain || !state.device || !state.context)
 			return false;
 
-		// get the backbuffer
+		// Get the backbuffer
 		ID3D11Texture2D* frame_buffer = nullptr;
 		state.swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&frame_buffer);
 		if (frame_buffer)
@@ -806,9 +814,29 @@ namespace Blah
 			frame_buffer->Release();
 		}
 
+		// Store Features
 		state.features.instancing = true;
 		state.features.max_texture_size = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
 		state.features.origin_bottom_left = false;
+
+		// Print Driver Info
+		{
+			IDXGIDevice* dxgi_device;
+			IDXGIAdapter* dxgi_adapter;
+			DXGI_ADAPTER_DESC adapter_desc;
+
+			hr = state.device->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxgi_device);
+
+			if (SUCCEEDED(hr))
+			{
+				dxgi_device->GetAdapter(&dxgi_adapter);
+				dxgi_adapter->GetDesc(&adapter_desc);
+
+				Log::print("D3D11 %ls", adapter_desc.Description);
+			}
+			else
+				Log::print("D3D11");
+		}
 
 		return true;
 	}
@@ -895,8 +923,8 @@ namespace Blah
 
 	void apply_uniforms(D3D11_Shader* shader, const MaterialRef& material, ShaderType type)
 	{
-		// HACK:
-		// Apply Uniforms ... I don't like how this is set up at all! This needs to be better!!
+		// TODO:
+		// I don't like how this is set up at all! This needs to be better!!
 		// The fact it builds this every render call is UGLY
 
 		auto& buffers = (type == ShaderType::Vertex ? shader->vcb : shader->fcb);
@@ -1043,36 +1071,31 @@ namespace Blah
 			ctx->PSSetShader(shader->fragment, nullptr, 0);
 			ctx->PSSetConstantBuffers(0, shader->fcb.size(), shader->fcb.begin());
 
-			// Fragment Shader Textures
+			// Fragment Shader Textures & Samplers
 			auto& textures = pass.material->textures();
 			for (int i = 0; i < textures.size(); i++)
 			{
 				if (textures[i])
 				{
+					// Assign the Texture
 					auto view = ((D3D11_Texture*)textures[i].get())->view;
 					ctx->PSSetShaderResources(i, 1, &view);
+
+					// Assign the Sampler
+
+					// TODO:
+					// This is incorrect! Textures and Samplers are separate in HLSL.
+					// For now, assuming there's 1 Sampler Per Texture, and we set it to
+					// the properties of the texture at the same index.
+
+					// I think most modern APIs separate these, where as OpenGL makes
+					// them the same (afaik). Either we need to separate these in our
+					// API, or find some work around here.
+
+					auto sampler = state.get_sampler(textures[i]);
+					if (sampler)
+						ctx->PSSetSamplers(i, 1, &sampler);
 				}
-			}
-
-			// Sampler
-
-			// TODO:
-			// This is incorrect! Textures and Samplers are separate in HLSL.
-			// For now, just assuming there's only 1 Sampler and we set it to
-			// the properties of the first Texture ...
-
-			// I think most modern APIs separate these, where as OpenGL makes
-			// them the same (afaik). Either we need to separate these in our
-			// API, or find some work around here.
-			
-			// I think our API should change to add Samplers as a unique resource,
-			// which matches D3D11 (and I assume Metal / Vulkan)
-
-			if (textures.size() > 0 && textures[0])
-			{
-				auto sampler = state.get_sampler(textures[0]);
-				if (sampler)
-					ctx->PSSetSamplers(0, 1, &sampler);
 			}
 		}
 
