@@ -1,8 +1,8 @@
 ## blah
-a small C++ game framework for 2D games.
-goal is to be simple and use as few dependencies as possible, to maintain easy building and portability.
+A small C++ game framework for 2D games.
+Goal is to be simple and use as few dependencies as possible, to maintain easy building and portability.
 
-this will likely see breaking changes.
+**☆ This will likely see breaking changes! Use at your own risk! ☆**
 
 #### building
  - Requires C++17 and CMake
