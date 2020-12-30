@@ -1,6 +1,7 @@
 #pragma once
 #include <blah/graphics/texture.h>
 #include <blah/graphics/shader.h>
+#include <blah/graphics/sampler.h>
 #include <blah/containers/vector.h>
 #include <memory>
 
@@ -43,6 +44,18 @@ namespace Blah
 		// Gets the texture, or an empty reference if invalid
 		TextureRef get_texture(int slot, int array_index = 0) const;
 
+		// Sets the sampler
+		void set_sampler(const char* name, const TextureSampler& sampler, int array_index = 0);
+
+		// Sets the sampler
+		void set_sampler(int slot, const TextureSampler& sampler, int array_index = 0);
+
+		// Gets the sampler
+		TextureSampler get_sampler(const char* name, int array_index = 0) const;
+
+		// Gets the sampler
+		TextureSampler get_sampler(int slot, int array_index = 0) const;
+
 		// Sets the value. `length` is the total number of floats to set
 		void set_value(const char* name, const float* value, int64_t length);
 
@@ -52,12 +65,16 @@ namespace Blah
 		// Returns the internal Texture buffer
 		const Vector<TextureRef>& textures() const;
 
+		// Returns the internal Sampler buffer
+		const Vector<TextureSampler>& samplers() const;
+
 		// Returns the interal float buffer of all the values
 		const float* data() const;
 
 	private:
 		ShaderRef m_shader;
 		Vector<TextureRef> m_textures;
+		Vector<TextureSampler> m_samplers;
 		Vector<float> m_data;
 	};
 }

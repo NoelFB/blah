@@ -27,6 +27,7 @@ add_library(blah
 	public/blah/graphics/mesh.cpp
 	public/blah/graphics/renderpass.h
 	public/blah/graphics/renderpass.cpp
+	public/blah/graphics/sampler.h
 	public/blah/graphics/shader.h
 	public/blah/graphics/shader.cpp
 	public/blah/graphics/texture.h

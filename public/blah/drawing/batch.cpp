@@ -339,6 +339,18 @@ void Batch::set_texture(const TextureRef& texture)
 	}
 }
 
+void Batch::set_sampler(const TextureSampler& sampler)
+{
+	if (m_batch.elements > 0 && sampler != m_batch.sampler)
+	{
+		m_batches.push_back(m_batch);
+		m_batch.offset += m_batch.elements;
+		m_batch.elements = 0;
+	}
+
+	m_batch.sampler = sampler;
+}
+
 void Batch::render(const FrameBufferRef& target)
 {
 	Point size;
@@ -394,7 +406,8 @@ void Batch::render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4
 	if (!pass.material)
 		pass.material = m_default_material;
 
-	pass.material->set_texture(0, b.texture, 0);
+	pass.material->set_texture(0, b.texture);
+	pass.material->set_sampler(0, b.sampler);
 	pass.material->set_value(matrix_uniform, &matrix.m11, 16);
 	
 	pass.blend = b.blend;
@@ -422,6 +435,7 @@ void Batch::clear()
 	m_batch.blend = BlendMode::Normal;
 	m_batch.material.reset();
 	m_batch.texture.reset();
+	m_batch.sampler = default_sampler;
 	m_batch.scissor.w = m_batch.scissor.h = -1;
 	m_batch.flip_vertically = false;
 

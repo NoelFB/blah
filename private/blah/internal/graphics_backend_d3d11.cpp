@@ -58,9 +58,7 @@ namespace Blah
 
 		struct StoredSampler
 		{
-			TextureFilter filter;
-			TextureWrap wrap_x;
-			TextureWrap wrap_y;
+			TextureSampler sampler;
 			ID3D11SamplerState* state;
 		};
 
@@ -79,7 +77,7 @@ namespace Blah
 		ID3D11InputLayout* get_layout(D3D11_Shader* shader, const VertexFormat& format);
 		ID3D11BlendState* get_blend(const BlendMode& blend);
 		ID3D11RasterizerState* get_rasterizer(const RenderPass& pass);
-		ID3D11SamplerState* get_sampler(const TextureRef& texture);
+		ID3D11SamplerState* get_sampler(const TextureSampler& sampler);
 		ID3D11DepthStencilState* get_depthstencil(const RenderPass& pass);
 	};
 
@@ -140,15 +138,23 @@ namespace Blah
 			D3D11_SHADER_INPUT_BIND_DESC desc;
 			reflector->GetResourceBindingDesc(i, &desc);
 
-			if (desc.Type == D3D_SIT_TEXTURE && 
-				desc.Dimension == D3D_SRV_DIMENSION_TEXTURE2D)
+			if (desc.Type == D3D_SIT_TEXTURE && desc.Dimension == D3D_SRV_DIMENSION_TEXTURE2D)
 			{
 				auto uniform = append_to.expand();
 				uniform->name = desc.Name;
 				uniform->shader = shader_type;
 				uniform->buffer_index = 0;
 				uniform->array_length = max(1, desc.BindCount);
-				uniform->type = UniformType::Texture;
+				uniform->type = UniformType::Texture2D;
+			}
+			else if (desc.Type == D3D_SIT_SAMPLER)
+			{
+				auto uniform = append_to.expand();
+				uniform->name = desc.Name;
+				uniform->shader = shader_type;
+				uniform->buffer_index = 0;
+				uniform->array_length = max(1, desc.BindCount);
+				uniform->type = UniformType::Sampler2D;
 			}
 		}
 
@@ -224,10 +230,7 @@ namespace Blah
 	private:
 		int m_width;
 		int m_height;
-		TextureFilter m_filter;
 		TextureFormat m_format;
-		TextureWrap m_wrap_x;
-		TextureWrap m_wrap_y;
 		bool m_is_framebuffer;
 		int m_size;
 
@@ -235,14 +238,11 @@ namespace Blah
 		ID3D11Texture2D* texture = nullptr;
 		ID3D11ShaderResourceView* view = nullptr;
 
-		D3D11_Texture(int width, int height, TextureFilter filter, TextureWrap wrap_x, TextureWrap wrap_y, TextureFormat format, bool is_framebuffer)
+		D3D11_Texture(int width, int height, TextureFormat format, bool is_framebuffer)
 		{
 			m_width = width;
 			m_height = height;
-			m_filter = filter;
 			m_format = format;
-			m_wrap_x = wrap_x;
-			m_wrap_y = wrap_y;
 			m_is_framebuffer = is_framebuffer;
 			m_size = 0;
 
@@ -320,32 +320,6 @@ namespace Blah
 			return m_format;
 		}
 
-		virtual void set_filter(TextureFilter filter) override
-		{
-			m_filter = filter;
-		}
-
-		virtual TextureFilter get_filter() const override
-		{
-			return m_filter;
-		}
-
-		virtual void set_wrap(TextureWrap x, TextureWrap y) override
-		{
-			m_wrap_x = x;
-			m_wrap_y = y;
-		}
-
-		virtual TextureWrap get_wrap_x() const override
-		{
-			return m_wrap_x;
-		}
-
-		virtual TextureWrap get_wrap_y() const override
-		{
-			return m_wrap_y;
-		}
-
 		virtual void set_data(unsigned char* data) override
 		{
 			D3D11_BOX box;
@@ -386,17 +360,12 @@ namespace Blah
 		StackVector<ID3D11RenderTargetView*, Attachments::MaxCapacity - 1> color_views;
 		ID3D11DepthStencilView* depth_view = nullptr;
 
-		D3D11_FrameBuffer(int width, int height, const TextureFormat* attachments, int attachmentCount)
+		D3D11_FrameBuffer(int width, int height, const TextureFormat* attachments, int attachment_count)
 		{
-			for (int i = 0; i < attachmentCount; i++)
+			for (int i = 0; i < attachment_count; i++)
 			{
-				auto tex = new D3D11_Texture(
-					width, height,
-					TextureFilter::Linear,
-					TextureWrap::Repeat,
-					TextureWrap::Repeat,
-					attachments[i],
-					true);
+				auto tex = new D3D11_Texture(width, height, attachments[i], true);
+
 				m_attachments.push_back(TextureRef(tex));
 
 				if (attachments[i] == TextureFormat::DepthStencil)
@@ -891,9 +860,9 @@ namespace Blah
 		state.swap_chain->Present(1, 0);
 	}
 
-	TextureRef GraphicsBackend::create_texture(int width, int height, TextureFilter filter, TextureWrap wrap_x, TextureWrap wrap_y, TextureFormat format)
+	TextureRef GraphicsBackend::create_texture(int width, int height, TextureFormat format)
 	{
-		auto result = new D3D11_Texture(width, height, filter, wrap_x, wrap_y, format, false);
+		auto result = new D3D11_Texture(width, height, format, false);
 		if (result->texture)
 			return TextureRef(result);
 
@@ -901,9 +870,9 @@ namespace Blah
 		return TextureRef();
 	}
 
-	FrameBufferRef GraphicsBackend::create_framebuffer(int width, int height, const TextureFormat* attachments, int attachmentCount)
+	FrameBufferRef GraphicsBackend::create_framebuffer(int width, int height, const TextureFormat* attachments, int attachment_count)
 	{
-		return FrameBufferRef(new D3D11_FrameBuffer(width, height, attachments, attachmentCount));
+		return FrameBufferRef(new D3D11_FrameBuffer(width, height, attachments, attachment_count));
 	}
 
 	ShaderRef GraphicsBackend::create_shader(const ShaderData* data)
@@ -936,7 +905,9 @@ namespace Blah
 			const float* data = material->data();
 			for (auto& it : shader->uniforms())
 			{
-				if (it.type == UniformType::Texture)
+				if (it.type == UniformType::None ||
+					it.type == UniformType::Texture2D ||
+					it.type == UniformType::Sampler2D)
 					continue;
 
 				int size = 0;
@@ -1071,7 +1042,7 @@ namespace Blah
 			ctx->PSSetShader(shader->fragment, nullptr, 0);
 			ctx->PSSetConstantBuffers(0, shader->fcb.size(), shader->fcb.begin());
 
-			// Fragment Shader Textures & Samplers
+			// Fragment Shader Textures
 			auto& textures = pass.material->textures();
 			for (int i = 0; i < textures.size(); i++)
 			{
@@ -1080,22 +1051,16 @@ namespace Blah
 					// Assign the Texture
 					auto view = ((D3D11_Texture*)textures[i].get())->view;
 					ctx->PSSetShaderResources(i, 1, &view);
-
-					// Assign the Sampler
-
-					// TODO:
-					// This is incorrect! Textures and Samplers are separate in HLSL.
-					// For now, assuming there's 1 Sampler Per Texture, and we set it to
-					// the properties of the texture at the same index.
-
-					// I think most modern APIs separate these, where as OpenGL makes
-					// them the same (afaik). Either we need to separate these in our
-					// API, or find some work around here.
-
-					auto sampler = state.get_sampler(textures[i]);
-					if (sampler)
-						ctx->PSSetSamplers(i, 1, &sampler);
 				}
+			}
+
+			// Fragment Shader Samplers
+			auto& samplers = pass.material->samplers();
+			for (int i = 0; i < samplers.size(); i++)
+			{
+				auto sampler = state.get_sampler(samplers[i]);
+				if (sampler)
+					ctx->PSSetSamplers(i, 1, &sampler);
 			}
 		}
 
@@ -1294,14 +1259,10 @@ namespace Blah
 		return nullptr;
 	}
 
-	ID3D11SamplerState* D3D11::get_sampler(const TextureRef& texture)
+	ID3D11SamplerState* D3D11::get_sampler(const TextureSampler& sampler)
 	{
-		auto filter = texture->get_filter();
-		auto wrap_x = texture->get_wrap_x();
-		auto wrap_y = texture->get_wrap_y();
-
 		for (auto& it : sampler_cache)
-			if (it.filter == filter && it.wrap_x == wrap_x && it.wrap_y == wrap_y)
+			if (it.sampler == sampler)
 				return it.state;
 
 		D3D11_SAMPLER_DESC desc = {};
@@ -1311,19 +1272,19 @@ namespace Blah
 		desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 		desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 
-		switch (filter)
+		switch (sampler.filter)
 		{
 		case TextureFilter::Nearest: desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT; break;
 		case TextureFilter::Linear: desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; break;
 		}
 
-		switch (wrap_x)
+		switch (sampler.wrap_x)
 		{
 		case TextureWrap::Clamp: desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP; break;
 		case TextureWrap::Repeat: desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP; break;
 		}
 
-		switch (wrap_y)
+		switch (sampler.wrap_y)
 		{
 		case TextureWrap::Clamp: desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP; break;
 		case TextureWrap::Repeat: desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP; break;
@@ -1335,9 +1296,7 @@ namespace Blah
 		if (SUCCEEDED(hr))
 		{
 			auto entry = sampler_cache.expand();
-			entry->filter = filter;
-			entry->wrap_x = wrap_x;
-			entry->wrap_y = wrap_y;
+			entry->sampler = sampler;
 			entry->state = result;
 			return result;
 		}

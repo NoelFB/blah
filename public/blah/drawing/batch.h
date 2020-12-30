@@ -9,6 +9,7 @@
 #include <blah/drawing/spritefont.h>
 #include <blah/containers/vector.h>
 #include <blah/graphics/blend.h>
+#include <blah/graphics/sampler.h>
 #include <blah/graphics/renderpass.h>
 #include <blah/app.h>
 
@@ -44,6 +45,9 @@ namespace Blah
 
 		// The name of the Matrix Uniform in the Shader
 		const char* matrix_uniform;
+
+		// Default Sampler, set on clear
+		TextureSampler default_sampler;
 
 		Batch();
 		Batch(const Batch& other) = delete;
@@ -111,6 +115,9 @@ namespace Blah
 		// Sets the current texture used for drawing. Note that certain functions will override
 		// this (ex the `str` and `tex` methods)
 		void set_texture(const TextureRef& texture);
+
+		// Sets the current texture sampler for drawing.
+		void set_sampler(const TextureSampler& sampler);
 
 		// Draws the batch to the given target
 		void render(const FrameBufferRef& target = App::backbuffer);
@@ -194,6 +201,7 @@ namespace Blah
 			MaterialRef material;
 			BlendMode blend;
 			TextureRef texture;
+			TextureSampler sampler;
 			bool flip_vertically;
 			Rect scissor;
 

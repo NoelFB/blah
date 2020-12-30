@@ -89,7 +89,7 @@ namespace Blah
 			rgba = blendColor;
 		}
 
-		inline bool operator==(const BlendMode& rhs) const
+		bool operator==(const BlendMode& rhs) const
 		{
 			return
 				color_op == rhs.color_op && color_src == rhs.color_src && color_dst == rhs.color_dst &&
@@ -97,7 +97,7 @@ namespace Blah
 				mask == rhs.mask && rgba == rhs.rgba;
 		}
 
-		inline bool operator!=(const BlendMode& rhs) const
+		bool operator!=(const BlendMode& rhs) const
 		{
 			return !(*this == rhs);
 		}

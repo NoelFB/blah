@@ -545,9 +545,7 @@ namespace Blah
 		GLuint m_id;
 		int m_width;
 		int m_height;
-		TextureWrap m_wrap_x;
-		TextureWrap m_wrap_y;
-		TextureFilter m_filter;
+		TextureSampler m_sampler;
 		TextureFormat m_format;
 		GLenum m_gl_internal_format;
 		GLenum m_gl_format;
@@ -556,14 +554,12 @@ namespace Blah
 	public:
 		bool framebuffer_parent;
 
-		OpenGL_Texture(int width, int height, TextureFilter filter, TextureWrap wrap_x, TextureWrap wrap_y, TextureFormat format)
+		OpenGL_Texture(int width, int height, TextureFormat format)
 		{
 			m_id = 0;
 			m_width = width;
 			m_height = height;
-			m_wrap_x = wrap_x;
-			m_wrap_y = wrap_y;
-			m_filter = filter;
+			m_sampler = TextureSampler(TextureFilter::None, TextureWrap::None, TextureWrap::None);
 			m_format = format;
 			framebuffer_parent = false;
 			m_gl_internal_format = GL_RED;
@@ -609,12 +605,7 @@ namespace Blah
 			gl.GenTextures(1, &m_id);
 			gl.ActiveTexture(GL_TEXTURE0);
 			gl.BindTexture(GL_TEXTURE_2D, m_id);
-
 			gl.TexImage2D(GL_TEXTURE_2D, 0, m_gl_internal_format, width, height, 0, m_gl_format, m_gl_type, nullptr);
-			gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (m_filter == TextureFilter::Nearest ? GL_NEAREST : GL_LINEAR));
-			gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (m_filter == TextureFilter::Nearest ? GL_NEAREST : GL_LINEAR));
-			gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (m_wrap_x == TextureWrap::Clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT));
-			gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (m_wrap_y == TextureWrap::Clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT));
 		}
 
 		~OpenGL_Texture()
@@ -643,38 +634,18 @@ namespace Blah
 			return m_format;
 		}
 
-		virtual void set_filter(TextureFilter filter) override
+		void update_sampler(const TextureSampler& sampler)
 		{
-			m_filter = filter;
+			if (m_sampler != sampler)
+			{
+				m_sampler = sampler;
 
-			gl.BindTexture(GL_TEXTURE_2D, m_id);
-			gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (filter == TextureFilter::Nearest ? GL_NEAREST : GL_LINEAR));
-			gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (filter == TextureFilter::Nearest ? GL_NEAREST : GL_LINEAR));
-		}
-
-		virtual TextureFilter get_filter() const override
-		{
-			return m_filter;
-		}
-
-		virtual void set_wrap(TextureWrap x, TextureWrap y) override
-		{
-			m_wrap_x = x;
-			m_wrap_y = y;
-
-			gl.BindTexture(GL_TEXTURE_2D, m_id);
-			gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (x == TextureWrap::Clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT));
-			gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (y == TextureWrap::Clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT));
-		}
-
-		virtual TextureWrap get_wrap_x() const override
-		{
-			return m_wrap_x;
-		}
-
-		virtual TextureWrap get_wrap_y() const override
-		{
-			return m_wrap_y;
+				gl.BindTexture(GL_TEXTURE_2D, m_id);
+				gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (m_sampler.filter == TextureFilter::Nearest ? GL_NEAREST : GL_LINEAR));
+				gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (m_sampler.filter == TextureFilter::Nearest ? GL_NEAREST : GL_LINEAR));
+				gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (m_sampler.wrap_x == TextureWrap::Clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT));
+				gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (m_sampler.wrap_y == TextureWrap::Clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT));
+			}
 		}
 
 		virtual void set_data(unsigned char* data) override
@@ -899,20 +870,34 @@ namespace Blah
 							}
 						}
 
-					UniformInfo uniform;
-					uniform.name = name;
-					uniform.type = UniformType::None;
-					uniform.buffer_index = 0;
-					uniform.array_length = size;
-					uniform_locations.push_back(gl.GetUniformLocation(id, name));
-
 					if (type == GL_SAMPLER_2D)
 					{
-						uniform.type = UniformType::Texture;
-						uniform.shader = ShaderType::Fragment;
+						UniformInfo tex_uniform;
+						tex_uniform.name = name;
+						tex_uniform.buffer_index = 0;
+						tex_uniform.array_length = size;
+						tex_uniform.type = UniformType::Texture2D;
+						tex_uniform.shader = ShaderType::Fragment;
+						uniform_locations.push_back(gl.GetUniformLocation(id, name));
+						m_uniforms.push_back(tex_uniform);
+
+						UniformInfo sampler_uniform;
+						sampler_uniform.name = String(name).append("_sampler");
+						sampler_uniform.buffer_index = 0;
+						sampler_uniform.array_length = size;
+						sampler_uniform.type = UniformType::Sampler2D;
+						sampler_uniform.shader = ShaderType::Fragment;
+						uniform_locations.push_back(gl.GetUniformLocation(id, name));
+						m_uniforms.push_back(sampler_uniform);
 					}
 					else
 					{
+						UniformInfo uniform;
+						uniform.name = name;
+						uniform.type = UniformType::None;
+						uniform.buffer_index = 0;
+						uniform.array_length = size;
+						uniform_locations.push_back(gl.GetUniformLocation(id, name));
 						uniform.shader = (ShaderType)((int)ShaderType::Vertex | (int)ShaderType::Fragment);
 
 						if (type == GL_FLOAT)
@@ -933,9 +918,10 @@ namespace Blah
 							Log::error("Unsupported Uniform Type");
 							break;
 						}
+
+						m_uniforms.push_back(uniform);
 					}
 
-					m_uniforms.push_back(uniform);
 				}
 			}
 
@@ -1192,9 +1178,9 @@ namespace Blah
 	void GraphicsBackend::before_render() {}
 	void GraphicsBackend::after_render() {}
 
-	TextureRef GraphicsBackend::create_texture(int width, int height, TextureFilter filter, TextureWrap wrap_x, TextureWrap wrap_y, TextureFormat format)
+	TextureRef GraphicsBackend::create_texture(int width, int height, TextureFormat format)
 	{
-		auto resource = new OpenGL_Texture(width, height, filter, wrap_x, wrap_y, format);
+		auto resource = new OpenGL_Texture(width, height, format);
 
 		if (resource->gl_id() <= 0)
 		{
@@ -1272,10 +1258,9 @@ namespace Blah
 		{
 			gl.UseProgram(shader->gl_id());
 
-			// upload uniform values
 			int texture_slot = 0;
+			int gl_texture_slot = 0;
 			GLint texture_ids[64];
-
 			auto& uniforms = shader->uniforms();
 			auto data = pass.material->data();
 
@@ -1284,14 +1269,19 @@ namespace Blah
 				auto location = shader->uniform_locations[i];
 				auto& uniform = uniforms[i];
 
-				// Sampler 2D
-				if (uniform.type == UniformType::Texture)
+				// Sampler 2D's are assigned by updating texture values
+				if (uniform.type == UniformType::Sampler2D)
+					continue;
+
+				// Texture2D
+				if (uniform.type == UniformType::Texture2D)
 				{
 					for (int n = 0; n < uniform.array_length; n++)
 					{
-						auto tex = pass.material->get_texture(i, n);
+						auto tex = pass.material->get_texture(texture_slot, n);
+						auto sampler = pass.material->get_sampler(texture_slot, n);
 
-						gl.ActiveTexture(GL_TEXTURE0 + texture_slot);
+						gl.ActiveTexture(GL_TEXTURE0 + gl_texture_slot);
 
 						if (!tex)
 						{
@@ -1299,14 +1289,17 @@ namespace Blah
 						}
 						else
 						{
-							gl.BindTexture(GL_TEXTURE_2D, ((OpenGL_Texture*)tex.get())->gl_id());
+							auto gl_tex = ((OpenGL_Texture*)tex.get());
+							gl_tex->update_sampler(sampler);
+							gl.BindTexture(GL_TEXTURE_2D, gl_tex->gl_id());
 						}
 
-						texture_ids[n] = texture_slot;
-						texture_slot++;
+						texture_ids[n] = gl_texture_slot;
+						gl_texture_slot++;
 					}
 
 					gl.Uniform1iv(location, (GLint)uniform.array_length, &texture_ids[0]);
+					texture_slot++;
 					continue;
 				}
 

@@ -49,10 +49,17 @@ Material::Material(const ShaderRef& shader)
 		if (uniform.type == UniformType::None)
 			continue;
 
-		if (uniform.type == UniformType::Texture)
+		if (uniform.type == UniformType::Texture2D)
 		{
 			for (int i = 0; i < uniform.array_length; i ++)
 				m_textures.push_back(TextureRef());
+			continue;
+		}
+
+		if (uniform.type == UniformType::Sampler2D)
+		{
+			for (int i = 0; i < uniform.array_length; i++)
+				m_samplers.push_back(TextureSampler());
 			continue;
 		}
 
@@ -74,7 +81,7 @@ void Material::set_texture(const char* name, const TextureRef& texture, int inde
 	int offset = 0;
 	for (auto& uniform : m_shader->uniforms())
 	{
-		if (uniform.type != UniformType::Texture)
+		if (uniform.type != UniformType::Texture2D)
 			continue;
 
 		if (strcmp(uniform.name, name) == 0)
@@ -99,19 +106,20 @@ void Material::set_texture(int slot, const TextureRef& texture, int index)
 	int offset = 0;
 	for (auto& uniform : m_shader->uniforms())
 	{
-		if (uniform.type == UniformType::Texture)
-		{
-			if (s == slot)
-			{
-				if (index > uniform.array_length)
-					break;
+		if (uniform.type != UniformType::Texture2D)
+			continue;
 
-				m_textures[offset + index] = texture;
+		if (s == slot)
+		{
+			if (index > uniform.array_length)
 				break;
-			}
-			offset += uniform.array_length;
-			s++;
+
+			m_textures[offset + index] = texture;
+			break;
 		}
+
+		offset += uniform.array_length;
+		s++;
 	}
 }
 
@@ -122,7 +130,7 @@ TextureRef Material::get_texture(const char* name, int index) const
 	int offset = 0;
 	for (auto& uniform : m_shader->uniforms())
 	{
-		if (uniform.type != UniformType::Texture)
+		if (uniform.type != UniformType::Texture2D)
 			continue;
 
 		if (strcmp(uniform.name, name) == 0)
@@ -145,26 +153,127 @@ TextureRef Material::get_texture(int slot, int index) const
 	int offset = 0;
 	for (auto& uniform : m_shader->uniforms())
 	{
-		if (uniform.type == UniformType::Texture)
+		if (uniform.type != UniformType::Texture2D)
+			continue;
+
+		if (s == slot)
 		{
-			if (s == slot)
-			{
-				if (index > uniform.array_length)
-					break;
-
-				return m_textures[offset + index];
-			}
-
-			offset += uniform.array_length;
-			if (offset + index >= m_textures.size())
+			if (index > uniform.array_length)
 				break;
+
+			return m_textures[offset + index];
 		}
+
+		offset += uniform.array_length;
+		if (offset + index >= m_textures.size())
+			break;
 
 		s++;
 	}
 
 	Log::warn("No Texture Uniform ['%i'] at index [%i] exists", slot, index);
 	return TextureRef();
+}
+
+void Material::set_sampler(const char* name, const TextureSampler& sampler, int index)
+{
+	BLAH_ASSERT(m_shader, "Material Shader is invalid");
+
+	int offset = 0;
+	for (auto& uniform : m_shader->uniforms())
+	{
+		if (uniform.type != UniformType::Sampler2D)
+			continue;
+
+		if (strcmp(uniform.name, name) == 0)
+		{
+			m_samplers[offset + index] = sampler;
+			return;
+		}
+
+		offset += uniform.array_length;
+		if (offset + index >= m_samplers.size())
+			break;
+	}
+
+	Log::warn("No Sampler Uniform '%s' at index [%i] exists", name, index);
+}
+
+void Material::set_sampler(int slot, const TextureSampler& sampler, int index)
+{
+	BLAH_ASSERT(m_shader, "Material Shader is invalid");
+
+	int s = 0;
+	int offset = 0;
+	for (auto& uniform : m_shader->uniforms())
+	{
+		if (uniform.type != UniformType::Sampler2D)
+			continue;
+
+		if (s == slot)
+		{
+			if (index > uniform.array_length)
+				break;
+
+			m_samplers[offset + index] = sampler;
+			break;
+		}
+
+		offset += uniform.array_length;
+		s++;
+	}
+}
+
+TextureSampler Material::get_sampler(const char* name, int index) const
+{
+	BLAH_ASSERT(m_shader, "Material Shader is invalid");
+
+	int offset = 0;
+	for (auto& uniform : m_shader->uniforms())
+	{
+		if (uniform.type != UniformType::Sampler2D)
+			continue;
+
+		if (strcmp(uniform.name, name) == 0)
+			return m_samplers[offset + index];
+
+		offset += uniform.array_length;
+		if (offset + index >= m_samplers.size())
+			break;
+	}
+
+	Log::warn("No Sampler Uniform '%s' at index [%i] exists", name, index);
+	return TextureSampler();
+}
+
+TextureSampler Material::get_sampler(int slot, int index) const
+{
+	BLAH_ASSERT(m_shader, "Material Shader is invalid");
+
+	int s = 0;
+	int offset = 0;
+	for (auto& uniform : m_shader->uniforms())
+	{
+		if (uniform.type != UniformType::Sampler2D)
+			continue;
+
+		if (s == slot)
+		{
+			if (index > uniform.array_length)
+				break;
+
+			return m_samplers[offset + index];
+		}
+
+		offset += uniform.array_length;
+		if (offset + index >= m_samplers.size())
+			break;
+
+		s++;
+	}
+
+	Log::warn("No Sampler Uniform ['%i'] at index [%i] exists", slot, index);
+	return TextureSampler();
 }
 
 void Material::set_value(const char* name, const float* value, int64_t length)
@@ -176,7 +285,9 @@ void Material::set_value(const char* name, const float* value, int64_t length)
 	int offset = 0;
 	for (auto& uniform : m_shader->uniforms())
 	{
-		if (uniform.type == UniformType::Texture || uniform.type == UniformType::None)
+		if (uniform.type == UniformType::Texture2D ||
+			uniform.type == UniformType::Sampler2D ||
+			uniform.type == UniformType::None)
 			continue;
 
 		if (strcmp(uniform.name, name) == 0)
@@ -207,7 +318,9 @@ const float* Material::get_value(const char* name, int64_t* length) const
 	int offset = 0;
 	for (auto& uniform : m_shader->uniforms())
 	{
-		if (uniform.type == UniformType::Texture || uniform.type == UniformType::None)
+		if (uniform.type == UniformType::Texture2D ||
+			uniform.type == UniformType::Sampler2D ||
+			uniform.type == UniformType::None)
 			continue;
 
 		if (strcmp(uniform.name, name) == 0)
@@ -229,6 +342,11 @@ const float* Material::get_value(const char* name, int64_t* length) const
 const Vector<TextureRef>& Material::textures() const
 {
 	return m_textures;
+}
+
+const Vector<TextureSampler>& Material::samplers() const
+{
+	return m_samplers;
 }
 
 const float* Material::data() const

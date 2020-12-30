@@ -3,19 +3,6 @@
 
 namespace Blah
 {
-	enum class TextureFilter
-	{
-		None,
-		Linear,
-		Nearest
-	};
-
-	enum class TextureWrap
-	{
-		None,
-		Clamp,
-		Repeat
-	};
 
 	enum class TextureFormat
 	{
@@ -75,21 +62,6 @@ namespace Blah
 
 		// Gets the format of the Texture
 		virtual TextureFormat format() const = 0;
-
-		// Sets the filter of the Texture
-		virtual void set_filter(TextureFilter filter) = 0;
-
-		// Gets the filter of the Texture
-		virtual TextureFilter get_filter() const = 0;
-
-		// Sets the wrap of the Texture
-		virtual void set_wrap(TextureWrap x, TextureWrap y) = 0;
-
-		// Gets the wrap of the Texture
-		virtual TextureWrap get_wrap_x() const = 0;
-
-		// Gets the wrap of the Texture
-		virtual TextureWrap get_wrap_y() const = 0;
 
 		// Sets the data of the Texture.
 		// Note that the pixel buffer should be in the same format as the Texture. There is no row padding.

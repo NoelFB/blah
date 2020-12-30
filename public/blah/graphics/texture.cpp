@@ -28,7 +28,7 @@ TextureRef Texture::create(int width, int height, TextureFormat format)
 	BLAH_ASSERT((int)format > (int)TextureFormat::None && (int)format < (int)TextureFormat::Count, "Invalid texture format");
 
 	if (width > 0 && height > 0)
-		return GraphicsBackend::create_texture(width, height, TextureFilter::Linear, TextureWrap::Repeat, TextureWrap::Repeat, format);
+		return GraphicsBackend::create_texture(width, height, format);
 
 	return TextureRef();
 }

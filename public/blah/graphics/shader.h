@@ -15,7 +15,8 @@ namespace Blah
 		Float4,
 		Mat3x2,
 		Mat4x4,
-		Texture
+		Texture2D,
+		Sampler2D
 	};
 
 	// Supported Shader Types

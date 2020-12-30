@@ -43,11 +43,11 @@ namespace Blah
 
 		// Creates a new Texture.
 		// if the Texture is invalid, this should return an empty reference.
-		TextureRef create_texture(int width, int height, TextureFilter filter, TextureWrap wrap_x, TextureWrap wrap_y, TextureFormat format);
+		TextureRef create_texture(int width, int height, TextureFormat format);
 
 		// Creates a new FrameBuffer.
 		// if the FrameBuffer is invalid, this should return an empty reference.
-		FrameBufferRef create_framebuffer(int width, int height, const TextureFormat* attachments, int attachmentCount);
+		FrameBufferRef create_framebuffer(int width, int height, const TextureFormat* attachments, int attachment_count);
 
 		// Creates a new Shader.
 		// if the Shader is invalid, this should return an empty reference.
