@@ -7,115 +7,65 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(blah
 
-	public/blah.h
-	public/blah/app.cpp
-	public/blah/app.h
-	public/blah/filesystem.cpp
-	public/blah/filesystem.h
-	public/blah/log.cpp
-	public/blah/log.h
-	public/blah/time.cpp
-	public/blah/time.h
+	src/core/app.cpp
+	src/core/filesystem.cpp
+	src/core/log.cpp
+	src/core/time.cpp
 
-	public/blah/graphics/blend.h
-	public/blah/graphics/blend.cpp
-	public/blah/graphics/framebuffer.h
-	public/blah/graphics/framebuffer.cpp
-	public/blah/graphics/material.h
-	public/blah/graphics/material.cpp
-	public/blah/graphics/mesh.h
-	public/blah/graphics/mesh.cpp
-	public/blah/graphics/renderpass.h
-	public/blah/graphics/renderpass.cpp
-	public/blah/graphics/sampler.h
-	public/blah/graphics/shader.h
-	public/blah/graphics/shader.cpp
-	public/blah/graphics/texture.h
-	public/blah/graphics/texture.cpp
+	src/graphics/blend.cpp
+	src/graphics/framebuffer.cpp
+	src/graphics/material.cpp
+	src/graphics/mesh.cpp
+	src/graphics/renderpass.cpp
+	src/graphics/shader.cpp
+	src/graphics/texture.cpp
 
-	public/blah/input/input.cpp
-	public/blah/input/virtual_stick.cpp
-	public/blah/input/virtual_stick.h
-	public/blah/input/virtual_button.cpp
-	public/blah/input/virtual_button.h
-	public/blah/input/virtual_axis.cpp
-	public/blah/input/virtual_axis.h
+	src/input/input.cpp
+	src/input/virtual_stick.cpp
+	src/input/virtual_button.cpp
+	src/input/virtual_axis.cpp
 	
-	public/blah/containers/vector.h
-	public/blah/containers/stackvector.h
-	public/blah/containers/str.cpp
-	public/blah/containers/str.h
+	src/containers/str.cpp
 	
-	public/blah/drawing/batch.cpp
-	public/blah/drawing/batch.h
-	public/blah/drawing/spritefont.cpp
-	public/blah/drawing/spritefont.h
-	public/blah/drawing/subtexture.cpp
-	public/blah/drawing/subtexture.h
+	src/drawing/batch.cpp
+	src/drawing/spritefont.cpp
+	src/drawing/subtexture.cpp
 
-	public/blah/images/aseprite.cpp
-	public/blah/images/aseprite.h
-	public/blah/images/font.cpp
-	public/blah/images/font.h
-	public/blah/images/image.cpp
-	public/blah/images/image.h
-	public/blah/images/packer.cpp
-	public/blah/images/packer.h
+	src/images/aseprite.cpp
+	src/images/font.cpp
+	src/images/image.cpp
+	src/images/packer.cpp
 
-	public/blah/math/calc.cpp
-	public/blah/math/calc.h
-	public/blah/math/circle.cpp
-	public/blah/math/circle.h
-	public/blah/math/color.cpp
-	public/blah/math/color.h
-	public/blah/math/ease.h
-	public/blah/math/line.cpp
-	public/blah/math/line.h
-	public/blah/math/mat3x2.cpp
-	public/blah/math/mat3x2.h
-	public/blah/math/mat4x4.cpp
-	public/blah/math/mat4x4.h
-	public/blah/math/point.cpp
-	public/blah/math/point.h
-	public/blah/math/quad.h
-	public/blah/math/quad.cpp
-	public/blah/math/rect.cpp
-	public/blah/math/rect.h
-	public/blah/math/rectI.cpp
-	public/blah/math/rectI.h
-	public/blah/math/stopwatch.cpp
-	public/blah/math/stopwatch.h
-	public/blah/math/vec2.cpp
-	public/blah/math/vec2.h
-	public/blah/math/vec4.h
+	src/math/calc.cpp
+	src/math/circle.cpp
+	src/math/color.cpp
+	src/math/line.cpp
+	src/math/mat3x2.cpp
+	src/math/mat4x4.cpp
+	src/math/point.cpp
+	src/math/quad.cpp
+	src/math/rect.cpp
+	src/math/rectI.cpp
+	src/math/stopwatch.cpp
+	src/math/vec2.cpp
 	
-	public/blah/streams/endian.h
-	public/blah/streams/bufferstream.cpp
-	public/blah/streams/bufferstream.h	
-	public/blah/streams/filestream.cpp
-	public/blah/streams/filestream.h
-	public/blah/streams/memorystream.cpp
-	public/blah/streams/memorystream.h
-	public/blah/streams/stream.cpp
-	public/blah/streams/stream.h
+	src/streams/bufferstream.cpp	
+	src/streams/filestream.cpp
+	src/streams/memorystream.cpp
+	src/streams/stream.cpp
 
-	private/blah/third_party/stb_image.h
-	private/blah/third_party/stb_image_write.h
-	private/blah/third_party/stb_truetype.h
-	private/blah/internal/graphics_backend.h
-	private/blah/internal/graphics_backend_gl.cpp
-	private/blah/internal/graphics_backend_d3d11.cpp
-	private/blah/internal/graphics_backend_dummy.cpp
-	private/blah/internal/input_backend.h
-	private/blah/internal/platform_backend.h
-	private/blah/internal/platform_backend_sdl2.cpp
+
+	src/internal/graphics_backend_gl.cpp
+	src/internal/graphics_backend_d3d11.cpp
+	src/internal/graphics_backend_dummy.cpp
+	src/internal/platform_backend_sdl2.cpp
 )
 
 target_include_directories(blah 
 	PUBLIC
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	PRIVATE
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/private>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
 # Platform Variables
@@ -127,12 +77,12 @@ set(D3D11_ENABLED false CACHE BOOL "Use D3D11 graphics implementation")
 
 set(LIBS "")
 
-# add OpenGL definition if we're using OpenGL
+# add OpenGL definition if we're using it
 if (OPENGL_ENABLED)
 	add_compile_definitions(BLAH_USE_OPENGL)
 endif()
 
-# add D3D11 definition if we're using D3D11
+# add D3D11 definition if we're using it
 if (D3D11_ENABLED)
 	add_compile_definitions(BLAH_USE_D3D11)
 	set(LIBS ${LIBS} d3d11.lib dxguid.lib D3Dcompiler.lib)
