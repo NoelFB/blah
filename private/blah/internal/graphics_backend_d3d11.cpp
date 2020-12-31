@@ -167,7 +167,10 @@ namespace Blah
 		{
 			if (texture)
 				texture->Release();
+			if (view)
+				view->Release();
 			texture = nullptr;
+			view = nullptr;
 		}
 
 		virtual int width() const override
@@ -431,10 +434,19 @@ namespace Blah
 
 		~D3D11_Shader()
 		{
-			if (vertex) vertex->Release();
-			if (vertex_blob) vertex_blob->Release();
-			if (fragment) fragment->Release();
-			if (fragment_blob) fragment_blob->Release();
+			if (vertex)
+				vertex->Release();
+			if (vertex_blob)
+				vertex_blob->Release();
+			if (fragment)
+				fragment->Release();
+			if (fragment_blob)
+				fragment_blob->Release();
+
+			for (auto& it : vertex_uniform_buffers)
+				it->Release();
+			for (auto& it : fragment_uniform_buffers)
+				it->Release();
 
 			vertex = nullptr;
 			vertex_blob = nullptr;
@@ -678,9 +690,29 @@ namespace Blah
 
 	void GraphicsBackend::shutdown()
 	{
+		// release cached objects
+		for (auto& it : state.blend_cache)
+			it.state->Release();
+		for (auto& it : state.depthstencil_cache)
+			it.state->Release();
+		for (auto& it : state.layout_cache)
+			it.layout->Release();
+		for (auto& it : state.rasterizer_cache)
+			it.state->Release();
+		for (auto& it : state.sampler_cache)
+			it.state->Release();
+
+		// TODO:
+		// Do we need to release live resources? ex. Texture's that
+		// haven't been released by shutdown will still exist...
+
+		// release main devices
 		state.swap_chain->Release();
 		state.context->Release();
 		state.device->Release();
+
+		// reset state
+		state = D3D11();
 	}
 
 	const RendererFeatures& GraphicsBackend::features()
