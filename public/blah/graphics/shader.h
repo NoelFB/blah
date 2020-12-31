@@ -89,7 +89,7 @@ namespace Blah
 
 		// Creates a Shader with the given Shader Data.
 		// If the Shader creation fails, it will return an invalid ShaderRef.
-		static ShaderRef create(const ShaderData* data);
+		static ShaderRef create(const ShaderData& data);
 
 		// Gets a list of Shader Uniforms from Shader
 		virtual Vector<UniformInfo>& uniforms() = 0;

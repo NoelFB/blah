@@ -374,7 +374,7 @@ void Batch::render(const FrameBufferRef& target, const Mat4x4& matrix)
 			m_mesh = Mesh::create();
 
 		if (!m_default_shader)
-			m_default_shader = Shader::create(&shader_data);
+			m_default_shader = Shader::create(shader_data);
 
 		if (!m_default_material)
 			m_default_material = Material::create(m_default_shader);

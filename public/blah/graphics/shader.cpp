@@ -3,10 +3,9 @@
 
 using namespace Blah;
 
-ShaderRef Shader::create(const ShaderData* data)
+ShaderRef Shader::create(const ShaderData& data)
 {
-	// get the shader
-	auto shader = GraphicsBackend::create_shader(data);
+	auto shader = GraphicsBackend::create_shader(&data);
 	
 	// validate the shader
 	if (shader)

@@ -79,149 +79,16 @@ namespace Blah
 		ID3D11DepthStencilState* get_depthstencil(const RenderPass& pass);
 	};
 
+	// D3D11 State
 	D3D11 state;
 
-	D3D11_BLEND_OP blend_op(BlendOp op)
-	{
-		switch (op)
-		{
-		case BlendOp::Add: return D3D11_BLEND_OP_ADD;
-		case BlendOp::Subtract: return D3D11_BLEND_OP_SUBTRACT;
-		case BlendOp::ReverseSubtract: return D3D11_BLEND_OP_REV_SUBTRACT;
-		case BlendOp::Min: return D3D11_BLEND_OP_MIN;
-		case BlendOp::Max: return D3D11_BLEND_OP_MAX;
-		}
+	// Utility Methods
+	D3D11_BLEND_OP blend_op(BlendOp op);
+	D3D11_BLEND blend_factor(BlendFactor factor);
+	bool reflect_uniforms(Vector<UniformInfo>& append_uniforms_to, Vector<ID3D11Buffer*>& append_buffers_to, ID3DBlob* shader, ShaderType shader_type);
+	void apply_uniforms(D3D11_Shader* shader, const MaterialRef& material, ShaderType type);
 
-		return D3D11_BLEND_OP_ADD;
-	}
-
-	D3D11_BLEND blend_factor(BlendFactor factor)
-	{
-		switch (factor)
-		{
-		case BlendFactor::Zero: return D3D11_BLEND_ZERO;
-		case BlendFactor::One: return D3D11_BLEND_ONE;
-		case BlendFactor::SrcColor: return D3D11_BLEND_SRC_COLOR;
-		case BlendFactor::OneMinusSrcColor: return D3D11_BLEND_INV_SRC_COLOR;
-		case BlendFactor::DstColor: return D3D11_BLEND_DEST_COLOR;
-		case BlendFactor::OneMinusDstColor: return D3D11_BLEND_INV_DEST_COLOR;
-		case BlendFactor::SrcAlpha: return D3D11_BLEND_SRC_ALPHA;
-		case BlendFactor::OneMinusSrcAlpha: return D3D11_BLEND_INV_SRC_ALPHA;
-		case BlendFactor::DstAlpha: return D3D11_BLEND_DEST_ALPHA;
-		case BlendFactor::OneMinusDstAlpha: return D3D11_BLEND_INV_DEST_ALPHA;
-		case BlendFactor::ConstantColor: return D3D11_BLEND_BLEND_FACTOR;
-		case BlendFactor::OneMinusConstantColor: return D3D11_BLEND_INV_BLEND_FACTOR;
-		case BlendFactor::ConstantAlpha: return D3D11_BLEND_BLEND_FACTOR;
-		case BlendFactor::OneMinusConstantAlpha: return D3D11_BLEND_INV_BLEND_FACTOR;
-		case BlendFactor::SrcAlphaSaturate: return D3D11_BLEND_SRC_ALPHA_SAT;
-		case BlendFactor::Src1Color: return D3D11_BLEND_SRC1_COLOR;
-		case BlendFactor::OneMinusSrc1Color: return D3D11_BLEND_INV_SRC1_COLOR;
-		case BlendFactor::Src1Alpha: return D3D11_BLEND_SRC1_ALPHA;
-		case BlendFactor::OneMinusSrc1Alpha: return D3D11_BLEND_INV_SRC1_ALPHA;
-		}
-
-		return D3D11_BLEND_ZERO;
-	}
-
-	bool reflect_uniforms(Vector<UniformInfo>& append_to, Vector<ID3D11Buffer*>& buffers, ID3DBlob* shader, ShaderType shader_type)
-	{
-		ID3D11ShaderReflection* reflector = nullptr;
-		D3DReflect(shader->GetBufferPointer(), shader->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&reflector);
-
-		D3D11_SHADER_DESC shader_desc;
-		reflector->GetDesc(&shader_desc);
-		
-		for (int i = 0; i < shader_desc.BoundResources; i++)
-		{
-			D3D11_SHADER_INPUT_BIND_DESC desc;
-			reflector->GetResourceBindingDesc(i, &desc);
-
-			if (desc.Type == D3D_SIT_TEXTURE && desc.Dimension == D3D_SRV_DIMENSION_TEXTURE2D)
-			{
-				auto uniform = append_to.expand();
-				uniform->name = desc.Name;
-				uniform->shader = shader_type;
-				uniform->buffer_index = 0;
-				uniform->array_length = max(1, desc.BindCount);
-				uniform->type = UniformType::Texture2D;
-			}
-			else if (desc.Type == D3D_SIT_SAMPLER)
-			{
-				auto uniform = append_to.expand();
-				uniform->name = desc.Name;
-				uniform->shader = shader_type;
-				uniform->buffer_index = 0;
-				uniform->array_length = max(1, desc.BindCount);
-				uniform->type = UniformType::Sampler2D;
-			}
-		}
-
-		for (int i = 0; i < shader_desc.ConstantBuffers; i++)
-		{
-			D3D11_SHADER_BUFFER_DESC desc;
-
-			auto cb = reflector->GetConstantBufferByIndex(i);
-			cb->GetDesc(&desc);
-
-			// create the constant buffer for assigning data later
-			{
-				D3D11_BUFFER_DESC buffer_desc = {};
-				buffer_desc.ByteWidth = desc.Size;
-				buffer_desc.Usage = D3D11_USAGE_DYNAMIC;
-				buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-				buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-
-				ID3D11Buffer* buffer;
-				state.device->CreateBuffer(&buffer_desc, nullptr, &buffer);
-				buffers.push_back(buffer);
-			}
-
-			// get the uniforms
-			for (int j = 0; j < desc.Variables; j++)
-			{
-				D3D11_SHADER_VARIABLE_DESC var_desc;
-				D3D11_SHADER_TYPE_DESC type_desc;
-
-				auto var = cb->GetVariableByIndex(j);
-				var->GetDesc(&var_desc);
-
-				auto type = var->GetType();
-				type->GetDesc(&type_desc);
-
-				auto uniform = append_to.expand();
-				uniform->name = var_desc.Name;
-				uniform->shader = shader_type;
-				uniform->buffer_index = i;
-				uniform->array_length = max(1, type_desc.Elements);
-				uniform->type = UniformType::None;
-
-				if (type_desc.Type == D3D_SVT_FLOAT)
-				{
-					if (type_desc.Rows == 1)
-					{
-						if (type_desc.Columns == 1)
-							uniform->type = UniformType::Float;
-						else if (type_desc.Columns == 2)
-							uniform->type = UniformType::Float2;
-						else if (type_desc.Columns == 3)
-							uniform->type = UniformType::Float3;
-						else if (type_desc.Columns == 4)
-							uniform->type = UniformType::Float4;
-					}
-					else if (type_desc.Rows == 2 && type_desc.Columns == 3)
-					{
-						uniform->type = UniformType::Mat3x2;
-					}
-					else if (type_desc.Rows == 4 && type_desc.Columns == 4)
-					{
-						uniform->type = UniformType::Mat4x4;
-					}
-				}
-			}
-		}
-
-		return true;
-	}
+	// ~ BEGIN IMPLEMENTATION ~
 
 	class D3D11_Texture : public Texture
 	{
@@ -432,8 +299,10 @@ namespace Blah
 		ID3D11PixelShader* fragment = nullptr;
 		ID3DBlob* vertex_blob = nullptr;
 		ID3DBlob* fragment_blob = nullptr;
-		Vector<ID3D11Buffer*> vcb;
-		Vector<ID3D11Buffer*> fcb;
+		Vector<ID3D11Buffer*> vertex_uniform_buffers;
+		Vector<ID3D11Buffer*> fragment_uniform_buffers;
+		Vector<Vector<float>> vertex_uniform_values;
+		Vector<Vector<float>> fragment_uniform_values;
 		StackVector<ShaderData::HLSL_Attribute, 16> attributes;
 		Vector<UniformInfo> uniform_list;
 		uint32_t hash = 0;
@@ -523,8 +392,8 @@ namespace Blah
 			}
 
 			// get uniforms
-			reflect_uniforms(uniform_list, vcb, vertex_blob, ShaderType::Vertex);
-			reflect_uniforms(uniform_list, fcb, fragment_blob, ShaderType::Fragment);
+			reflect_uniforms(uniform_list, vertex_uniform_buffers, vertex_blob, ShaderType::Vertex);
+			reflect_uniforms(uniform_list, fragment_uniform_buffers, fragment_blob, ShaderType::Fragment);
 
 			// combine uniforms that were in both
 			for (int i = 0; i < uniform_list.size(); i++)
@@ -539,19 +408,13 @@ namespace Blah
 							uniform_list.erase(j);
 							j--;
 						}
-						else
-						{
-							// TODO:
-							// We don't allow uniforms to share names ...
-							// This should result in an invalid shader
-						}
 					}
 				}
 			}
 
-			// TODO:
-			// Validate Uniforms! Make sure they're all types we understand
-			// (ex. float/matrix only)
+			// create CPU uniform buffers, so we don't need to create them during rendering
+			vertex_uniform_values.expand(vertex_uniform_buffers.size());
+			fragment_uniform_values.expand(fragment_uniform_buffers.size());
 
 			// copy HLSL attributes
 			attributes = data->hlsl_attributes;
@@ -888,62 +751,6 @@ namespace Blah
 		return MeshRef(new D3D11_Mesh());
 	}
 
-	void apply_uniforms(D3D11_Shader* shader, const MaterialRef& material, ShaderType type)
-	{
-		// TODO:
-		// I don't like how this is set up at all! This needs to be better!!
-		// The fact it builds this every render call is UGLY
-
-		auto& buffers = (type == ShaderType::Vertex ? shader->vcb : shader->fcb);
-
-		Vector<float> buffer_input;
-		for (int i = 0; i < buffers.size(); i++)
-		{
-			// build block
-			const float* data = material->data();
-			for (auto& it : shader->uniforms())
-			{
-				if (it.type == UniformType::None ||
-					it.type == UniformType::Texture2D ||
-					it.type == UniformType::Sampler2D)
-					continue;
-
-				int size = 0;
-				switch (it.type)
-				{
-				case UniformType::Float: size = 1; break;
-				case UniformType::Float2: size = 2; break;
-				case UniformType::Float3: size = 3; break;
-				case UniformType::Float4: size = 4; break;
-				case UniformType::Mat3x2: size = 6; break;
-				case UniformType::Mat4x4: size = 16; break;
-				}
-
-				int length = size * it.array_length;
-
-				if (it.buffer_index == i && ((int)it.shader & (int)type) != 0)
-				{
-					auto start = buffer_input.expand(length);
-					memcpy(start, data, sizeof(float) * length);
-				}
-
-				data += length;
-			}
-
-			// apply block
-			if (buffers[i])
-			{
-				D3D11_MAPPED_SUBRESOURCE map;
-				state.context->Map(buffers[i], 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
-				memcpy(map.pData, buffer_input.begin(), buffer_input.size() * sizeof(float));
-				state.context->Unmap(buffers[i], 0);
-			}
-
-			// clear for next buffer
-			buffer_input.clear();
-		}
-	}
-
 	void GraphicsBackend::render(const RenderPass& pass)
 	{
 		auto ctx = state.context;
@@ -1031,14 +838,14 @@ namespace Blah
 		{
 			apply_uniforms(shader, pass.material, ShaderType::Vertex);
 			ctx->VSSetShader(shader->vertex, nullptr, 0);
-			ctx->VSSetConstantBuffers(0, shader->vcb.size(), shader->vcb.begin());
+			ctx->VSSetConstantBuffers(0, shader->vertex_uniform_buffers.size(), shader->vertex_uniform_buffers.begin());
 		}
 
 		// PS
 		{
 			apply_uniforms(shader, pass.material, ShaderType::Fragment);
 			ctx->PSSetShader(shader->fragment, nullptr, 0);
-			ctx->PSSetConstantBuffers(0, shader->fcb.size(), shader->fcb.begin());
+			ctx->PSSetConstantBuffers(0, shader->fragment_uniform_buffers.size(), shader->fragment_uniform_buffers.begin());
 
 			// Fragment Shader Textures
 			auto& textures = pass.material->textures();
@@ -1123,6 +930,202 @@ namespace Blah
 	{
 		float clear[4] = { color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f };
 		state.context->ClearRenderTargetView(state.backbuffer, clear);
+	}
+
+	// Utility Methods
+
+	D3D11_BLEND_OP blend_op(BlendOp op)
+	{
+		switch (op)
+		{
+		case BlendOp::Add: return D3D11_BLEND_OP_ADD;
+		case BlendOp::Subtract: return D3D11_BLEND_OP_SUBTRACT;
+		case BlendOp::ReverseSubtract: return D3D11_BLEND_OP_REV_SUBTRACT;
+		case BlendOp::Min: return D3D11_BLEND_OP_MIN;
+		case BlendOp::Max: return D3D11_BLEND_OP_MAX;
+		}
+
+		return D3D11_BLEND_OP_ADD;
+	}
+
+	D3D11_BLEND blend_factor(BlendFactor factor)
+	{
+		switch (factor)
+		{
+		case BlendFactor::Zero: return D3D11_BLEND_ZERO;
+		case BlendFactor::One: return D3D11_BLEND_ONE;
+		case BlendFactor::SrcColor: return D3D11_BLEND_SRC_COLOR;
+		case BlendFactor::OneMinusSrcColor: return D3D11_BLEND_INV_SRC_COLOR;
+		case BlendFactor::DstColor: return D3D11_BLEND_DEST_COLOR;
+		case BlendFactor::OneMinusDstColor: return D3D11_BLEND_INV_DEST_COLOR;
+		case BlendFactor::SrcAlpha: return D3D11_BLEND_SRC_ALPHA;
+		case BlendFactor::OneMinusSrcAlpha: return D3D11_BLEND_INV_SRC_ALPHA;
+		case BlendFactor::DstAlpha: return D3D11_BLEND_DEST_ALPHA;
+		case BlendFactor::OneMinusDstAlpha: return D3D11_BLEND_INV_DEST_ALPHA;
+		case BlendFactor::ConstantColor: return D3D11_BLEND_BLEND_FACTOR;
+		case BlendFactor::OneMinusConstantColor: return D3D11_BLEND_INV_BLEND_FACTOR;
+		case BlendFactor::ConstantAlpha: return D3D11_BLEND_BLEND_FACTOR;
+		case BlendFactor::OneMinusConstantAlpha: return D3D11_BLEND_INV_BLEND_FACTOR;
+		case BlendFactor::SrcAlphaSaturate: return D3D11_BLEND_SRC_ALPHA_SAT;
+		case BlendFactor::Src1Color: return D3D11_BLEND_SRC1_COLOR;
+		case BlendFactor::OneMinusSrc1Color: return D3D11_BLEND_INV_SRC1_COLOR;
+		case BlendFactor::Src1Alpha: return D3D11_BLEND_SRC1_ALPHA;
+		case BlendFactor::OneMinusSrc1Alpha: return D3D11_BLEND_INV_SRC1_ALPHA;
+		}
+
+		return D3D11_BLEND_ZERO;
+	}
+
+	bool reflect_uniforms(Vector<UniformInfo>& append_uniforms_to, Vector<ID3D11Buffer*>& append_buffers_to, ID3DBlob* shader, ShaderType shader_type)
+	{
+		ID3D11ShaderReflection* reflector = nullptr;
+		D3DReflect(shader->GetBufferPointer(), shader->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&reflector);
+
+		D3D11_SHADER_DESC shader_desc;
+		reflector->GetDesc(&shader_desc);
+
+		for (int i = 0; i < shader_desc.BoundResources; i++)
+		{
+			D3D11_SHADER_INPUT_BIND_DESC desc;
+			reflector->GetResourceBindingDesc(i, &desc);
+
+			if (desc.Type == D3D_SIT_TEXTURE && desc.Dimension == D3D_SRV_DIMENSION_TEXTURE2D)
+			{
+				auto uniform = append_uniforms_to.expand();
+				uniform->name = desc.Name;
+				uniform->shader = shader_type;
+				uniform->buffer_index = 0;
+				uniform->array_length = max(1, desc.BindCount);
+				uniform->type = UniformType::Texture2D;
+			}
+			else if (desc.Type == D3D_SIT_SAMPLER)
+			{
+				auto uniform = append_uniforms_to.expand();
+				uniform->name = desc.Name;
+				uniform->shader = shader_type;
+				uniform->buffer_index = 0;
+				uniform->array_length = max(1, desc.BindCount);
+				uniform->type = UniformType::Sampler2D;
+			}
+		}
+
+		for (int i = 0; i < shader_desc.ConstantBuffers; i++)
+		{
+			D3D11_SHADER_BUFFER_DESC desc;
+
+			auto cb = reflector->GetConstantBufferByIndex(i);
+			cb->GetDesc(&desc);
+
+			// create the constant buffer for assigning data later
+			{
+				D3D11_BUFFER_DESC buffer_desc = {};
+				buffer_desc.ByteWidth = desc.Size;
+				buffer_desc.Usage = D3D11_USAGE_DYNAMIC;
+				buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+				buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+				ID3D11Buffer* buffer;
+				state.device->CreateBuffer(&buffer_desc, nullptr, &buffer);
+				append_buffers_to.push_back(buffer);
+			}
+
+			// get the uniforms
+			for (int j = 0; j < desc.Variables; j++)
+			{
+				D3D11_SHADER_VARIABLE_DESC var_desc;
+				D3D11_SHADER_TYPE_DESC type_desc;
+
+				auto var = cb->GetVariableByIndex(j);
+				var->GetDesc(&var_desc);
+
+				auto type = var->GetType();
+				type->GetDesc(&type_desc);
+
+				auto uniform = append_uniforms_to.expand();
+				uniform->name = var_desc.Name;
+				uniform->shader = shader_type;
+				uniform->buffer_index = i;
+				uniform->array_length = max(1, type_desc.Elements);
+				uniform->type = UniformType::None;
+
+				if (type_desc.Type == D3D_SVT_FLOAT)
+				{
+					if (type_desc.Rows == 1)
+					{
+						if (type_desc.Columns == 1)
+							uniform->type = UniformType::Float;
+						else if (type_desc.Columns == 2)
+							uniform->type = UniformType::Float2;
+						else if (type_desc.Columns == 3)
+							uniform->type = UniformType::Float3;
+						else if (type_desc.Columns == 4)
+							uniform->type = UniformType::Float4;
+					}
+					else if (type_desc.Rows == 2 && type_desc.Columns == 3)
+					{
+						uniform->type = UniformType::Mat3x2;
+					}
+					else if (type_desc.Rows == 4 && type_desc.Columns == 4)
+					{
+						uniform->type = UniformType::Mat4x4;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+
+	void apply_uniforms(D3D11_Shader* shader, const MaterialRef& material, ShaderType type)
+	{
+		auto& buffers = (type == ShaderType::Vertex ? shader->vertex_uniform_buffers : shader->fragment_uniform_buffers);
+		auto& values = (type == ShaderType::Vertex ? shader->vertex_uniform_values : shader->fragment_uniform_values);
+
+		for (int i = 0; i < buffers.size(); i++)
+		{
+			// clear previous values
+			values[i].clear();
+
+			// build block
+			const float* data = material->data();
+			for (auto& it : shader->uniforms())
+			{
+				if (it.type == UniformType::None ||
+					it.type == UniformType::Texture2D ||
+					it.type == UniformType::Sampler2D)
+					continue;
+
+				int size = 0;
+				switch (it.type)
+				{
+				case UniformType::Float: size = 1; break;
+				case UniformType::Float2: size = 2; break;
+				case UniformType::Float3: size = 3; break;
+				case UniformType::Float4: size = 4; break;
+				case UniformType::Mat3x2: size = 6; break;
+				case UniformType::Mat4x4: size = 16; break;
+				}
+
+				int length = size * it.array_length;
+
+				if (it.buffer_index == i && ((int)it.shader & (int)type) != 0)
+				{
+					auto start = values[i].expand(length);
+					memcpy(start, data, sizeof(float) * length);
+				}
+
+				data += length;
+			}
+
+			// apply block
+			if (buffers[i])
+			{
+				D3D11_MAPPED_SUBRESOURCE map;
+				state.context->Map(buffers[i], 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
+				memcpy(map.pData, values[i].begin(), values[i].size() * sizeof(float));
+				state.context->Unmap(buffers[i], 0);
+			}
+		}
 	}
 
 	ID3D11InputLayout* D3D11::get_layout(D3D11_Shader* shader, const VertexFormat& format)
