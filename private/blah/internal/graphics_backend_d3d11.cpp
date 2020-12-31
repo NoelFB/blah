@@ -96,11 +96,13 @@ namespace Blah
 		int m_width;
 		int m_height;
 		TextureFormat m_format;
+		DXGI_FORMAT m_dxgi_format;
 		bool m_is_framebuffer;
 		int m_size;
 
 	public:
 		ID3D11Texture2D* texture = nullptr;
+		ID3D11Texture2D* staging = nullptr;
 		ID3D11ShaderResourceView* view = nullptr;
 
 		D3D11_Texture(int width, int height, TextureFormat format, bool is_framebuffer)
@@ -146,6 +148,8 @@ namespace Blah
 				break;
 			}
 
+			m_dxgi_format = desc.Format;
+
 			auto hr = state.device->CreateTexture2D(&desc, NULL, &texture);
 			if (!SUCCEEDED(hr))
 			{
@@ -167,8 +171,11 @@ namespace Blah
 		{
 			if (texture)
 				texture->Release();
+			if (staging)
+				staging->Release();
 			if (view)
 				view->Release();
+			staging = nullptr;
 			texture = nullptr;
 			view = nullptr;
 		}
@@ -190,6 +197,7 @@ namespace Blah
 
 		virtual void set_data(unsigned char* data) override
 		{
+			// bounds
 			D3D11_BOX box;
 			box.left = 0;
 			box.right = m_width;
@@ -198,6 +206,7 @@ namespace Blah
 			box.front = 0;
 			box.back = 1;
 
+			// set data
 			state.context->UpdateSubresource(
 				texture,
 				0,
@@ -209,7 +218,60 @@ namespace Blah
 
 		virtual void get_data(unsigned char* data) override
 		{
-			BLAH_ASSERT(false, "Not Implemented Yet");
+			HRESULT hr;
+
+			// bounds
+			D3D11_BOX box;
+			box.left = 0;
+			box.right = m_width;
+			box.top = 0;
+			box.bottom = m_height;
+			box.front = 0;
+			box.back = 1;
+
+			// create staging texture
+			if (!staging)
+			{
+				D3D11_TEXTURE2D_DESC desc;
+				desc.Width = m_width;
+				desc.Height = m_height;
+				desc.MipLevels = 1;
+				desc.ArraySize = 1;
+				desc.Format = m_dxgi_format;
+				desc.SampleDesc.Count = 1;
+				desc.SampleDesc.Quality = 0;
+				desc.Usage = D3D11_USAGE_STAGING;
+				desc.BindFlags = 0;
+				desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+				desc.MiscFlags = 0;
+
+				hr = state.device->CreateTexture2D(&desc, NULL, &staging);
+				if (!SUCCEEDED(hr))
+				{
+					BLAH_ERROR("Failed to create staging texture to get data");
+					return;
+				}
+			}
+
+			// copy data to staging texture
+			state.context->CopySubresourceRegion(
+				staging, 0,
+				0, 0, 0,
+				texture, 0,
+				&box);
+
+			// get data
+			D3D11_MAPPED_SUBRESOURCE map;
+			hr = state.context->Map(staging, 0, D3D11_MAP_READ, 0, &map);
+
+			if (!SUCCEEDED(hr))
+			{
+				BLAH_ERROR("Failed to get texture data");
+				return;
+			}
+
+			memcpy(data, map.pData, m_size);
+			state.context->Unmap(staging, 0);
 		}
 
 		virtual bool is_framebuffer() const override
@@ -309,6 +371,7 @@ namespace Blah
 		StackVector<ShaderData::HLSL_Attribute, 16> attributes;
 		Vector<UniformInfo> uniform_list;
 		uint32_t hash = 0;
+		bool valid = false;
 
 		D3D11_Shader(const ShaderData* data)
 		{
@@ -333,12 +396,8 @@ namespace Blah
 
 				if (FAILED(hr))
 				{
-					if (error_blob)
-					{
-						Log::error("%s", (char*)error_blob->GetBufferPointer());
-						error_blob->Release();
-					}
-
+					Log::error("%s", (char*)error_blob->GetBufferPointer());
+					error_blob->Release();
 					return;
 				}
 			}
@@ -360,12 +419,8 @@ namespace Blah
 
 				if (FAILED(hr))
 				{
-					if (error_blob)
-					{
-						Log::error("%s", (char*)error_blob->GetBufferPointer());
-						error_blob->Release();
-					}
-
+					Log::error("%s", (char*)error_blob->GetBufferPointer());
+					error_blob->Release();
 					return;
 				}
 			}
@@ -430,6 +485,9 @@ namespace Blah
 					hash = ((hash << 5) + hash) + it.semantic_name[i];
 				hash = it.semantic_index << 5 + hash;
 			}
+
+			// Shader is ready for use!
+			valid = true;
 		}
 
 		~D3D11_Shader()
@@ -528,15 +586,22 @@ namespace Blah
 					data.pSysMem = indices;
 
 					// create
-					state.device->CreateBuffer(&desc, &data, &index_buffer);
+					auto hr = state.device->CreateBuffer(&desc, &data, &index_buffer);
+					BLAH_ASSERT(SUCCEEDED(hr), "Failed to update Index Data");
 				}
 			}
 			else if (indices)
 			{
-				D3D11_MAPPED_SUBRESOURCE resource;
-				state.context->Map(index_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
-				memcpy(resource.pData, indices, index_stride * count);
-				state.context->Unmap(index_buffer, 0);
+				D3D11_MAPPED_SUBRESOURCE map;
+
+				auto hr = state.context->Map(index_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
+				BLAH_ASSERT(SUCCEEDED(hr), "Failed to update Index Data");
+
+				if (SUCCEEDED(hr))
+				{
+					memcpy(map.pData, indices, index_stride * count);
+					state.context->Unmap(index_buffer, 0);
+				}
 			}
 		}
 
@@ -569,16 +634,22 @@ namespace Blah
 					data.pSysMem = vertices;
 
 					// create
-					state.device->CreateBuffer(&desc, &data, &vertex_buffer);
+					auto hr = state.device->CreateBuffer(&desc, &data, &vertex_buffer);
+					BLAH_ASSERT(SUCCEEDED(hr), "Failed to update Vertex Data");
 				}
 			}
 			// otherwise just update it
 			else if (vertices)
 			{
-				D3D11_MAPPED_SUBRESOURCE resource;
-				state.context->Map(vertex_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
-				memcpy(resource.pData, vertices, vertex_format.stride * count);
-				state.context->Unmap(vertex_buffer, 0);
+				D3D11_MAPPED_SUBRESOURCE map;
+				auto hr = state.context->Map(vertex_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
+				BLAH_ASSERT(SUCCEEDED(hr), "Failed to update Vertex Data");
+
+				if (SUCCEEDED(hr))
+				{
+					memcpy(map.pData, vertices, vertex_format.stride * count);
+					state.context->Unmap(vertex_buffer, 0);
+				}
 			}
 		}
 
@@ -726,6 +797,8 @@ namespace Blah
 
 	void GraphicsBackend::before_render()
 	{
+		HRESULT hr;
+
 		auto next_size = Point(App::draw_width(), App::draw_height());
 		if (state.last_size != next_size)
 		{
@@ -734,15 +807,17 @@ namespace Blah
 				state.backbuffer->Release();
 
 			// perform resize
-			state.swap_chain->ResizeBuffers(2, next_size.x, next_size.y, DXGI_FORMAT_B8G8R8A8_UNORM, 0);
+			hr = state.swap_chain->ResizeBuffers(2, next_size.x, next_size.y, DXGI_FORMAT_B8G8R8A8_UNORM, 0);
+			BLAH_ASSERT(SUCCEEDED(hr), "Failed to update Backbuffer on Resize");
 			state.last_size = next_size;
 
 			// get the new buffer
 			ID3D11Texture2D* frame_buffer = nullptr;
-			state.swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&frame_buffer);
-			if (frame_buffer)
+			hr = state.swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&frame_buffer);
+			if (SUCCEEDED(hr) && frame_buffer)
 			{
-				state.device->CreateRenderTargetView(frame_buffer, nullptr, &state.backbuffer);
+				hr = state.device->CreateRenderTargetView(frame_buffer, nullptr, &state.backbuffer);
+				BLAH_ASSERT(SUCCEEDED(hr), "Failed to update Backbuffer on Resize");
 				frame_buffer->Release();
 			}
 		}
@@ -750,12 +825,14 @@ namespace Blah
 
 	void GraphicsBackend::after_render()
 	{
-		state.swap_chain->Present(1, 0);
+		auto hr = state.swap_chain->Present(1, 0);
+		BLAH_ASSERT(SUCCEEDED(hr), "Failed to Present swap chain");
 	}
 
 	TextureRef GraphicsBackend::create_texture(int width, int height, TextureFormat format)
 	{
 		auto result = new D3D11_Texture(width, height, format, false);
+
 		if (result->texture)
 			return TextureRef(result);
 
@@ -771,7 +848,7 @@ namespace Blah
 	ShaderRef GraphicsBackend::create_shader(const ShaderData* data)
 	{
 		auto result = new D3D11_Shader(data);
-		if (result->vertex && result->fragment && result->vertex_blob && result->fragment_blob)
+		if (result->valid)
 			return ShaderRef(result);
 
 		delete result;
