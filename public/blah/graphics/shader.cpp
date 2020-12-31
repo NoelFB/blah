@@ -5,6 +5,10 @@ using namespace Blah;
 
 ShaderRef Shader::create(const ShaderData& data)
 {
+	BLAH_ASSERT(data.vertex.length() > 0, "Must provide a Vertex Shader");
+	BLAH_ASSERT(data.fragment.length() > 0, "Must provide a Fragment Shader");
+	BLAH_ASSERT(data.hlsl_attributes.size() > 0 || App::renderer() != Renderer::D3D11, "D3D11 Shaders must have hlsl_attributes assigned");
+
 	auto shader = GraphicsBackend::create_shader(&data);
 	
 	// validate the shader

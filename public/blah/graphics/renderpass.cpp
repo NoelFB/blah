@@ -23,26 +23,9 @@ RenderPass::RenderPass()
 
 void RenderPass::perform()
 {
-	// Validate Material
-	if (!material)
-	{
-		Log::warn("Trying to draw with an invalid Material; skipping render pass");
-		return;
-	}
-
-	// Validate Shader
-	if (!material->shader())
-	{
-		Log::warn("Trying to draw with an invalid Shader; skipping render pass");
-		return;
-	}
-
-	// Validate Mesh
-	if (!mesh)
-	{
-		Log::warn("Trying to draw with an invalid Mesh; skipping render pass");
-		return;
-	}
+	BLAH_ASSERT(material, "Trying to draw with an invalid Material");
+	BLAH_ASSERT(material->shader(), "Trying to draw with an invalid Shader");
+	BLAH_ASSERT(mesh, "Trying to draw with an invalid Mesh");
 
 	// copy call
 	RenderPass pass = *this;

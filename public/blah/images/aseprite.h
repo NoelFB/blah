@@ -136,15 +136,15 @@ namespace Blah
 		~Aseprite();
 
 	private:
-		UserData* last_userdata = nullptr;
+		UserData* m_last_userdata = nullptr;
 
-		void Parse(Stream& stream);
-		void ParseLayer(Stream& stream, int frame);
-		void ParseCel(Stream& stream, int frame, size_t maxPosition);
-		void ParsePalette(Stream& stream, int frame);
-		void ParseUserData(Stream& stream, int frame);
-		void ParseTag(Stream& stream, int frame);
-		void ParseSlice(Stream& stream, int frame);
-		void RenderCel(Cel* cel, Frame* frame);
+		void parse(Stream& stream);
+		void parse_layer(Stream& stream, int frame);
+		void parse_cel(Stream& stream, int frame, size_t maxPosition);
+		void parse_palette(Stream& stream, int frame);
+		void parse_user_data(Stream& stream, int frame);
+		void parse_tag(Stream& stream, int frame);
+		void parse_slice(Stream& stream, int frame);
+		void render_cel(Cel* cel, Frame* frame);
 	};
 }

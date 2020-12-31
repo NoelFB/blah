@@ -3,15 +3,7 @@
 #include <blah/log.h>
 
 #define STBI_NO_STDIO
-#define STBI_NO_JPEG
-#define STBI_NO_PNG
-#define STBI_NO_BMP
-#define STBI_NO_PSD
-#define STBI_NO_TGA
-#define STBI_NO_GIF
-#define STBI_NO_HDR
-#define STBI_NO_PIC
-#define STBI_NO_PNM
+#define STBI_ONLY_ZLIB
 #include <blah/third_party/stb_image.h>
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -29,12 +21,12 @@ Aseprite::Aseprite()
 Aseprite::Aseprite(const char* path)
 {
 	FileStream fs(path, FileMode::Read);
-	Parse(fs);
+	parse(fs);
 }
 
 Aseprite::Aseprite(Stream& stream)
 {
-	Parse(stream);
+	parse(stream);
 }
 
 Aseprite::Aseprite(const Aseprite& src)
@@ -92,7 +84,7 @@ Aseprite::~Aseprite()
 
 }
 
-void Aseprite::Parse(Stream& stream)
+void Aseprite::parse(Stream& stream)
 {
 	if (!stream.is_readable())
 	{
@@ -175,12 +167,12 @@ void Aseprite::Parse(Stream& stream)
 
 			switch (chunkType)
 			{
-			case Chunks::Layer: ParseLayer(stream, i); break;
-			case Chunks::Cel: ParseCel(stream, i, chunkEnd); break;
-			case Chunks::Palette: ParsePalette(stream, i); break;
-			case Chunks::UserData: ParseUserData(stream, i); break;
-			case Chunks::FrameTags: ParseTag(stream, i); break;
-			case Chunks::Slice: ParseSlice(stream, i); break;
+			case Chunks::Layer: parse_layer(stream, i); break;
+			case Chunks::Cel: parse_cel(stream, i, chunkEnd); break;
+			case Chunks::Palette: parse_palette(stream, i); break;
+			case Chunks::UserData: parse_user_data(stream, i); break;
+			case Chunks::FrameTags: parse_tag(stream, i); break;
+			case Chunks::Slice: parse_slice(stream, i); break;
 			default: break;
 			}
 
@@ -191,7 +183,7 @@ void Aseprite::Parse(Stream& stream)
 	}
 }
 
-void Aseprite::ParseLayer(Stream& stream, int frame)
+void Aseprite::parse_layer(Stream& stream, int frame)
 {
 	layers.emplace_back();
 
@@ -211,10 +203,10 @@ void Aseprite::ParseLayer(Stream& stream, int frame)
 
 	layer.userdata.color = 0xffffff;
 	layer.userdata.text = "";
-	last_userdata = &(layer.userdata);
+	m_last_userdata = &(layer.userdata);
 }
 
-void Aseprite::ParseCel(Stream& stream, int frameIndex, size_t maxPosition)
+void Aseprite::parse_cel(Stream& stream, int frameIndex, size_t maxPosition)
 {
 	Frame& frame = frames[frameIndex];
 
@@ -295,15 +287,15 @@ void Aseprite::ParseCel(Stream& stream, int frameIndex, size_t maxPosition)
 	// draw to frame if visible
 	if ((int)layers[cel.layer_index].flag & (int)LayerFlags::Visible)
 	{
-		RenderCel(&cel, &frame);
+		render_cel(&cel, &frame);
 	}
 
 	cel.userdata.color = 0xffffff;
 	cel.userdata.text = "";
-	last_userdata = &(cel.userdata);
+	m_last_userdata = &(cel.userdata);
 }
 
-void Aseprite::ParsePalette(Stream& stream, int frame)
+void Aseprite::parse_palette(Stream& stream, int frame)
 {
 	/* size */ stream.read<uint32_t>(Endian::Little);
 	auto start = stream.read<uint32_t>(Endian::Little);
@@ -326,26 +318,26 @@ void Aseprite::ParsePalette(Stream& stream, int frame)
 	}
 }
 
-void Aseprite::ParseUserData(Stream& stream, int frame)
+void Aseprite::parse_user_data(Stream& stream, int frame)
 {
-	if (last_userdata != nullptr)
+	if (m_last_userdata != nullptr)
 	{
 		auto flags = stream.read<uint32_t>(Endian::Little);
 
 		// has text
 		if (flags & (1 << 0))
 		{
-			last_userdata->text.set_length(stream.read<uint16_t>(Endian::Little));
-			stream.read(last_userdata->text.cstr(), last_userdata->text.length());
+			m_last_userdata->text.set_length(stream.read<uint16_t>(Endian::Little));
+			stream.read(m_last_userdata->text.cstr(), m_last_userdata->text.length());
 		}
 
 		// has color
 		if (flags & (1 << 1))
-			last_userdata->color = stream.read<Color>(Endian::Little);
+			m_last_userdata->color = stream.read<Color>(Endian::Little);
 	}
 }
 
-void Aseprite::ParseTag(Stream& stream, int frame)
+void Aseprite::parse_tag(Stream& stream, int frame)
 {
 	auto count = stream.read<uint16_t>(Endian::Little);
 	stream.seek(stream.position() + 8);
@@ -368,7 +360,7 @@ void Aseprite::ParseTag(Stream& stream, int frame)
 	}
 }
 
-void Aseprite::ParseSlice(Stream& stream, int frame)
+void Aseprite::parse_slice(Stream& stream, int frame)
 {
 	int count = stream.read<uint32_t>(Endian::Little);
 	int flags = stream.read<uint32_t>(Endian::Little);
@@ -410,11 +402,11 @@ void Aseprite::ParseSlice(Stream& stream, int frame)
 
 		slice.userdata.color = 0xffffff;
 		slice.userdata.text = "";
-		last_userdata = &(slice.userdata);
+		m_last_userdata = &(slice.userdata);
 	}
 }
 
-void Aseprite::RenderCel(Cel* cel, Frame* frame)
+void Aseprite::render_cel(Cel* cel, Frame* frame)
 {
 	Layer& layer = layers[cel->layer_index];
 

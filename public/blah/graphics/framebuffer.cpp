@@ -31,8 +31,5 @@ FrameBufferRef FrameBuffer::create(int width, int height, const TextureFormat* a
 	BLAH_ASSERT(depth_count <= 1, "FrameBuffer can only have 1 Depth/Stencil Texture");
 	BLAH_ASSERT(color_count <= BLAH_ATTACHMENTS - 1, "Exceeded maximum Color attachment count");
 
-	if (color_count <= BLAH_ATTACHMENTS - 1 && depth_count <= 1 && width > 0 && height > 0)
-		return GraphicsBackend::create_framebuffer(width, height, attachments, attachment_count);
-
-	return FrameBufferRef();
+	return GraphicsBackend::create_framebuffer(width, height, attachments, attachment_count);
 }

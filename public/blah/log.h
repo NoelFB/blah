@@ -10,21 +10,18 @@
 	#define BLAH_ERROR_FMT(message, ...) \
 		do { Log::error(message "\n\tin file: %s:%d", __VA_ARGS__, __FILE__, __LINE__); abort(); } while(0)
 
-	#define BLAH_ASSERT(condition, message) \
-		do { if (!(condition)) { BLAH_ERROR(message); } } while(0)
-
 #else
 
 	#define BLAH_ERROR(message) \
 		Log::error(message "\n\tin file: %s:%d", __FILE__, __LINE__)
 
-#define BLAH_ERROR_FMT(message, ...) \
+	#define BLAH_ERROR_FMT(message, ...) \
 		Log::error(message "\n\tin file: %s:%d", __VA_ARGS__, __FILE__, __LINE__)
 
-	#define BLAH_ASSERT(condition, message) \
-		do { } while(false)
-
 #endif
+
+#define BLAH_ASSERT(condition, message) \
+		do { if (!(condition)) { BLAH_ERROR(message); } } while(0)
 
 // maximum length of a print/warn/error message
 #ifndef BLAH_MESSAGE
