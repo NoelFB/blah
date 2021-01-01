@@ -47,8 +47,6 @@ bool App::run(const Config* c)
 	app_is_running = true;
 	app_is_exiting = false;
 
-	Log::print("Starting Up ...");
-
 	// initialize the system
 	if (!PlatformBackend::init(&app_config))
 	{
@@ -148,8 +146,6 @@ bool App::run(const Config* c)
 
 	}
 
-	Log::print("Shutting down ...");
-
 	// shutdown
 	if (app_config.on_shutdown != nullptr)
 		app_config.on_shutdown();
@@ -158,7 +154,6 @@ bool App::run(const Config* c)
 	PlatformBackend::shutdown();
 
 	// clear static state
-	Log::print("Exited");
 	app_is_running = false;
 	app_is_exiting = false;
 	Time::milliseconds = 0;
