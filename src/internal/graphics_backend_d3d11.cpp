@@ -993,8 +993,8 @@ namespace Blah
 			if (pass.has_scissor)
 			{
 				D3D11_RECT scissor = {
-					pass.scissor.x, pass.scissor.y,
-					pass.scissor.x + pass.scissor.w, pass.scissor.y + pass.scissor.h };
+					(int)pass.scissor.x, (int)pass.scissor.y,
+					(int)pass.scissor.x + (int)pass.scissor.w, (int)pass.scissor.y + (int)pass.scissor.h };
 
 				ctx->RSSetScissorRects(1, &scissor);
 			}
