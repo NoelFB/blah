@@ -1,5 +1,6 @@
 #pragma once
 #include <inttypes.h>
+#include <blah/math/vec2.h>
 
 namespace Blah
 {
@@ -22,7 +23,9 @@ namespace Blah
 
 		int rand_int();
 
-		float approach(float t, float target, float maxDelta);
+		float approach(float t, float target, float delta);
+
+		Vec2 approach(const Vec2& t, const Vec2& target, float delta);
 
 		float clamp(float t, float min, float max);
 

@@ -31,9 +31,16 @@ int Calc::rand_int()
 	return rand();
 }
 
-float Calc::approach(float t, float target, float maxDelta)
+float Calc::approach(float t, float target, float delta)
 {
-	return t < target ? min(t + maxDelta, target) : max(t - maxDelta, target);
+	return t < target ? min(t + delta, target) : max(t - delta, target);
+}
+
+Vec2 Calc::approach(const Vec2& t, const Vec2& target, float delta)
+{
+	if ((target - t).length() <= delta)
+		return target;
+	return t + (target - t).normal() * delta;
 }
 
 float Calc::clamp(float t, float min, float max)
