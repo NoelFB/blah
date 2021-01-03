@@ -1,6 +1,7 @@
 #pragma once
 #include <inttypes.h>
 #include <stdarg.h>
+#include <cstdio>
 #include <blah/containers/vector.h>
 
 namespace Blah

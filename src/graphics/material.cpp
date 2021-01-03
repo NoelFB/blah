@@ -1,5 +1,6 @@
 #include <blah/graphics/material.h>
 #include <blah/core/log.h>
+#include <cstring>
 
 using namespace Blah;
 

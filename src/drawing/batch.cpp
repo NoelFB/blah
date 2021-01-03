@@ -6,6 +6,7 @@
 #include <blah/graphics/material.h>
 #include <blah/math/calc.h>
 #include <blah/core/app.h>
+#include <cmath>
 
 using namespace Blah;
 namespace

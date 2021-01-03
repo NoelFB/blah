@@ -1,6 +1,7 @@
 #pragma once
 #include <blah/core/log.h>
 #include <new>
+#include <initializer_list>
 
 namespace Blah
 {
