@@ -649,6 +649,7 @@ void PlatformBackend::gl_context_destroy(void* context)
 	SDL_GL_DeleteContext(context);
 }
 
+#if _WIN32
 void* PlatformBackend::d3d11_get_hwnd()
 {
 	SDL_SysWMinfo info;
@@ -656,5 +657,5 @@ void* PlatformBackend::d3d11_get_hwnd()
 	SDL_GetWindowWMInfo(window, &info);
 	return info.info.win.window;
 }
-
+#endif
 #endif // BLAH_USE_SDL2

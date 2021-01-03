@@ -5,18 +5,18 @@
 
 	#include <stdlib.h>
 	#define BLAH_ERROR(message) \
-		do { Log::error(message "\n\tin file: %s:%d", __FILE__, __LINE__); abort(); } while(0)
+		do { Blah::Log::error(message "\n\tin file: %s:%d", __FILE__, __LINE__); abort(); } while(0)
 
 	#define BLAH_ERROR_FMT(message, ...) \
-		do { Log::error(message "\n\tin file: %s:%d", __VA_ARGS__, __FILE__, __LINE__); abort(); } while(0)
+		do { Blah::Log::error(message "\n\tin file: %s:%d", __VA_ARGS__, __FILE__, __LINE__); abort(); } while(0)
 
 #else
 
 	#define BLAH_ERROR(message) \
-		Log::error(message "\n\tin file: %s:%d", __FILE__, __LINE__)
+		Blah::Log::error(message "\n\tin file: %s:%d", __FILE__, __LINE__)
 
 	#define BLAH_ERROR_FMT(message, ...) \
-		Log::error(message "\n\tin file: %s:%d", __VA_ARGS__, __FILE__, __LINE__)
+		Blah::Log::error(message "\n\tin file: %s:%d", __VA_ARGS__, __FILE__, __LINE__)
 
 #endif
 
