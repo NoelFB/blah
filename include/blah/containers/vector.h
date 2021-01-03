@@ -80,7 +80,7 @@ namespace Blah
 		m_count = m_capacity = 0;
 		reserve(src.m_capacity);
 		for (int i = 0; i < src.m_count; i++)
-			m_buffer[i] = src.m_buffer[i];
+			new (m_buffer + i) T(src.m_buffer[i]);
 		m_count = src.m_count;
 	}
 
@@ -213,13 +213,17 @@ namespace Blah
 	template<class T>
 	inline void Vector<T>::push_back(const T& item)
 	{
-		emplace_back(item);
+		reserve(m_count + 1);
+		new (m_buffer + m_count) T(item);
+		m_count++;
 	}
 
 	template<class T>
 	inline void Vector<T>::push_back(T&& item)
 	{
-		emplace_back(std::move(item));
+		reserve(m_count + 1);
+		new (m_buffer + m_count) T(std::move(item));
+		m_count++;
 	}
 
 	template<class T>
