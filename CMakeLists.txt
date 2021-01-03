@@ -70,8 +70,6 @@ target_include_directories(blah
 
 # Platform Variables
 set(SDL2_ENABLED true CACHE BOOL "Use SDL2 as the System implementation")
-set(SDL2_INCLUDE_DIRS "" CACHE FILEPATH "SDL2 Headers")
-set(SDL2_LIBRARIES "" CACHE FILEPATH "SDL2 Headers")
 set(OPENGL_ENABLED true CACHE BOOL "Use OpenGL graphics implementation")
 set(D3D11_ENABLED false CACHE BOOL "Use D3D11 graphics implementation")
 
@@ -88,9 +86,14 @@ if (D3D11_ENABLED)
 	set(LIBS ${LIBS} d3d11.lib dxguid.lib D3Dcompiler.lib)
 endif()
 
-# Link and create SDL2 Definition if we're using SDL2
+# Link and create SDL2 Definition if we're using it
 if (SDL2_ENABLED)
 	add_compile_definitions(BLAH_USE_SDL2)
+
+	if (NOT DEFINED SDL2_INCLUDE_DIRS OR NOT DEFINED SDL2_LIBRARIES)
+		find_package(SDL2 REQUIRED)
+	endif()
+	
 	target_include_directories(blah PUBLIC "$<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>")
 	set(LIBS ${LIBS} ${SDL2_LIBRARIES})
 endif()
