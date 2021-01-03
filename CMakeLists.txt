@@ -90,7 +90,6 @@ endif()
 
 # Link and create SDL2 Definition if we're using SDL2
 if (SDL2_ENABLED)
-	find_package(SDL2 REQUIRED)
 	add_compile_definitions(BLAH_USE_SDL2)
 	target_include_directories(blah PUBLIC "$<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>")
 	set(LIBS ${LIBS} ${SDL2_LIBRARIES})
