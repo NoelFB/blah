@@ -114,9 +114,7 @@ namespace Blah
 		void gl_context_make_current(void* context);
 		void gl_context_destroy(void* context);
 
-#if _WIN32
 		// D3D11 Methods
 		void* d3d11_get_hwnd();
-#endif
 	}
 }
