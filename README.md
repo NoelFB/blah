@@ -5,7 +5,7 @@ Goal is to be simple and use as few dependencies as possible, to maintain easy b
 **☆ This will likely see breaking changes! Use at your own risk! ☆**
 
 #### building
- - Requires C++17 and CMake
+ - Requires C++17 and CMake 3.12+
  - Platform Backend
 	- [SDL2](https://github.com/NoelFB/blah/blob/master/private/blah/internal/platform_backend_sdl2.cpp) can be enabled in CMake with `SDL2_ENABLED`, and setting `SDL2_INCLUDE_DIRS` and `SDL2_LIBRARIES`
  - Graphics Backend
