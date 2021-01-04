@@ -166,6 +166,9 @@ uint64_t PlatformBackend::time()
 	return (uint64_t)SDL_GetTicks();
 }
 
+// Macro defined by X11 conflicts with MouseButton enum
+#undef None
+
 void PlatformBackend::frame()
 {
 	// update the mouse every frame
@@ -567,7 +570,9 @@ void PlatformBackend::dir_enumerate(Vector<FilePath>& list, const char* path, bo
 			if (dp->d_name[0] == '.')
 				continue;
 
-			FilePath subpath = FilePath(path).append(dp->d_name);
+			FilePath subpath = FilePath(path);
+			if (subpath.end()[-1] != '/') subpath = subpath.append("/");
+			subpath = subpath.append(dp->d_name);
 			list.push_back(subpath);
 
 			if (recursive && dp->d_type == DT_DIR)
