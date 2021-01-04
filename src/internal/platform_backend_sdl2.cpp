@@ -81,6 +81,10 @@ bool PlatformBackend::init(const Config* config)
 	{
 		flags |= SDL_WINDOW_OPENGL;
 
+#ifdef __EMSCRIPTEN__
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#else
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -93,6 +97,7 @@ bool PlatformBackend::init(const Config* config)
 		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+#endif
 	}
 	// enable DirectX
 	else if (App::renderer() == Renderer::D3D11)
@@ -140,9 +145,11 @@ bool PlatformBackend::init(const Config* config)
 
 void PlatformBackend::ready()
 {
+#ifndef __EMSCRIPTEN__
 	// enable V-Sync
 	if (App::renderer() == Renderer::OpenGL)
 		SDL_GL_SetSwapInterval(1);
+#endif
 }
 
 void PlatformBackend::shutdown()

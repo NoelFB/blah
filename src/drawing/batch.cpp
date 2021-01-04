@@ -19,7 +19,11 @@ namespace
 
 	const ShaderData shader_data = {
 		// vertex shader
+#ifdef __EMSCRIPTEN__
+		"#version 300 es\n"
+#else
 		"#version 330\n"
+#endif
 		"uniform mat4 u_matrix;\n"
 		"layout(location=0) in vec2 a_position;\n"
 		"layout(location=1) in vec2 a_tex;\n"
@@ -37,7 +41,12 @@ namespace
 		"}",
 
 		// fragment shader
+#ifdef __EMSCRIPTEN__
+		"#version 300 es\n"
+		"precision mediump float;\n"
+#else
 		"#version 330\n"
+#endif
 		"uniform sampler2D u_texture;\n"
 		"in vec2 v_tex;\n"
 		"in vec4 v_col;\n"
