@@ -751,15 +751,10 @@ namespace Blah
 
 		virtual void clear(Color color) override
 		{
-			auto rgba = color.to_rgba();
-			unsigned char r = rgba >> 24;
-			unsigned char g = rgba >> 16;
-			unsigned char b = rgba >> 8;
-			unsigned char a = rgba;
-
 			gl.BindFramebuffer(GL_FRAMEBUFFER, m_id);
 			gl.Disable(GL_SCISSOR_TEST);
-			gl.ClearColor(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+			gl.ColorMask(true, true, true, true);
+			gl.ClearColor(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
 			gl.Clear(GL_COLOR_BUFFER_BIT);
 		}
 	};
@@ -1492,15 +1487,10 @@ namespace Blah
 
 	void GraphicsBackend::clear_backbuffer(Color color)
 	{
-		auto rgba = color.to_rgba();
-		unsigned char r = rgba >> 24;
-		unsigned char g = rgba >> 16;
-		unsigned char b = rgba >> 8;
-		unsigned char a = rgba;
-
 		gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
 		gl.Disable(GL_SCISSOR_TEST);
-		gl.ClearColor(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+		gl.ColorMask(true, true, true, true);
+		gl.ClearColor(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
 		gl.Clear(GL_COLOR_BUFFER_BIT);
 	}
 }
