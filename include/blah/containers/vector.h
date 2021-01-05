@@ -107,7 +107,7 @@ namespace Blah
 		clear();
 		reserve(src.m_capacity);
 		for (int i = 0; i < src.m_count; i++)
-			m_buffer[i] = src.m_buffer[i];
+			new (m_buffer + i) T(src.m_buffer[i]);
 		m_count = src.m_count;
 		return *this;
 	}
