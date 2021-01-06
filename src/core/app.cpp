@@ -7,13 +7,20 @@
 #include "../internal/graphics_backend.h"
 #include "../internal/input_backend.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <emscripten/html5.h>
+#endif
+
 using namespace Blah;
 
 namespace
 {
-	Config app_config;
-	bool app_is_running = false;
-	bool app_is_exiting = false;
+	static Config app_config;
+	static bool app_is_running = false;
+	static bool app_is_exiting = false;
+	static uint64_t time_last;
+	static uint64_t time_accumulator = 0;
 }
 
 Config::Config()
@@ -33,6 +40,79 @@ Config::Config()
 	on_warn = nullptr;
 	on_error = nullptr;
 }
+
+namespace {
+
+void loop_iteration() {
+	// poll system events
+	PlatformBackend::frame();
+
+	// update at a fixed timerate
+	// TODO: allow a non-fixed step update?
+	{
+		uint64_t time_target = (uint64_t)((1.0f / app_config.target_framerate) * 1000);
+		uint64_t time_curr = PlatformBackend::time();
+		uint64_t time_diff = time_curr - time_last;
+		time_last = time_curr;
+		time_accumulator += time_diff;
+
+		// do not let us run too fast
+		while (time_accumulator < time_target)
+		{
+			PlatformBackend::sleep((int)(time_target - time_accumulator));
+
+			time_curr = PlatformBackend::time();
+			time_diff = time_curr - time_last;
+			time_last = time_curr;
+			time_accumulator += time_diff;
+		}
+
+		// Do not allow us to fall behind too many updates
+		// (otherwise we'll get spiral of death)
+		uint64_t time_maximum = app_config.max_updates * time_target;
+		if (time_accumulator > time_maximum)
+			time_accumulator = time_maximum;
+
+		// do as many updates as we can
+		while (time_accumulator >= time_target)
+		{
+			time_accumulator -= time_target;
+
+			Time::delta = (1.0f / app_config.target_framerate);
+
+			if (Time::pause_timer > 0)
+			{
+				Time::pause_timer -= Time::delta;
+				if (Time::pause_timer <= -0.0001f)
+					Time::delta = -Time::pause_timer;
+				else
+					continue;
+			}
+
+			Time::milliseconds += time_target;
+			Time::previous_elapsed = Time::elapsed;
+			Time::elapsed += Time::delta;
+
+			InputBackend::frame();
+			GraphicsBackend::frame();
+
+			if (app_config.on_update != nullptr)
+				app_config.on_update();
+		}
+	}
+
+	// render
+	{
+		GraphicsBackend::before_render();
+
+		if (app_config.on_render != nullptr)
+			app_config.on_render();
+
+		GraphicsBackend::after_render();
+		PlatformBackend::present();
+	}
+}
+} // namespace
 
 bool App::run(const Config* c)
 {
@@ -68,83 +148,20 @@ bool App::run(const Config* c)
 	if (app_config.on_startup != nullptr)
 		app_config.on_startup();
 
-	uint64_t time_last = PlatformBackend::time();
-	uint64_t time_accumulator = 0;
+	time_last = PlatformBackend::time();
+	time_accumulator = 0;
 
 	// display window
 	PlatformBackend::ready();
 
+#ifdef __EMSCRIPTEN__
+	emscripten_set_main_loop(loop_iteration, 0, 1);
+#else
 	while (!app_is_exiting)
 	{
-		// poll system events
-		PlatformBackend::frame();
-
-		// update at a fixed timerate
-		// TODO: allow a non-fixed step update?
-		{
-			uint64_t time_target = (uint64_t)((1.0f / app_config.target_framerate) * 1000);
-			uint64_t time_curr = PlatformBackend::time();
-			uint64_t time_diff = time_curr - time_last;
-			time_last = time_curr;
-			time_accumulator += time_diff;
-
-			// do not let us run too fast
-			while (time_accumulator < time_target)
-			{
-				PlatformBackend::sleep((int)(time_target - time_accumulator));
-
-				time_curr = PlatformBackend::time();
-				time_diff = time_curr - time_last;
-				time_last = time_curr;
-				time_accumulator += time_diff;
-			}
-
-			// Do not allow us to fall behind too many updates
-			// (otherwise we'll get spiral of death)
-			uint64_t time_maximum = app_config.max_updates * time_target;
-			if (time_accumulator > time_maximum)
-				time_accumulator = time_maximum;
-
-			// do as many updates as we can
-			while (time_accumulator >= time_target)
-			{
-				time_accumulator -= time_target;
-
-				Time::delta = (1.0f / app_config.target_framerate);
-
-				if (Time::pause_timer > 0)
-				{
-					Time::pause_timer -= Time::delta;
-					if (Time::pause_timer <= -0.0001f)
-						Time::delta = -Time::pause_timer;
-					else
-						continue;
-				}
-
-				Time::milliseconds += time_target;
-				Time::previous_elapsed = Time::elapsed;
-				Time::elapsed += Time::delta;
-
-				InputBackend::frame();
-				GraphicsBackend::frame();
-
-				if (app_config.on_update != nullptr)
-					app_config.on_update();
-			}
-		}
-
-		// render
-		{
-			GraphicsBackend::before_render();
-
-			if (app_config.on_render != nullptr)
-				app_config.on_render();
-
-			GraphicsBackend::after_render();
-			PlatformBackend::present();
-		}
-
+		loop_iteration();
 	}
+#endif
 
 	// shutdown
 	if (app_config.on_shutdown != nullptr)
