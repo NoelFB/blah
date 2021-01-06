@@ -806,7 +806,7 @@ namespace Blah
 				state.backbuffer->Release();
 
 			// perform resize
-			hr = state.swap_chain->ResizeBuffers(2, next_size.x, next_size.y, DXGI_FORMAT_B8G8R8A8_UNORM, 0);
+			hr = state.swap_chain->ResizeBuffers(0, next_size.x, next_size.y, DXGI_FORMAT_B8G8R8A8_UNORM, 0);
 			BLAH_ASSERT(SUCCEEDED(hr), "Failed to update Backbuffer on Resize");
 			state.last_size = next_size;
 
