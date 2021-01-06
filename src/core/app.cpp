@@ -14,15 +14,6 @@
 
 using namespace Blah;
 
-namespace
-{
-	static Config app_config;
-	static bool app_is_running = false;
-	static bool app_is_exiting = false;
-	static uint64_t time_last;
-	static uint64_t time_accumulator = 0;
-}
-
 Config::Config()
 {
 	name = nullptr;
@@ -41,78 +32,86 @@ Config::Config()
 	on_error = nullptr;
 }
 
-namespace {
+namespace
+{
+	Config app_config;
+	bool app_is_running = false;
+	bool app_is_exiting = false;
+	uint64_t time_last;
+	uint64_t time_accumulator = 0;
 
-void loop_iteration() {
-	// poll system events
-	PlatformBackend::frame();
-
-	// update at a fixed timerate
-	// TODO: allow a non-fixed step update?
+	void app_iterate()
 	{
-		uint64_t time_target = (uint64_t)((1.0f / app_config.target_framerate) * 1000);
-		uint64_t time_curr = PlatformBackend::time();
-		uint64_t time_diff = time_curr - time_last;
-		time_last = time_curr;
-		time_accumulator += time_diff;
+		// poll system events
+		PlatformBackend::frame();
 
-		// do not let us run too fast
-		while (time_accumulator < time_target)
+		// update at a fixed timerate
+		// TODO: allow a non-fixed step update?
 		{
-			PlatformBackend::sleep((int)(time_target - time_accumulator));
-
-			time_curr = PlatformBackend::time();
-			time_diff = time_curr - time_last;
+			uint64_t time_target = (uint64_t)((1.0f / app_config.target_framerate) * 1000);
+			uint64_t time_curr = PlatformBackend::time();
+			uint64_t time_diff = time_curr - time_last;
 			time_last = time_curr;
 			time_accumulator += time_diff;
-		}
 
-		// Do not allow us to fall behind too many updates
-		// (otherwise we'll get spiral of death)
-		uint64_t time_maximum = app_config.max_updates * time_target;
-		if (time_accumulator > time_maximum)
-			time_accumulator = time_maximum;
-
-		// do as many updates as we can
-		while (time_accumulator >= time_target)
-		{
-			time_accumulator -= time_target;
-
-			Time::delta = (1.0f / app_config.target_framerate);
-
-			if (Time::pause_timer > 0)
+			// do not let us run too fast
+			while (time_accumulator < time_target)
 			{
-				Time::pause_timer -= Time::delta;
-				if (Time::pause_timer <= -0.0001f)
-					Time::delta = -Time::pause_timer;
-				else
-					continue;
+				PlatformBackend::sleep((int)(time_target - time_accumulator));
+
+				time_curr = PlatformBackend::time();
+				time_diff = time_curr - time_last;
+				time_last = time_curr;
+				time_accumulator += time_diff;
 			}
 
-			Time::milliseconds += time_target;
-			Time::previous_elapsed = Time::elapsed;
-			Time::elapsed += Time::delta;
+			// Do not allow us to fall behind too many updates
+			// (otherwise we'll get spiral of death)
+			uint64_t time_maximum = app_config.max_updates * time_target;
+			if (time_accumulator > time_maximum)
+				time_accumulator = time_maximum;
 
-			InputBackend::frame();
-			GraphicsBackend::frame();
+			// do as many updates as we can
+			while (time_accumulator >= time_target)
+			{
+				time_accumulator -= time_target;
 
-			if (app_config.on_update != nullptr)
-				app_config.on_update();
+				Time::delta = (1.0f / app_config.target_framerate);
+
+				if (Time::pause_timer > 0)
+				{
+					Time::pause_timer -= Time::delta;
+					if (Time::pause_timer <= -0.0001f)
+						Time::delta = -Time::pause_timer;
+					else
+						continue;
+				}
+
+				Time::milliseconds += time_target;
+				Time::previous_elapsed = Time::elapsed;
+				Time::elapsed += Time::delta;
+
+				InputBackend::frame();
+				GraphicsBackend::frame();
+
+				if (app_config.on_update != nullptr)
+					app_config.on_update();
+			}
+		}
+
+		// render
+		{
+			GraphicsBackend::before_render();
+
+			if (app_config.on_render != nullptr)
+				app_config.on_render();
+
+			GraphicsBackend::after_render();
+			PlatformBackend::present();
 		}
 	}
 
-	// render
-	{
-		GraphicsBackend::before_render();
-
-		if (app_config.on_render != nullptr)
-			app_config.on_render();
-
-		GraphicsBackend::after_render();
-		PlatformBackend::present();
-	}
 }
-} // namespace
 
 bool App::run(const Config* c)
 {
@@ -154,13 +153,14 @@ bool App::run(const Config* c)
 	// display window
 	PlatformBackend::ready();
 
+	// Begin main loop
+	// Emscripten requires the main loop be separated into its own call
+
 #ifdef __EMSCRIPTEN__
-	emscripten_set_main_loop(loop_iteration, 0, 1);
+	emscripten_set_main_loop(app_iterate, 0, 1);
 #else
 	while (!app_is_exiting)
-	{
-		loop_iteration();
-	}
+		app_iterate();
 #endif
 
 	// shutdown

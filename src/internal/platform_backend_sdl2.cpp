@@ -147,6 +147,8 @@ void PlatformBackend::ready()
 {
 #ifndef __EMSCRIPTEN__
 	// enable V-Sync
+	// TODO:
+	// This should be a toggle or controllable in some way
 	if (App::renderer() == Renderer::OpenGL)
 		SDL_GL_SetSwapInterval(1);
 #endif
