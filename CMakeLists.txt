@@ -89,15 +89,23 @@ endif()
 # Link and create SDL2 Definition if we're using it
 if (SDL2_ENABLED)
 	add_compile_definitions(BLAH_USE_SDL2)
-	if (${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
+	if (EMSCRIPTEN)
   		set_target_properties(blah PROPERTIES COMPILE_FLAGS "-s USE_SDL=2")
 	else()
-		if (NOT DEFINED SDL2_INCLUDE_DIRS OR NOT DEFINED SDL2_LIBRARIES)
-			find_package(SDL2 REQUIRED)
+		# TODO: Maybe select system SDL2 and then fallback to downloading if it doesn't exist
+		include(FetchContent)
+		FetchContent_Declare(
+			SDL2
+			GIT_REPOSITORY https://github.com/SDL-mirror/SDL
+			GIT_TAG release-2.0.14 # grab latest release
+		)
+		FetchContent_GetProperties(SDL2)
+		if (NOT sdl2_POPULATED)
+			FetchContent_Populate(SDL2)
+			add_subdirectory(${sdl2_SOURCE_DIR} ${sdl2_BINARY_DIR})
 		endif()
-		
-		target_include_directories(blah PUBLIC "$<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>")
-		set(LIBS ${LIBS} ${SDL2_LIBRARIES})
+
+		set(LIBS ${LIBS} SDL2) # link to SDL2 static library
 	endif()
 endif()
 
