@@ -31,8 +31,8 @@ namespace Blah
 		Vec2& operator /=(float rhs);
 		Vec2& operator *=(float rhs);
 		
-		bool operator ==(const Vec2& rhs);
-		bool operator !=(const Vec2& rhs);
+		bool operator ==(const Vec2& rhs) const;
+		bool operator !=(const Vec2& rhs) const;
 		
 		Vec2 normal() const;
 		Vec2 turn_right() const;
