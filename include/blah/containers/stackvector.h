@@ -146,7 +146,7 @@ namespace Blah
 			return &data()[count];
 		}
 
-		return m_buffer;
+		return (T*)m_buffer;
 	}
 
 	template<class T, size_t Capacity>
