@@ -97,27 +97,21 @@ namespace Blah
 			return write_from(buffer, length);
 		}
 
-		// writes a null-terminated string, and returns the amount written
-		int64_t write_cstr(const Str& string)
+		// writes the contents of a string to the stream
+		int64_t write(const String& string)
 		{
-			return write(string.cstr(), string.length() + 1);
-		}
-
-		// writes a null-terminated string, and returns the amount written
-		int64_t write_cstr(const char* cstr)
-		{
-			return write(cstr, strlen(cstr) + 1);
+			return write_from(string.begin(), string.length());
 		}
 
 		// writes a number
-		template<class T>
+		template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
 		int64_t write(const T& value)
 		{
 			return write<T>(value, Endian::Little);
 		}
 
 		// writes a number
-		template<class T>
+		template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
 		int64_t write(const T& value, Endian endian)
 		{
 			T writing = value;
