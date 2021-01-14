@@ -43,45 +43,20 @@ namespace Blah
 		int64_t read(void* buffer, int64_t length) { return read_into(buffer, length); }
 
 		// reads a string. if length < 0, assumes null-terminated
-		String read_string(int length = -1)
-		{
-			String result;
+		String read_string(int length = -1);
 
-			if (length < 0)
-			{
-				char next;
-				while (read(&next, 1) && next != '\0')
-					result.append(next);
-			}
-			else
-			{
-				result.set_length(length);
-				read_into(result.cstr(), length);
-			}
-
-			return result;
-		}
-
-		String read_line()
-		{
-			String result;
-
-			char next;
-			while (read(&next, 1) && next != '\n' && next != '\0')
-				result.append(next);
-
-			return result;
-		}
+		// reads a string until a newline '\n' or null-terminator '\0' is found
+		String read_line();
 
 		// reads a number
-		template<class T>
+		template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
 		T read()
 		{
 			return read<T>(Endian::Little);
 		}
 
 		// reads a number
-		template<class T>
+		template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
 		T read(Endian endian)
 		{
 			T result;
@@ -92,16 +67,10 @@ namespace Blah
 		}
 
 		// writes the amount of bytes to the stream from the given buffer, and returns the amount written
-		int64_t write(const void* buffer, int64_t length) 
-		{ 
-			return write_from(buffer, length);
-		}
+		int64_t write(const void* buffer, int64_t length);
 
 		// writes the contents of a string to the stream
-		int64_t write(const String& string)
-		{
-			return write_from(string.begin(), string.length());
-		}
+		int64_t write(const String& string);
 
 		// writes a number
 		template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
@@ -130,6 +99,3 @@ namespace Blah
 		virtual int64_t write_from(const void* buffer, int64_t length) = 0;
 	};
 }
-
-#undef BLAH_SWAP_ENDIAN
-#undef BLAH_BIG_ENDIAN
