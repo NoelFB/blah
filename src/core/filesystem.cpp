@@ -134,3 +134,8 @@ FilePath Path::normalize(const FilePath& path)
 
 	return normalized;
 }
+
+FilePath Path::join(const FilePath& a, const FilePath& b)
+{
+	return normalize(FilePath(a).append("/").append(b));
+}
