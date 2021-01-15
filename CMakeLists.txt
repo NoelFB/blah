@@ -92,20 +92,26 @@ if (SDL2_ENABLED)
 	if (EMSCRIPTEN)
   		set_target_properties(blah PROPERTIES COMPILE_FLAGS "-s USE_SDL=2")
 	else()
-		# TODO: Maybe select system SDL2 and then fallback to downloading if it doesn't exist
-		include(FetchContent)
-		FetchContent_Declare(
-			SDL2
-			GIT_REPOSITORY https://github.com/SDL-mirror/SDL
-			GIT_TAG release-2.0.14 # grab latest release
-		)
-		FetchContent_GetProperties(SDL2)
-		if (NOT sdl2_POPULATED)
-			FetchContent_Populate(SDL2)
-			add_subdirectory(${sdl2_SOURCE_DIR} ${sdl2_BINARY_DIR})
+		# Attempt to find SDL2
+		find_package(SDL2 QUIET)
+
+		# If CMake cannot find SDL2 library, then it gets downloaded and compiled that way 
+		if (NOT ${SDL2_FOUND})
+			include(FetchContent)
+			FetchContent_Declare(
+				SDL2
+				GIT_REPOSITORY https://github.com/SDL-mirror/SDL
+				GIT_TAG release-2.0.14 # grab latest stable release
+			)
+			FetchContent_GetProperties(SDL2)
+			if (NOT sdl2_POPULATED)
+				FetchContent_Populate(SDL2)
+				add_subdirectory(${sdl2_SOURCE_DIR} ${sdl2_BINARY_DIR})
+			endif()
 		endif()
 
-		set(LIBS ${LIBS} SDL2) # link to SDL2 static library
+		# Either way we are linking to SDL2
+		set(LIBS ${LIBS} SDL2)
 	endif()
 endif()
 
