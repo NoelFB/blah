@@ -77,18 +77,33 @@ SpriteFont& SpriteFont::operator=(SpriteFont && src) noexcept
 float SpriteFont::width_of(const String& text) const
 {
 	float width = 0;
-	float lineWidth = 0;
-	for (auto it = text.begin(); it != text.end(); it++)
+	float line_width = 0;
+
+	uint32_t last;
+	for (int i = 0; i < text.length(); i ++)
 	{
-		if (*it == '\n')
-			lineWidth = 0;
+		if (text[i] == '\n')
+		{
+			line_width = 0;
+			continue;
+		}
 
-		// TODO: this doesn't account for Unicode values!
-		uint32_t codepoint = *it;
+		// get codepoint
+		auto next = text.utf8_at(i);
 
-		lineWidth += this->operator[](codepoint).advance;
-		if (lineWidth > width)
-			width = lineWidth;
+		// increment length
+		line_width += this->operator[](next).advance;
+		
+		// add kerning
+		if (i > 0)
+			line_width += get_kerning(last, next);
+
+		if (line_width > width)
+			width = line_width;
+
+		// move to thext utf8 character
+		i += text.utf8_length(i) - 1;
+		last = next;
 	}
 
 	return width;
@@ -99,19 +114,31 @@ float SpriteFont::width_of_line(const String& text, int start) const
 	if (start < 0) return 0;
 	if (start >= text.length()) return 0;
 
-	float lineWidth = 0;
-	for (auto it = text.begin() + start; it != text.end(); it++)
+	float width = 0;
+
+	uint32_t last;
+	for (int i = start; i < text.length(); i ++)
 	{
-		if (*it == '\n')
-			return lineWidth;
+		if (text[i] == '\n')
+			return width;
 
-		// TODO: this doesn't account for Unicode values!
-		uint32_t codepoint = *it;
+		// get codepoint
+		auto next = text.utf8_at(i);
 
-		lineWidth += this->operator[](codepoint).advance;
+		// increment length
+		width += this->operator[](next).advance;
+		
+		// add kerning
+		if (i > 0)
+			width += get_kerning(last, next);
+
+		// move to thext utf8 character
+		i += text.utf8_length(i) - 1;
+
+		last = next;
 	}
 
-	return lineWidth;
+	return width;
 }
 
 float SpriteFont::height_of(const String& text) const
@@ -120,10 +147,11 @@ float SpriteFont::height_of(const String& text) const
 		return 0;
 
 	float height = line_height();
-	for (auto it = text.begin(); it != text.end(); it++)
+	for (int i = 0; i < text.length(); i ++)
 	{
-		if (*it == '\n')
+		if (text[i] == '\n')
 			height += line_height();
+		i += text.utf8_length(i) - 1;
 	}
 
 	return height - line_gap;

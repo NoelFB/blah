@@ -1046,6 +1046,7 @@ void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, Tex
 	else
 		offset.y = (font.ascent + font.descent + font.height() - font.height_of(text)) * 0.5f;
 
+	uint32_t last = 0;
 	for (int i = 0, l = text.length(); i < l; i++)
 	{
 		if (text[i] == '\n')
@@ -1061,29 +1062,34 @@ void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, Tex
 			else
 				offset.x = -font.width_of_line(text, i + 1) * 0.5f;
 
+			last = 0;
 			continue;
 		}
 
-		// TODO:
-		// This doesn't parse Unicode! 
-		// It will assume it's a 1-byte ASCII char which is incorrect
-		const auto& ch = font[text[i]];
+		// get the character
+		uint32_t next = text.utf8_at(i);
+		const auto& ch = font[next];
 
+		// draw it, if the subtexture exists
 		if (ch.subtexture.texture)
 		{
 			Vec2 at = offset + ch.offset;
 
 			if (i > 0 && text[i - 1] != '\n')
-			{
-				// TODO:
-				// This doesn't parse Unicode! 
-				at.x += font.get_kerning(text[i - 1], text[i]);
-			}
+				at.x += font.get_kerning(last, next);
 
 			tex(ch.subtexture, at, color);
 		}
 
+		// move forward
 		offset.x += ch.advance;
+
+		// increment past current character
+		// (minus 1 since the for loop iterator increments as well)
+		i += text.utf8_length(i) - 1;
+		
+		// keep last codepoint for next char for kerning
+		last = next;
 	}
 
 	pop_matrix();

@@ -79,6 +79,50 @@ void Str::set_length(int len)
 	m_length = len;
 }
 
+uint32_t Str::utf8_at(int index) const
+{
+	uint32_t charcode = 0;
+	
+	int t = (unsigned char)(this->operator[](index++));
+	if (t < 128)
+		return t;
+
+	int high_bit_mask = (1 << 6) - 1;
+	int high_bit_shift = 0;
+	int total_bits = 0;
+	int other_bits = 6;
+
+	while ((t & 0xC0) == 0xC0)
+	{
+		t <<= 1;
+		t &= 0xff;
+		total_bits += 6;
+		high_bit_mask >>= 1;
+		high_bit_shift++;
+		charcode <<= other_bits;
+		charcode |= ((unsigned char)(this->operator[](index++))) & ((1 << other_bits) - 1);
+	}
+	charcode |= ((t >> high_bit_shift) & high_bit_mask) << total_bits;
+
+	return charcode;
+}
+
+int Str::utf8_length(int index) const
+{
+	auto c = this->operator[](index);
+	if ((c & 0xFE) == 0xFC)
+		return 6;
+	if ((c & 0xFC) == 0xF8)
+		return 5;
+	if ((c & 0xF8) == 0xF0)
+		return 4;
+	else if ((c & 0xF0) == 0xE0)
+		return 3;
+	else if ((c & 0xE0) == 0xC0)
+		return 2;
+	return 1;
+}
+
 Str& Str::append(char c)
 {
 	reserve(m_length + 1);

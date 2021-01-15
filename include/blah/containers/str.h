@@ -75,6 +75,14 @@ namespace Blah
 
 		// ensures the string has the given capacity
 		void reserve(int capacity);
+		
+		// Returns the unicode value at the given index.
+		// Assumes the index is a valid utf8 starting point.
+		uint32_t utf8_at(int index) const;
+
+		// Returns the byte-length of the utf8 character.
+		// Assumes the index is a valid utf8 starting point.
+		int utf8_length(int index) const;
 
 		// appends the given character
 		Str& append(char c);

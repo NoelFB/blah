@@ -37,5 +37,12 @@ namespace Blah
 		FilePath get_path_after(const FilePath& path, const FilePath& after);
 		FilePath get_directory_name(const FilePath& path);
 		FilePath normalize(const FilePath& path);
+		FilePath join(const FilePath& a, const FilePath& b);
+
+		template<typename ... Args>
+		FilePath join(const FilePath& a, const FilePath& b, const Args&... args)
+		{
+			return join(a, join(b, args...));
+		}
 	}
 }

@@ -25,8 +25,8 @@ Vec2& Vec2::operator *=(const Vec2& rhs) { x *= rhs.x; y *= rhs.y; return *this;
 Vec2& Vec2::operator/=(float rhs) { x /= rhs; y /= rhs; return *this; }
 Vec2& Vec2::operator*=(float rhs) { x *= rhs; y *= rhs; return *this; }
 
-bool Vec2::operator ==(const Vec2& rhs) { return x == rhs.x && y == rhs.y; }
-bool Vec2::operator !=(const Vec2& rhs) { return x != rhs.x || y != rhs.y; }
+bool Vec2::operator ==(const Vec2& rhs) const { return x == rhs.x && y == rhs.y; }
+bool Vec2::operator !=(const Vec2& rhs) const { return x != rhs.x || y != rhs.y; }
 
 Vec2 Vec2::normal() const
 {
