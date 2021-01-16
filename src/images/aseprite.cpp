@@ -308,8 +308,7 @@ void Aseprite::parse_palette(Stream& stream, int frame)
 	for (int p = 0, len = static_cast<int>(end - start) + 1; p < len; p++)
 	{
 		auto hasName = stream.read<uint16_t>(Endian::Little);
-
-		palette[start + p] = stream.read<Color>(Endian::Little);
+		palette[start + p] = stream.read<uint32_t>(Endian::Little);
 
 		if (hasName & 0xF000)
 		{
@@ -334,7 +333,7 @@ void Aseprite::parse_user_data(Stream& stream, int frame)
 
 		// has color
 		if (flags & (1 << 1))
-			m_last_userdata->color = stream.read<Color>(Endian::Little);
+			m_last_userdata->color = stream.read<uint32_t>(Endian::Little);
 	}
 }
 
