@@ -27,6 +27,9 @@ Color::Color(uint8_t r, uint8_t g, uint8_t b)
 Color::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 	: r(r), g(g), b(b), a(a) {}
 
+Color::Color(const Vec4& vec4)
+	: r((int)(vec4.x * 255)), g((int)(vec4.y * 255)), b((int)(vec4.z * 255)), a((int)(vec4.w * 255)) {}
+
 Color::Color(const char* value) : r(0), g(0), b(0), a(255)
 {
 	int length = 0;
@@ -83,6 +86,13 @@ void Color::to_hex_rgba(char* buffer) const
 	buffer[7] = hex[(a & 0x0F) >> 0];
 }
 
+String Color::to_hex_rgba() const
+{
+	String str = "00000000";
+	to_hex_rgba(str.cstr());
+	return str;
+}
+
 void Color::to_hex_rgb(char* buffer) const
 {
 	buffer[0] = hex[(r & 0xF0) >> 4];
@@ -91,6 +101,13 @@ void Color::to_hex_rgb(char* buffer) const
 	buffer[3] = hex[(g & 0x0F) >> 0];
 	buffer[4] = hex[(b & 0xF0) >> 4];
 	buffer[5] = hex[(b & 0x0F) >> 0];
+}
+
+String Color::to_hex_rgb() const
+{
+	String str = "000000";
+	to_hex_rgb(str.cstr());
+	return str;
 }
 
 Color Color::from_rgba(uint32_t value)
@@ -136,7 +153,7 @@ Color Color::operator*(float multiply) const
 		(int)(a * multiply));
 }
 
-Color& Color::operator= (const int rgb)
+Color& Color::operator=(const int rgb)
 {
 	r = (uint8_t)((rgb & 0xFF0000) >> 16);
 	g = (uint8_t)((rgb & 0x00FF00) >> 8);
@@ -144,6 +161,9 @@ Color& Color::operator= (const int rgb)
 	a = 255;
 	return *this;
 }
+
+bool Color::operator ==(const Color& rhs) const { return r == rhs.r && g == rhs.g && b == rhs.b && a == rhs.a; }
+bool Color::operator !=(const Color& rhs) const { return r != rhs.r || g != rhs.g || b != rhs.b || a != rhs.a; }
 
 const Color Color::transparent = Color(0, 0, 0, 0);
 const Color Color::white = Color(255, 255, 255, 255);
