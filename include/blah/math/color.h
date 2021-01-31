@@ -1,5 +1,6 @@
 #pragma once
 #include <inttypes.h>
+#include <blah/containers/str.h>
 
 namespace Blah
 {
