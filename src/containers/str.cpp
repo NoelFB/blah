@@ -6,13 +6,6 @@
 
 using namespace Blah;
 
-const uint16_t UTF8_LEAD_SURROGATE_MIN = 0xd800u;
-const uint16_t UTF8_LEAD_SURROGATE_MAX = 0xdbffu;
-const uint16_t UTF8_TRAIL_SURROGATE_MIN = 0xdc00u;
-const uint16_t UTF8_TRAIL_SURROGATE_MAX = 0xdfffu;
-const uint16_t UTF8_LEAD_OFFSET = UTF8_LEAD_SURROGATE_MIN - (0x10000 >> 10);
-const uint32_t UTF8_SURROGATE_OFFSET = 0x10000u - (UTF8_LEAD_SURROGATE_MIN << 10) - UTF8_TRAIL_SURROGATE_MIN;
-
 char Str::empty_buffer[1] = { '\0' };
 
 bool Str::operator==(const Str& rhs) const
@@ -217,24 +210,30 @@ Str& Str::append_fmt(const char* fmt, ...)
 	return *this;
 }
 
-Str& Str::append_utf16(const uint16_t* start, const uint16_t* end, bool swapEndian)
+Str& Str::append_utf16(const uint16_t* start, const uint16_t* end, bool swap_endian)
 {
+	// converts utf16 into utf8
+	// more info: https://en.wikipedia.org/wiki/UTF-16#Description
+
+	const uint16_t surrogate_min = 0xd800u;
+	const uint16_t surrogate_max = 0xdbffu;
+
 	while (start != end)
 	{
 		uint16_t next = (*start++);
-		if (swapEndian)
+		if (swap_endian)
 			next = ((next & 0xff) << 8 | ((next & 0xff00) >> 8));
 
 		uint32_t cp = 0xffff & next;
 
-		if ((cp >= UTF8_LEAD_SURROGATE_MIN && cp <= UTF8_LEAD_SURROGATE_MAX))
+		if ((cp >= surrogate_min && cp <= surrogate_max))
 		{
 			next = (*start++);
-			if (swapEndian)
+			if (swap_endian)
 				next = ((next & 0xff) << 8 | ((next & 0xff00) >> 8));
 
 			uint32_t trail = 0xffff & next;
-			cp = (cp << 10) + trail + UTF8_SURROGATE_OFFSET;
+			cp = (cp << 10) + trail + 0x10000u - (surrogate_min << 10) - 0xdc00u;
 		}
 
 		append(cp);

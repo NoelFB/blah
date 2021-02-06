@@ -93,7 +93,7 @@ void InputBackend::on_mouse_down(MouseButton button)
 	{
 		g_next_state.mouse.down[i] = true;
 		g_next_state.mouse.pressed[i] = true;
-		g_next_state.mouse.timestamp[i] = Time::milliseconds;
+		g_next_state.mouse.timestamp[i] = Time::ticks;
 	}
 }
 
@@ -114,7 +114,7 @@ void InputBackend::on_key_down(Key key)
 	{
 		g_next_state.keyboard.down[i] = true;
 		g_next_state.keyboard.pressed[i] = true;
-		g_next_state.keyboard.timestamp[i] = Time::milliseconds;
+		g_next_state.keyboard.timestamp[i] = Time::ticks;
 	}
 }
 
@@ -170,7 +170,7 @@ void InputBackend::on_button_down(int index, int button)
 	{
 		g_next_state.controllers[index].down[button] = 1;
 		g_next_state.controllers[index].pressed[button] = 1;
-		g_next_state.controllers[index].button_timestamp[button] = Time::milliseconds;
+		g_next_state.controllers[index].button_timestamp[button] = Time::ticks;
 	}
 }
 
@@ -194,7 +194,7 @@ void InputBackend::on_axis_move(int index, int axis, float value)
 		axis < g_next_state.controllers[index].axis_count)
 	{
 		g_next_state.controllers[index].axis[axis] = value;
-		g_next_state.controllers[index].axis_timestamp[axis] = Time::milliseconds;
+		g_next_state.controllers[index].axis_timestamp[axis] = Time::ticks;
 	}
 }
 

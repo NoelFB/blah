@@ -118,16 +118,16 @@ void VirtualStick::update()
 	if (m_value_i != Point::zero && m_last_value_i != m_value_i)
 	{
 		m_pressed = true;
-		m_last_press_time = m_repeat_press_time = Time::elapsed;
+		m_last_press_time = m_repeat_press_time = Time::seconds;
 	}
 	else if (m_value_i == m_last_value_i && m_value_i != Point::zero)
 	{
-		if (Time::elapsed - m_last_press_time <= m_press_buffer)
+		if (Time::seconds - m_last_press_time <= m_press_buffer)
 			m_pressed = true;
-		else if (m_repeat_interval > 0 && Time::elapsed >= m_repeat_press_time + m_repeat_delay)
+		else if (m_repeat_interval > 0 && Time::seconds >= m_repeat_press_time + m_repeat_delay)
 		{
-			int prev = (int)((Time::previous_elapsed - m_repeat_press_time - m_repeat_delay) / m_repeat_interval);
-			int cur = (int)((Time::elapsed - m_repeat_press_time - m_repeat_delay) / m_repeat_interval);
+			int prev = (int)((Time::previous_seconds - m_repeat_press_time - m_repeat_delay) / m_repeat_interval);
+			int cur = (int)((Time::seconds - m_repeat_press_time - m_repeat_delay) / m_repeat_interval);
 			m_pressed = prev < cur;
 		}
 	}
@@ -136,9 +136,9 @@ void VirtualStick::update()
 	if (m_last_value_i != Point::zero && m_value_i != m_last_value_i)
 	{
 		m_released = true;
-		m_last_release_time = Time::elapsed;
+		m_last_release_time = Time::seconds;
 	}
-	else if (Time::elapsed - m_last_release_time <= m_release_buffer)
+	else if (Time::seconds - m_last_release_time <= m_release_buffer)
 		m_released = true;
 	else
 		m_released = false;

@@ -48,8 +48,8 @@ namespace
 		// update at a fixed timerate
 		// TODO: allow a non-fixed step update?
 		{
-			uint64_t time_target = (uint64_t)((1.0f / app_config.target_framerate) * 1000);
-			uint64_t time_curr = PlatformBackend::time();
+			uint64_t time_target = (uint64_t)((1.0 / app_config.target_framerate) * Time::ticks_per_second);
+			uint64_t time_curr = PlatformBackend::ticks();
 			uint64_t time_diff = time_curr - time_last;
 			time_last = time_curr;
 			time_accumulator += time_diff;
@@ -57,9 +57,10 @@ namespace
 			// do not let us run too fast
 			while (time_accumulator < time_target)
 			{
-				PlatformBackend::sleep((int)(time_target - time_accumulator));
+				int milliseconds = (int)(time_target - time_accumulator) / (Time::ticks_per_second / 1000);
+				PlatformBackend::sleep(milliseconds);
 
-				time_curr = PlatformBackend::time();
+				time_curr = PlatformBackend::ticks();
 				time_diff = time_curr - time_last;
 				time_last = time_curr;
 				time_accumulator += time_diff;
@@ -81,15 +82,16 @@ namespace
 				if (Time::pause_timer > 0)
 				{
 					Time::pause_timer -= Time::delta;
-					if (Time::pause_timer <= -0.0001f)
+					if (Time::pause_timer <= -0.0001)
 						Time::delta = -Time::pause_timer;
 					else
 						continue;
 				}
 
-				Time::milliseconds += time_target;
-				Time::previous_elapsed = Time::elapsed;
-				Time::elapsed += Time::delta;
+				Time::previous_ticks = Time::ticks;
+				Time::ticks += time_target;
+				Time::previous_seconds = Time::seconds;
+				Time::seconds += Time::delta;
 
 				InputBackend::frame();
 				GraphicsBackend::frame();
@@ -147,7 +149,7 @@ bool App::run(const Config* c)
 	if (app_config.on_startup != nullptr)
 		app_config.on_startup();
 
-	time_last = PlatformBackend::time();
+	time_last = PlatformBackend::ticks();
 	time_accumulator = 0;
 
 	// display window
@@ -173,8 +175,11 @@ bool App::run(const Config* c)
 	// clear static state
 	app_is_running = false;
 	app_is_exiting = false;
-	Time::milliseconds = 0;
-	Time::elapsed = 0;
+
+	Time::ticks = 0;
+	Time::seconds = 0;
+	Time::previous_ticks = 0;
+	Time::previous_seconds = 0;
 	Time::delta = 0;
 
 	return true;
