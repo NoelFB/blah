@@ -68,7 +68,7 @@ void VirtualButton::update()
 	m_pressed = false;
 	m_released = false;
 
-	//Keys
+	// Keys
 	for (int i = 0; i < m_keys_len; i++)
 	{
 		m_keys[i].update();
@@ -78,7 +78,7 @@ void VirtualButton::update()
 		m_released = m_released || m_keys[i].released;
 	}
 
-	//Buttons
+	// Buttons
 	for (int i = 0; i < m_buttons_len; i++)
 	{
 		m_buttons[i].update();
@@ -88,7 +88,7 @@ void VirtualButton::update()
 		m_released = m_released || m_buttons[i].released;
 	}
 
-	//Axes
+	// Axes
 	for (int i = 0; i < m_axes_len; i++)
 	{
 		m_axes[i].update();
@@ -98,27 +98,27 @@ void VirtualButton::update()
 		m_released = m_released || m_axes[i].released;
 	}
 
-	//pressed?
+	// pressed?
 	if (m_pressed)
 	{
-		m_repeat_press_time = m_last_press_time = Time::elapsed;
+		m_repeat_press_time = m_last_press_time = Time::seconds;
 	}
-	else if (Time::elapsed - m_last_press_time <= m_press_buffer)
+	else if (Time::seconds - m_last_press_time <= m_press_buffer)
 	{
 		m_pressed = true;
 	}
-	else if (m_down && m_repeat_interval > 0 && Time::elapsed >= m_repeat_press_time + m_repeat_delay)
+	else if (m_down && m_repeat_interval > 0 && Time::seconds >= m_repeat_press_time + m_repeat_delay)
 	{
-		int prev = (int)((Time::previous_elapsed - m_repeat_press_time - m_repeat_delay) / m_repeat_interval);
-		int cur = (int)((Time::elapsed - m_repeat_press_time - m_repeat_delay) / m_repeat_interval);
+		int prev = (int)((Time::previous_seconds - m_repeat_press_time - m_repeat_delay) / m_repeat_interval);
+		int cur = (int)((Time::seconds - m_repeat_press_time - m_repeat_delay) / m_repeat_interval);
 		m_pressed = prev < cur;
 	}
 
-	//released?
+	// released?
 	if (m_released)
-		m_last_release_time = Time::elapsed;
+		m_last_release_time = Time::seconds;
 	else
-		m_released = Time::elapsed - m_last_release_time <= m_release_buffer;
+		m_released = Time::seconds - m_last_release_time <= m_release_buffer;
 }
 
 void VirtualButton::KeyNode::init(Key key)

@@ -5,14 +5,20 @@ namespace Blah
 {
 	struct Time
 	{
-		// uptime, in milliseconds
-		static uint64_t milliseconds;
+		// ticks per second (microseconds, in this case)
+		static constexpr uint64_t ticks_per_second = 1000000;
+
+		// uptime, in ticks
+		static uint64_t ticks;
 
 		// uptime, in seconds
-		static float elapsed;
+		static double seconds;
+
+		// previous frame uptime, in ticks
+		static uint64_t previous_ticks;
 
 		// previous frame uptime, in seconds
-		static float previous_elapsed;
+		static double previous_seconds;
 
 		// delta time from last frame
 		static float delta;
@@ -21,10 +27,10 @@ namespace Blah
 		static float pause_timer;
 
 		// pauses the entire application for the given time
-		static void pause_for(float time);
+		static void pause_for(float duration);
 
 		// returns true on the given time interval
-		static bool on_interval(float time, float delta, float interval, float offset);
+		static bool on_interval(double time, float delta, float interval, float offset);
 
 		// returns true on the given time interval
 		static bool on_interval(float delta, float interval, float offset);
@@ -33,10 +39,10 @@ namespace Blah
 		static bool on_interval(float interval, float offset = 0);
 
 		// returns true when the given timestamp is passed
-		static bool on_time(float time, float timestamp);
+		static bool on_time(double time, double timestamp);
 
 		// returns true between time intervals
-		static bool between_interval(float time, float interval, float offset);
+		static bool between_interval(double time, float interval, float offset);
 		
 		// returns true between time intervals
 		static bool between_interval(float interval, float offset = 0);

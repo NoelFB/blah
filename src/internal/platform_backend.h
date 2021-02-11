@@ -21,8 +21,8 @@ namespace Blah
 		// Called during shutdown
 		void shutdown();
 
-		// The time, in milliseconds, since the Application was started
-		uint64_t time();
+		// The time, in ticks (microseconds) since the Application was started
+		uint64_t ticks();
 
 		// Called every frame
 		void frame();

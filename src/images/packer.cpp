@@ -63,7 +63,7 @@ void Packer::add_entry(uint64_t id, int w, int h, const Color* pixels)
 	Entry entry(id, RectI(0, 0, w, h));
 
 	// trim
-	int top = 0, left = 0, right = w, bottom = h;
+	int top = 0, left = 0, right = 0, bottom = 0;
 
 	// TOP:
 	for (int y = 0; y < h; y++)

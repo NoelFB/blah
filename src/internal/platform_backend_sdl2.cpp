@@ -7,6 +7,7 @@
 #include <blah/core/app.h>
 #include <blah/core/filesystem.h>
 #include <blah/core/log.h>
+#include <blah/core/time.h>
 
 #include <SDL.h>
 #include <SDL_vulkan.h>
@@ -170,9 +171,11 @@ void PlatformBackend::shutdown()
 	SDL_Quit();
 }
 
-uint64_t PlatformBackend::time()
+uint64_t PlatformBackend::ticks()
 {
-	return (uint64_t)SDL_GetTicks();
+	auto counter = SDL_GetPerformanceCounter();
+	auto per_second = (double)SDL_GetPerformanceFrequency();
+	return (uint64_t)(counter * (Time::ticks_per_second / per_second));
 }
 
 // Macro defined by X11 conflicts with MouseButton enum
