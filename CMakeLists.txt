@@ -24,9 +24,9 @@ add_library(blah
 	src/input/virtual_stick.cpp
 	src/input/virtual_button.cpp
 	src/input/virtual_axis.cpp
-	
+
 	src/containers/str.cpp
-	
+
 	src/drawing/batch.cpp
 	src/drawing/spritefont.cpp
 	src/drawing/subtexture.cpp
@@ -48,8 +48,8 @@ add_library(blah
 	src/math/rectI.cpp
 	src/math/stopwatch.cpp
 	src/math/vec2.cpp
-	
-	src/streams/bufferstream.cpp	
+
+	src/streams/bufferstream.cpp
 	src/streams/filestream.cpp
 	src/streams/memorystream.cpp
 	src/streams/stream.cpp
@@ -61,7 +61,7 @@ add_library(blah
 	src/internal/platform_backend_sdl2.cpp
 )
 
-target_include_directories(blah 
+target_include_directories(blah
 	PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	PRIVATE
@@ -95,12 +95,12 @@ if (SDL2_ENABLED)
 		# Attempt to find SDL2
 		find_package(SDL2 QUIET)
 
-		# If CMake cannot find SDL2 library, then it gets downloaded and compiled that way 
+		# If CMake cannot find SDL2 library, then it gets downloaded and compiled that way
 		if (NOT ${SDL2_FOUND})
 			include(FetchContent)
 			FetchContent_Declare(
 				SDL2
-				GIT_REPOSITORY https://github.com/SDL-mirror/SDL
+				GIT_REPOSITORY https://github.com/libsdl-org/SDL
 				GIT_TAG release-2.0.14 # grab latest stable release
 			)
 			FetchContent_GetProperties(SDL2)
