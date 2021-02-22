@@ -25,7 +25,8 @@ namespace Blah
 		ID3D11Device* device = nullptr;
 		ID3D11DeviceContext* context = nullptr;
 		IDXGISwapChain* swap_chain = nullptr;
-		ID3D11RenderTargetView* backbuffer = nullptr;
+		ID3D11RenderTargetView* backbuffer_view = nullptr;
+		ID3D11DepthStencilView* backbuffer_depth_view = nullptr;
 
 		// supported renderer features
 		RendererFeatures features;
@@ -120,12 +121,10 @@ namespace Blah
 			desc.SampleDesc.Count = 1;
 			desc.SampleDesc.Quality = 0;
 			desc.Usage = D3D11_USAGE_DEFAULT;
-			desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 			desc.CPUAccessFlags = 0;
 			desc.MiscFlags = 0;
 
-			if (is_framebuffer)
-				desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+			bool is_depth_stencil = false;
 
 			switch (format)
 			{
@@ -144,8 +143,17 @@ namespace Blah
 			case TextureFormat::DepthStencil:
 				desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 				m_size = width * height * 4;
+				is_depth_stencil = true;
 				break;
 			}
+
+			if (!is_depth_stencil)
+				desc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+			else
+				desc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
+
+			if (is_framebuffer && !is_depth_stencil)
+				desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 
 			m_dxgi_format = desc.Format;
 
@@ -158,11 +166,14 @@ namespace Blah
 				return;
 			}
 
-			hr = state.device->CreateShaderResourceView(texture, NULL, &view);
-			if (!SUCCEEDED(hr))
+			if (!is_depth_stencil)
 			{
-				texture->Release();
-				texture = nullptr;
+				hr = state.device->CreateShaderResourceView(texture, NULL, &view);
+				if (!SUCCEEDED(hr))
+				{
+					texture->Release();
+					texture = nullptr;
+				}
 			}
 		}
 
@@ -347,12 +358,27 @@ namespace Blah
 			return m_attachments[0]->height();
 		}
 
-		virtual void clear(Color color) override
+		virtual void clear(Color color, float depth, uint8_t stencil, ClearMask mask) override
 		{
 			float col[4] = { color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f };
 
-			for (int i = 0; i < m_attachments.size(); i++)
-				state.context->ClearRenderTargetView(color_views[i], col);
+			if (((int)mask & (int)ClearMask::Color) == (int)ClearMask::Color)
+			{
+				for (int i = 0; i < m_attachments.size() - 1; i++)
+					state.context->ClearRenderTargetView(color_views[i], col);
+			}
+
+			if (depth_view)
+			{
+				UINT flags = 0;
+				if (((int)mask & (int)ClearMask::Depth) == (int)ClearMask::Depth)
+					flags |= D3D11_CLEAR_DEPTH;
+				if (((int)mask & (int)ClearMask::Stencil) == (int)ClearMask::Stencil)
+					flags |= D3D11_CLEAR_STENCIL;
+
+				if (flags != 0)
+					state.context->ClearDepthStencilView(depth_view, flags, depth, stencil);
+			}
 		}
 	};
 
@@ -722,9 +748,12 @@ namespace Blah
 		state.swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&frame_buffer);
 		if (frame_buffer)
 		{
-			state.device->CreateRenderTargetView(frame_buffer, nullptr, &state.backbuffer);
+			state.device->CreateRenderTargetView(frame_buffer, nullptr, &state.backbuffer_view);
 			frame_buffer->Release();
 		}
+
+		// TODO:
+		// create a depth backbuffer
 
 		// Store Features
 		state.features.instancing = true;
@@ -802,8 +831,8 @@ namespace Blah
 		if (state.last_size != next_size)
 		{
 			// release old buffer
-			if (state.backbuffer)
-				state.backbuffer->Release();
+			if (state.backbuffer_view)
+				state.backbuffer_view->Release();
 
 			// perform resize
 			hr = state.swap_chain->ResizeBuffers(0, next_size.x, next_size.y, DXGI_FORMAT_B8G8R8A8_UNORM, 0);
@@ -815,7 +844,7 @@ namespace Blah
 			hr = state.swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&frame_buffer);
 			if (SUCCEEDED(hr) && frame_buffer)
 			{
-				hr = state.device->CreateRenderTargetView(frame_buffer, nullptr, &state.backbuffer);
+				hr = state.device->CreateRenderTargetView(frame_buffer, nullptr, &state.backbuffer_view);
 				BLAH_ASSERT(SUCCEEDED(hr), "Failed to update Backbuffer on Resize");
 				frame_buffer->Release();
 			}
@@ -870,7 +899,7 @@ namespace Blah
 			// Set the Target
 			if (pass.target == App::backbuffer || !pass.target)
 			{
-				ctx->OMSetRenderTargets(1, &state.backbuffer, nullptr);
+				ctx->OMSetRenderTargets(1, &state.backbuffer_view, state.backbuffer_depth_view);
 			}
 			else
 			{
@@ -1036,10 +1065,25 @@ namespace Blah
 		}
 	}
 
-	void GraphicsBackend::clear_backbuffer(Color color)
+	void GraphicsBackend::clear_backbuffer(Color color, float depth, uint8_t stencil, ClearMask mask)
 	{
-		float clear[4] = { color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f };
-		state.context->ClearRenderTargetView(state.backbuffer, clear);
+		if (((int)mask & (int)ClearMask::Color) == (int)ClearMask::Color)
+		{
+			float clear[4] = { color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f };
+			state.context->ClearRenderTargetView(state.backbuffer_view, clear);
+		}
+
+		if (state.backbuffer_depth_view)
+		{
+			UINT flags = 0;
+			if (((int)mask & (int)ClearMask::Depth) == (int)ClearMask::Depth)
+				flags |= D3D11_CLEAR_DEPTH;
+			if (((int)mask & (int)ClearMask::Stencil) == (int)ClearMask::Stencil)
+				flags |= D3D11_CLEAR_STENCIL;
+
+			if (flags != 0)
+				state.context->ClearDepthStencilView(state.backbuffer_depth_view, flags, depth, stencil);
+		}
 	}
 
 	// Utility Methods

@@ -300,9 +300,9 @@ namespace
 			return App::draw_height();
 		}
 
-		virtual void clear(Color color) override
+		virtual void clear(Color color, float depth, uint8_t stencil, ClearMask mask) override
 		{
-			GraphicsBackend::clear_backbuffer(color);
+			GraphicsBackend::clear_backbuffer(color, depth, stencil, mask);
 		}
 	};
 

@@ -749,13 +749,24 @@ namespace Blah
 			return m_height;
 		}
 
-		virtual void clear(Color color) override
+		virtual void clear(Color color, float depth, uint8_t stencil, ClearMask mask) override
 		{
+			int clear = 0;
+
+			if (((int)mask & (int)ClearMask::Color) == (int)ClearMask::Color)
+				clear |= GL_COLOR_BUFFER_BIT;
+			if (((int)mask & (int)ClearMask::Depth) == (int)ClearMask::Depth)
+				clear |= GL_DEPTH_BUFFER_BIT;
+			if (((int)mask & (int)ClearMask::Stencil) == (int)ClearMask::Stencil)
+				clear |= GL_STENCIL_BUFFER_BIT;
+
 			gl.BindFramebuffer(GL_FRAMEBUFFER, m_id);
 			gl.Disable(GL_SCISSOR_TEST);
 			gl.ColorMask(true, true, true, true);
 			gl.ClearColor(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
-			gl.Clear(GL_COLOR_BUFFER_BIT);
+			gl.ClearDepth(depth);
+			gl.ClearStencil(stencil);
+			gl.Clear(clear);
 		}
 	};
 
@@ -1485,13 +1496,24 @@ namespace Blah
 		}
 	}
 
-	void GraphicsBackend::clear_backbuffer(Color color)
+	void GraphicsBackend::clear_backbuffer(Color color, float depth, uint8_t stencil, ClearMask mask)
 	{
+		int clear = 0;
+
+		if (((int)mask & (int)ClearMask::Color) == (int)ClearMask::Color)
+			clear |= GL_COLOR_BUFFER_BIT;
+		if (((int)mask & (int)ClearMask::Depth) == (int)ClearMask::Depth)
+			clear |= GL_DEPTH_BUFFER_BIT;
+		if (((int)mask & (int)ClearMask::Stencil) == (int)ClearMask::Stencil)
+			clear |= GL_STENCIL_BUFFER_BIT;
+
 		gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
 		gl.Disable(GL_SCISSOR_TEST);
 		gl.ColorMask(true, true, true, true);
 		gl.ClearColor(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
-		gl.Clear(GL_COLOR_BUFFER_BIT);
+		gl.ClearDepth(depth);
+		gl.ClearStencil(stencil);
+		gl.Clear(clear);
 	}
 }
 
