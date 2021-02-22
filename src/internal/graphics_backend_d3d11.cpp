@@ -480,9 +480,9 @@ namespace Blah
 			hash = 5381;
 			for (auto& it : attributes)
 			{
-				for (int i = 0, n = strlen(it.semantic_name); i < n; i++)
+				for (size_t i = 0, n = strlen(it.semantic_name); i < n; i++)
 					hash = ((hash << 5) + hash) + it.semantic_name[i];
-				hash = it.semantic_index << 5 + hash;
+				hash = (it.semantic_index << 5) + hash;
 			}
 
 			// Shader is ready for use!
@@ -575,7 +575,7 @@ namespace Blah
 				
 					// buffer description
 					D3D11_BUFFER_DESC desc = { 0 };
-					desc.ByteWidth = index_stride * m_index_capacity;
+					desc.ByteWidth = (UINT)(index_stride * m_index_capacity);
 					desc.Usage = D3D11_USAGE_DYNAMIC;
 					desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 					desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -623,7 +623,7 @@ namespace Blah
 				{
 					// buffer description
 					D3D11_BUFFER_DESC desc = { 0 };
-					desc.ByteWidth = format.stride * m_vertex_capacity;
+					desc.ByteWidth = (UINT)(format.stride * m_vertex_capacity);
 					desc.Usage = D3D11_USAGE_DYNAMIC;
 					desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 					desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -1015,7 +1015,9 @@ namespace Blah
 		{
 			if (mesh->instance_count() <= 0)
 			{
-				ctx->DrawIndexed(pass.index_count, pass.index_start, 0);
+				ctx->DrawIndexed(
+					static_cast<UINT>(pass.index_count),
+					static_cast<UINT>(pass.index_start), 0);
 			}
 			else
 			{
@@ -1092,7 +1094,7 @@ namespace Blah
 		D3D11_SHADER_DESC shader_desc;
 		reflector->GetDesc(&shader_desc);
 
-		for (int i = 0; i < shader_desc.BoundResources; i++)
+		for (UINT i = 0; i < shader_desc.BoundResources; i++)
 		{
 			D3D11_SHADER_INPUT_BIND_DESC desc;
 			reflector->GetResourceBindingDesc(i, &desc);
@@ -1117,7 +1119,7 @@ namespace Blah
 			}
 		}
 
-		for (int i = 0; i < shader_desc.ConstantBuffers; i++)
+		for (UINT i = 0; i < shader_desc.ConstantBuffers; i++)
 		{
 			D3D11_SHADER_BUFFER_DESC desc;
 
@@ -1138,7 +1140,7 @@ namespace Blah
 			}
 
 			// get the uniforms
-			for (int j = 0; j < desc.Variables; j++)
+			for (UINT j = 0; j < desc.Variables; j++)
 			{
 				D3D11_SHADER_VARIABLE_DESC var_desc;
 				D3D11_SHADER_TYPE_DESC type_desc;
