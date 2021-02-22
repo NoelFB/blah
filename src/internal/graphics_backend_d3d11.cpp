@@ -364,7 +364,7 @@ namespace Blah
 
 			if (((int)mask & (int)ClearMask::Color) == (int)ClearMask::Color)
 			{
-				for (int i = 0; i < m_attachments.size() - 1; i++)
+				for (int i = 0; i < color_views.size(); i++)
 					state.context->ClearRenderTargetView(color_views[i], col);
 			}
 
