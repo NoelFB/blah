@@ -1,8 +1,13 @@
 #pragma once
 #include <memory>
+#include <functional>
+#include <blah/core/log.h>
 
 namespace Blah
 {
+	using AppEventFn = std::function<void()>;
+	using AppLogFn = std::function<void(const char* message, Log::Category category)>;
+
 	struct Config
 	{
 		const char* name;
@@ -11,15 +16,12 @@ namespace Blah
 		int max_updates;
 		int target_framerate;
 
-		void (*on_startup)();
-		void (*on_shutdown)();
-		void (*on_update)();
-		void (*on_render)();
-		void (*on_exit_request)();
-
-		void (*on_info)(const char* text);
-		void (*on_warn)(const char* text);
-		void (*on_error)(const char* text);
+		AppEventFn on_startup;
+		AppEventFn on_shutdown;
+		AppEventFn on_update;
+		AppEventFn on_render;
+		AppEventFn on_exit_request;
+		AppLogFn on_log;
 
 		Config();
 	};

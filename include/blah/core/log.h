@@ -23,6 +23,9 @@
 #define BLAH_ASSERT(condition, message) \
 		do { if (!(condition)) { BLAH_ERROR(message); } } while(0)
 
+#define BLAH_ASSERT_FMT(condition, message, ...) \
+		do { if (!(condition)) { BLAH_ERROR_FMT(message, __VA_ARGS__); } } while(0)
+
 // maximum length of a print/warn/error message
 #ifndef BLAH_MESSAGE
 #define BLAH_MESSAGE 1024
@@ -32,6 +35,13 @@ namespace Blah
 {
 	namespace Log
 	{
+		enum class Category
+		{
+			Info,
+			Warning,
+			Error
+		};
+
 		void print(const char* info, ...);
 		void warn(const char* info, ...);
 		void error(const char* info, ...);

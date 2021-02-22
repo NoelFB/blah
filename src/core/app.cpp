@@ -27,9 +27,7 @@ Config::Config()
 	on_update = nullptr;
 	on_render = nullptr;
 	on_exit_request = App::exit;
-	on_info = nullptr;
-	on_warn = nullptr;
-	on_error = nullptr;
+	on_log = nullptr;
 }
 
 namespace
