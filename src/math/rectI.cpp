@@ -26,11 +26,68 @@ RectI::RectI(Point pos, Point size)
 	h = size.y;
 }
 
-Point RectI::center() const { return Point(centerX(), centerY()); }
-Point RectI::top_left() const { return Point(left(), top()); }
-Point RectI::top_right() const { return Point(right(), top()); }
-Point RectI::bottom_left() const { return Point(left(), bottom()); }
-Point RectI::bottom_right() const { return Point(right(), bottom()); }
+int RectI::left() const
+{
+	return x;
+}
+
+int RectI::right() const
+{
+	return x + w;
+}
+
+int RectI::top() const
+{
+	return y;
+}
+
+int RectI::bottom() const
+{
+	return y + h;
+}
+
+int RectI::center_x() const
+{
+	return x + w / 2;
+}
+
+int RectI::center_y() const
+{
+	return y + h / 2;
+}
+
+Point RectI::center() const
+{
+	return Point(x + w / 2, y + h / 2);
+}
+
+Point RectI::top_left() const
+{
+	return Point(x, y);
+}
+
+Point RectI::top_right() const
+{
+	return Point(x + w, y);
+}
+
+Point RectI::bottom_left() const
+{
+	return Point(x, y + h);
+}
+
+Point RectI::bottom_right() const
+{
+	return Point(x + w, y + h);
+}
+
+bool RectI::overlaps(const RectI& other) const
+{
+	return x < other.x + other.w
+		&& other.x < x + w
+		&& y < other.y + other.h
+		&& other.y < y + h;
+}
 
 bool RectI::contains(const Point& point) const
 {
@@ -84,7 +141,42 @@ char RectI::get_sector(const Vec2& pt) const
 	return h | v;
 }
 
-RectI RectI::operator+(const Point& rhs) const { return RectI(x + rhs.x, y + rhs.y, w, h); }
-RectI RectI::operator-(const Point& rhs) const { return RectI(x - rhs.x, y - rhs.y, w, h); }
-RectI& RectI::operator+=(const Point& rhs) { x += rhs.x; y += rhs.y; return *this; }
-RectI& RectI::operator-=(const Point& rhs) { x -= rhs.x; y -= rhs.y; return *this; }
+bool RectI::operator==(const RectI& rhs) const
+{
+	return x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h;
+}
+
+bool RectI::operator!=(const RectI& rhs) const
+{
+	return !(*this == rhs);
+}
+
+RectI RectI::operator+(const Point& rhs) const
+{
+	return RectI(x + rhs.x, y + rhs.y, w, h);
+}
+
+RectI RectI::operator-(const Point& rhs) const
+{
+	return RectI(x - rhs.x, y - rhs.y, w, h);
+}
+
+RectI RectI::operator*(const int& rhs) const
+{
+	return RectI(x * rhs, y * rhs, w * rhs, h * rhs);
+}
+
+RectI RectI::operator/(const int& rhs) const
+{
+	return RectI(x / rhs, y / rhs, w / rhs, h / rhs);
+}
+
+RectI& RectI::operator+=(const Point& rhs)
+{
+	x += rhs.x; y += rhs.y; return *this;
+}
+
+RectI& RectI::operator-=(const Point& rhs)
+{
+	x -= rhs.x; y -= rhs.y; return *this;
+}

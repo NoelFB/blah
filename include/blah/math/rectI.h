@@ -17,12 +17,12 @@ namespace Blah
 		RectI(int rx, int ry, int rw, int rh);
 		RectI(Point pos, Point size);
 
-		int left() const { return x; }
-		int right() const { return x + w; }
-		int top() const { return y; }
-		int bottom() const { return y + h; }
-		int centerX() const { return x + w / 2; }
-		int centerY() const { return y + h / 2; }
+		int left() const;
+		int right() const;
+		int top() const;
+		int bottom() const;
+		int center_x() const;
+		int center_y() const;
 
 		Point center() const;
 		Point top_left() const;
@@ -30,14 +30,7 @@ namespace Blah
 		Point bottom_left() const;
 		Point bottom_right() const;
 
-		bool overlaps(const RectI& other) const
-		{
-			return x < other.x + other.w
-				&& other.x < x + w
-				&& y < other.y + other.h
-				&& other.y < y + h;
-		}
-
+		bool overlaps(const RectI& other) const;
 		bool contains(const Point& pt) const;
 		bool contains(const Vec2& pt) const;
 
@@ -51,14 +44,14 @@ namespace Blah
 		char get_sector(const Point& pt) const;
 		char get_sector(const Vec2& pt) const;
 
-		bool operator==(const RectI& rhs) const { return x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h; }
-		bool operator!=(const RectI& rhs) const { return !(*this == rhs); }
+		bool operator==(const RectI& rhs) const;
+		bool operator!=(const RectI& rhs) const;
 
 		RectI operator+(const Point& rhs) const;
 		RectI operator-(const Point& rhs) const;
+		RectI operator*(const int& rhs) const;
+		RectI operator/(const int& rhs) const;
 		RectI& operator+=(const Point& rhs);
 		RectI& operator-=(const Point& rhs);
-
-		RectI operator*(const int& rhs) const { return RectI(x * rhs, y * rhs, w * rhs, h * rhs); }
 	};
 }

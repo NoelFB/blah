@@ -1,7 +1,7 @@
 #pragma once
 
 // error / abort
-#ifdef DEBUG
+#if defined(DEBUG) || defined(_DEBUG)
 
 	#include <stdlib.h>
 	#define BLAH_ERROR(message) \

@@ -507,7 +507,7 @@ void Batch::bezier_line(const Vec2& from, const Vec2& b, const Vec2& to, int ste
 
 	for (int i = 1; i < steps; i++)
 	{
-		Vec2 at = Vec2::bezier_lerp(from, b, to, add * i);
+		Vec2 at = Vec2::lerp_bezier(from, b, to, add * i);
 		line(prev, at, t, color);
 		prev = at;
 	}
@@ -522,7 +522,7 @@ void Batch::bezier_line(const Vec2& from, const Vec2& b, const Vec2& c, const Ve
 
 	for (int i = 1; i < steps; i++)
 	{
-		Vec2 at = Vec2::bezier_lerp(from, b, c, to, add * i);
+		Vec2 at = Vec2::lerp_bezier(from, b, c, to, add * i);
 		line(prev, at, t, color);
 		prev = at;
 	}
@@ -668,8 +668,8 @@ void Batch::rect_rounded(const Rect& rect, float rtl, int rtl_steps, float rtr, 
 	{
 		// get corners
 		Rect tl = Rect(rect.top_left(), Vec2(rtl, rtl));
-		Rect tr = Rect(rect.top_right() + Vec2(-rtr, 0), Vec2(rtr, rtr));
-		Rect bl = Rect(rect.bottom_left() + Vec2(0, -rbl), Vec2(rbl, rbl));
+		Rect tr = Rect(rect.top_right() + Vec2(-rtr, 0.0f), Vec2(rtr, rtr));
+		Rect bl = Rect(rect.bottom_left() + Vec2(0.0f, -rbl), Vec2(rbl, rbl));
 		Rect br = Rect(rect.bottom_right() + Vec2(-rbr, -rbr), Vec2(rbr, rbr));
 
 		// rounded corners

@@ -5,28 +5,100 @@
 
 using namespace Blah;
 
-Vec2::Vec2() { x = y = 0; }
-Vec2::Vec2(float vx, float vy) { x = vx; y = vy; }
-Vec2::Vec2(int vx, float vy) { x = (float)vx; y = vy; }
-Vec2::Vec2(float vx, int vy) { x = vx; y = (float)vy; }
-Vec2::Vec2(int vx, int vy) { x = (float)vx; y = (float)vy; }
-Vec2::Vec2(Point p) { x = (float)p.x; y = (float)p.y; }
+Vec2::Vec2() 
+	: x(0)
+	, y(0)
+{}
 
-Vec2 Vec2::operator +(const Vec2 rhs) const { return Vec2(x + rhs.x, y + rhs.y); }
-Vec2 Vec2::operator -(const Vec2 rhs) const { return Vec2(x - rhs.x, y - rhs.y); }
-Vec2 Vec2::operator /(const float rhs) const { return Vec2(x / rhs, y / rhs); }
-Vec2 Vec2::operator *(const float rhs) const { return Vec2(x * rhs, y * rhs); }
-Vec2 Vec2::operator-() const { return Vec2(-x, -y); }
+Vec2::Vec2(float vx, float vy)
+	: x(vx)
+	, y(vy)
+{}
 
-Vec2& Vec2::operator +=(const Vec2& rhs) { x += rhs.x; y += rhs.y; return *this; }
-Vec2& Vec2::operator -=(const Vec2& rhs) { x -= rhs.x; y -= rhs.y; return *this; }
-Vec2& Vec2::operator /=(const Vec2& rhs) { x /= rhs.x; y /= rhs.y; return *this; }
-Vec2& Vec2::operator *=(const Vec2& rhs) { x *= rhs.x; y *= rhs.y; return *this; }
-Vec2& Vec2::operator/=(float rhs) { x /= rhs; y /= rhs; return *this; }
-Vec2& Vec2::operator*=(float rhs) { x *= rhs; y *= rhs; return *this; }
+Vec2::Vec2(int vx, float vy)
+	: x(static_cast<float>(vx))
+	, y(vy)
+{}
 
-bool Vec2::operator ==(const Vec2& rhs) const { return x == rhs.x && y == rhs.y; }
-bool Vec2::operator !=(const Vec2& rhs) const { return x != rhs.x || y != rhs.y; }
+Vec2::Vec2(float vx, int vy)
+	: x(vx)
+	, y(static_cast<float>(vy))
+{}
+
+Vec2::Vec2(int vx, int vy)
+	: x(static_cast<float>(vx))
+	, y(static_cast<float>(vy))
+{}
+
+Vec2::Vec2(Point p)
+	: x(static_cast<float>(p.x))
+	, y(static_cast<float>(p.y))
+{}
+
+Vec2 Vec2::operator +(const Vec2 rhs) const
+{
+	return Vec2(x + rhs.x, y + rhs.y);
+}
+
+Vec2 Vec2::operator -(const Vec2 rhs) const
+{
+	return Vec2(x - rhs.x, y - rhs.y);
+}
+
+Vec2 Vec2::operator /(const float rhs) const
+{
+	return Vec2(x / rhs, y / rhs);
+}
+
+Vec2 Vec2::operator *(const float rhs) const
+{
+	return Vec2(x * rhs, y * rhs);
+}
+
+Vec2 Vec2::operator-() const
+{
+	return Vec2(-x, -y);
+}
+
+Vec2& Vec2::operator +=(const Vec2& rhs)
+{
+	x += rhs.x; y += rhs.y; return *this;
+}
+
+Vec2& Vec2::operator -=(const Vec2& rhs)
+{
+	x -= rhs.x; y -= rhs.y; return *this;
+}
+
+Vec2& Vec2::operator /=(const Vec2& rhs)
+{
+	x /= rhs.x; y /= rhs.y; return *this;
+}
+
+Vec2& Vec2::operator *=(const Vec2& rhs)
+{
+	x *= rhs.x; y *= rhs.y; return *this;
+}
+
+Vec2& Vec2::operator/=(float rhs)
+{
+	x /= rhs; y /= rhs; return *this;
+}
+
+Vec2& Vec2::operator*=(float rhs)
+{
+	x *= rhs; y *= rhs; return *this;
+}
+
+bool Vec2::operator ==(const Vec2& rhs) const
+{
+	return x == rhs.x && y == rhs.y;
+}
+
+bool Vec2::operator !=(const Vec2& rhs) const
+{
+	return x != rhs.x || y != rhs.y;
+}
 
 Vec2 Vec2::normal() const
 {
@@ -46,8 +118,15 @@ Vec2 Vec2::turn_left() const
 	return Vec2(-y, x);
 }
 
-float Vec2::length() const { return sqrtf(x * x + y * y); }
-float Vec2::length_squared() const { return x * x + y * y; }
+float Vec2::length() const
+{
+	return sqrtf(x * x + y * y);
+}
+
+float Vec2::length_squared() const
+{
+	return x * x + y * y;
+}
 
 Vec2 Vec2::perpendicular() const
 {
@@ -59,9 +138,20 @@ float Vec2::angle() const
 	return Calc::atan2(y, x);
 }
 
-float Vec2::dot(Vec2 a, Vec2 b) { return (a.x * b.x + a.y * b.y); }
-float Vec2::dot(float x, float y, Vec2 b) { return (x * b.x + y * b.y); }
-float Vec2::dot(float x1, float y1, float x2, float y2) { return (x1 * x2 + y1 * y2); }
+float Vec2::dot(Vec2 a, Vec2 b)
+{
+	return (a.x * b.x + a.y * b.y);
+}
+
+float Vec2::dot(float x, float y, Vec2 b)
+{
+	return (x * b.x + y * b.y);
+}
+
+float Vec2::dot(float x1, float y1, float x2, float y2)
+{
+	return (x1 * x2 + y1 * y2);
+}
 
 Vec2 Vec2::transform(const Vec2& vec, const Mat3x2& matrix)
 {
@@ -77,14 +167,23 @@ Vec2 Vec2::transform(float x, float y, const Mat3x2& matrix)
 		(x * matrix.m12) + (y * matrix.m22) + matrix.m32);
 }
 
+Vec2 transform_normal(const Vec2& vec, const Mat3x2& matrix)
+{
+	return Vec2(
+		vec.x * matrix.m11 + vec.y * matrix.m21,
+		vec.x * matrix.m12 + vec.y * matrix.m22);
+}
+
+Vec2 transform_normal(float x, float y, const Mat3x2& matrix)
+{
+	return Vec2(
+		x * matrix.m11 + y * matrix.m21,
+		x * matrix.m12 + y * matrix.m22);
+}
+
 Vec2 Vec2::from_angle(float radians, float length)
 {
 	return Vec2((float)cos(radians) * length, (float)sin(radians) * length);
-}
-
-Vec2 Vec2::from_angle(float radians)
-{
-	return from_angle(radians, 1);
 }
 
 Vec2 Vec2::lerp(Vec2 a, Vec2 b, float t)
@@ -97,14 +196,14 @@ Vec2 Vec2::lerp(Vec2 a, Vec2 b, float t)
 		return a + (b - a) * t;
 }
 
-Vec2 Vec2::bezier_lerp(Vec2 start, Vec2 b, Vec2 end, float t)
+Vec2 Vec2::lerp_bezier(Vec2 start, Vec2 b, Vec2 end, float t)
 {
 	return lerp(lerp(start, b, t), lerp(b, end, t), t);
 }
 
-Vec2 Vec2::bezier_lerp(Vec2 start, Vec2 b, Vec2 c, Vec2 end, float t)
+Vec2 Vec2::lerp_bezier(Vec2 start, Vec2 b, Vec2 c, Vec2 end, float t)
 {
-	return bezier_lerp(lerp(start, b, t), lerp(b, c, t), lerp(c, end, t), t);
+	return lerp_bezier(lerp(start, b, t), lerp(b, c, t), lerp(c, end, t), t);
 }
 
 Vec2 Vec2::reflect(const Vec2& vector, const Vec2& normal)
@@ -114,6 +213,20 @@ Vec2 Vec2::reflect(const Vec2& vector, const Vec2& normal)
 	return Vec2(
 		vector.x - 2.0f * dot * normal.x,
 		vector.y - 2.0f * dot * normal.y);
+}
+
+Vec2 Vec2::min(const Vec2& a, const Vec2& b)
+{
+	return Vec2(
+		a.x < b.x ? a.x : b.x,
+		a.y < b.y ? a.y : b.y);
+}
+
+Vec2 Vec2::max(const Vec2& a, const Vec2& b)
+{
+	return Vec2(
+		a.x > b.x ? a.x : b.x,
+		a.y > b.y ? a.y : b.y);
 }
 
 const Vec2 Vec2::unit_x = Vec2(1, 0);
