@@ -230,15 +230,6 @@ namespace Blah
 		{
 			HRESULT hr;
 
-			// bounds
-			D3D11_BOX box;
-			box.left = 0;
-			box.right = m_width;
-			box.top = 0;
-			box.bottom = m_height;
-			box.front = 0;
-			box.back = 1;
-
 			// create staging texture
 			if (!staging)
 			{
@@ -268,7 +259,7 @@ namespace Blah
 				staging, 0,
 				0, 0, 0,
 				texture, 0,
-				&box);
+				nullptr);
 
 			// get data
 			D3D11_MAPPED_SUBRESOURCE map;
