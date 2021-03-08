@@ -42,7 +42,7 @@ namespace Blah
 		template<typename ... Args>
 		FilePath join(const FilePath& a, const FilePath& b, const Args&... args)
 		{
-			return join(a, join(b, args...));
+			return join(a, join(b, std::forward<Args>(args)...));
 		}
 	}
 }
