@@ -1,5 +1,4 @@
 #include <blah/core/time.h>
-#include <math.h>
 
 using namespace Blah;
 
@@ -26,7 +25,9 @@ void Time::pause_for(float duration)
 
 bool Time::on_interval(double time, float delta, float interval, float offset)
 {
-	return floor((time - offset - delta) / interval) < floor((time - offset) / interval);
+	auto last = static_cast<long>((time - offset - delta) / interval);
+	auto next = static_cast<long>((time - offset) / interval);
+	return last < next;
 }
 
 bool Time::on_interval(float delta, float interval, float offset)
@@ -39,14 +40,15 @@ bool Time::on_interval(float interval, float offset)
 	return Time::on_interval(Time::seconds, Time::delta, interval, offset);
 }
 
-bool Time::on_time(double time, double timestamp)
+bool Time::on_time(double time, double timestamp) 
 {
-	return time >= timestamp && time - Time::delta < timestamp;
+	float c = static_cast<float>(time) - Time::delta;
+	return time >= timestamp && c < timestamp;
 }
 
 bool Time::between_interval(double time, float interval, float offset)
 {
-	return modf(time - offset, interval * 2) >= interval;
+	return modf(time - offset, ((double)interval) * 2) >= interval;
 }
 
 bool Time::between_interval(float interval, float offset)

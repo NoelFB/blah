@@ -45,6 +45,7 @@
 #include "blah/math/rectI.h"
 #include "blah/math/stopwatch.h"
 #include "blah/math/vec2.h"
+#include "blah/math/vec3.h"
 #include "blah/math/vec4.h"
 	
 #include "blah/streams/bufferstream.h"

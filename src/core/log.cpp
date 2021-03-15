@@ -13,9 +13,9 @@ void Log::print(const char* format, ...)
 	vsnprintf(msg, sizeof(char) * BLAH_MESSAGE, format, ap);
 	va_end(ap);
 
-	if (App::is_running() && App::config()->on_info != nullptr)
+	if (App::is_running() && App::config()->on_log)
 	{
-		App::config()->on_info(msg);
+		App::config()->on_log(msg, Category::Info);
 	}
 	else
 	{
@@ -31,13 +31,13 @@ void Log::warn(const char* format, ...)
 	vsnprintf(msg, sizeof(char) * BLAH_MESSAGE, format, ap);
 	va_end(ap);
 
-	if (App::is_running() && App::config()->on_warn != nullptr)
+	if (App::is_running() && App::config()->on_log)
 	{
-		App::config()->on_warn(msg);
+		App::config()->on_log(msg, Category::Warning);
 	}
 	else
 	{
-		printf("\033[01;33mWARN:\033[0m\t%s\n", msg);
+		printf("WARN: %s\n", msg);
 	}
 }
 
@@ -49,12 +49,12 @@ void Log::error(const char* format, ...)
 	vsnprintf(msg, sizeof(char) * BLAH_MESSAGE, format, ap);
 	va_end(ap);
 
-	if (App::is_running() && App::config()->on_error != nullptr)
+	if (App::is_running() && App::config()->on_log)
 	{
-		App::config()->on_error(msg);
+		App::config()->on_log(msg, Category::Error);
 	}
 	else
 	{
-		printf("\033[1;31mERROR:\033[0m\t%s\n", msg);
+		printf("ERROR: %s\n", msg);
 	}
 }

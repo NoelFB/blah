@@ -10,7 +10,6 @@
 #include <blah/core/time.h>
 
 #include <SDL.h>
-#include <SDL_vulkan.h>
 #include <SDL_syswm.h>
 
 #if _WIN32

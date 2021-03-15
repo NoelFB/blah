@@ -113,6 +113,11 @@ float Calc::cos(float x)
 	return cosf(x);
 }
 
+float Calc::tan(float x)
+{
+	return tanf(x);
+}
+
 float Calc::atan2(float y, float x)
 {
 	return atan2f(y, x);

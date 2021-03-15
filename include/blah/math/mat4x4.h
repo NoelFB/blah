@@ -1,4 +1,5 @@
 #pragma once
+#include "vec3.h"
 
 namespace Blah
 {
@@ -36,8 +37,11 @@ namespace Blah
 
 		static Mat4x4 create_ortho(float width, float height, float z_near_plane, float z_far_plane);
 		static Mat4x4 create_ortho_offcenter(float left, float right, float bottom, float top, float z_near_plane, float z_far_plane);
+		static Mat4x4 create_perspective(float field_of_view, float ratio, float z_near_plane, float z_far_plane);
 		static Mat4x4 create_translation(float x, float y, float z);
 		static Mat4x4 create_scale(float x, float y, float z);
+		static Mat4x4 create_lookat(Vec3  position, Vec3 target, Vec3 up);
+
 
 		Mat4x4 operator* (const Mat4x4& rhs);
 	};

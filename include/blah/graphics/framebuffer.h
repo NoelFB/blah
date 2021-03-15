@@ -14,6 +14,15 @@ namespace Blah
 	class FrameBuffer;
 	typedef std::shared_ptr<FrameBuffer> FrameBufferRef;
 
+	enum class ClearMask
+	{
+		None = 0,
+		Color = 1,
+		Depth = 2,
+		Stencil = 4,
+		All = (int)Color | (int)Depth | (int)Stencil
+	};
+
 	class FrameBuffer
 	{
 	protected:
@@ -56,7 +65,7 @@ namespace Blah
 		virtual int height() const = 0;
 
 		// Clears the FrameBuffer
-		virtual void clear(Color color) = 0;
+		virtual void clear(Color color = Color::black, float depth = 1.0f, uint8_t stencil = 0, ClearMask mask = ClearMask::All) = 0;
 	};
 
 }

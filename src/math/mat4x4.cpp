@@ -1,4 +1,5 @@
 #include <blah/math/mat4x4.h>
+#include <blah/core/log.h>
 
 using namespace Blah;
 
@@ -59,6 +60,29 @@ Mat4x4 Mat4x4::create_ortho_offcenter(float left, float right, float bottom, flo
 	return result;
 }
 
+Mat4x4 Mat4x4::create_perspective(float field_of_view, float ratio, float z_near_plane, float z_far_plane)
+{
+	float yScale = 1.0f / (float)Calc::tan(field_of_view * 0.5f);
+	float xScale = yScale / ratio;
+
+	Mat4x4 result;
+
+	result.m11 = xScale;
+	result.m12 = result.m13 = result.m14 = 0.0f;
+
+	result.m22 = yScale;
+	result.m21 = result.m23 = result.m24 = 0.0f;
+
+	result.m31 = result.m32 = 0.0f;
+	result.m33 = z_far_plane / (z_near_plane - z_far_plane);
+	result.m34 = -1.0f;
+
+	result.m41 = result.m42 = result.m44 = 0.0f;
+	result.m43 = z_near_plane * z_far_plane / (z_near_plane - z_far_plane);
+
+	return result;
+}
+
 Mat4x4 Mat4x4::create_translation(float x, float y, float z)
 {
 	Mat4x4 result = identity;
@@ -77,6 +101,34 @@ Mat4x4 Mat4x4::create_scale(float x, float y, float z)
 	result.m11 = x;
 	result.m22 = y;
 	result.m33 = z;
+
+	return result;
+}
+
+Mat4x4 Mat4x4::create_lookat(Vec3 position, Vec3 target, Vec3 up)
+{
+	Vec3 zaxis = (position - target).normal();
+	Vec3 xaxis = Vec3::cross(up, zaxis).normal();
+	Vec3 yaxis = Vec3::cross(zaxis, xaxis);
+
+	Mat4x4 result;
+
+	result.m11 = xaxis.x;
+	result.m12 = yaxis.x;
+	result.m13 = zaxis.x;
+	result.m14 = 0.0f;
+	result.m21 = xaxis.y;
+	result.m22 = yaxis.y;
+	result.m23 = zaxis.y;
+	result.m24 = 0.0f;
+	result.m31 = xaxis.z;
+	result.m32 = yaxis.z;
+	result.m33 = zaxis.z;
+	result.m34 = 0.0f;
+	result.m41 = -Vec3::dot(xaxis, position);
+	result.m42 = -Vec3::dot(yaxis, position);
+	result.m43 = -Vec3::dot(zaxis, position);
+	result.m44 = 1.0f;
 
 	return result;
 }

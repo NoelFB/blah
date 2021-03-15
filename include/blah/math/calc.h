@@ -61,6 +61,8 @@ namespace Blah
 
 		float cos(float x);
 
+		float tan(float x);
+
 		float atan2(float y, float x);
 
 		float pow(float x, float n);
