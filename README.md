@@ -1,6 +1,5 @@
 ## blah
-A small C++ game framework for 2D games.
-Goal is to be simple and use as few dependencies as possible, to maintain easy building and portability.
+A small 2D C++ Game Framework, using few dependencies and simple code to mainain easy building and portability.
 
 **☆ This will likely see breaking changes! Use at your own risk! ☆**
 
@@ -10,7 +9,7 @@ Goal is to be simple and use as few dependencies as possible, to maintain easy b
 	- [SDL2](https://github.com/NoelFB/blah/blob/master/src/internal/platform_backend_sdl2.cpp) can be enabled in CMake with `SDL2_ENABLED`, and setting `SDL2_INCLUDE_DIRS` and `SDL2_LIBRARIES`
  - Graphics Backend
 	- [OpenGL](https://github.com/NoelFB/blah/blob/master/src/internal/graphics_backend_gl.cpp) can be enabled in CMake with `OPENGL_ENABLED`.
-	- [D3D11](https://github.com/NoelFB/blah/blob/master/src/internal/graphics_backend_d3d11.cpp) (unfinished) can be enabled in CMake with `D3D11_ENABLED`.
+	- [D3D11](https://github.com/NoelFB/blah/blob/master/src/internal/graphics_backend_d3d11.cpp) can be enabled in CMake with `D3D11_ENABLED`.
  - Other backends can be added by implementing the [Platform Backend](https://github.com/NoelFB/blah/blob/master/src/internal/platform_backend.h) or [Graphics Backend](https://github.com/NoelFB/blah/blob/master/src/internal/graphics_backend.h).
  
 #### notes
@@ -18,6 +17,7 @@ Goal is to be simple and use as few dependencies as possible, to maintain easy b
  - Only floatN/mat3x2/mat4x4 uniforms are supported.
  - There's no Audio API or backend implementation yet.
  - No threaded rendering so it will explode if you try that.
+ - No Audio API implemented yet.
 
 #### a sample application
 
