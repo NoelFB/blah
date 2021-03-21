@@ -6,59 +6,47 @@
 
 namespace Blah
 {
-	// Represents a Controller Trigger or a single direction of a Controller Axis.
-	// Used in the Binding implementation.
-	struct BoundTrigger
-	{
-		// Controller Index we're bound to
-		int controller = 0;
-
-		// The Axis we're bound to
-		Axis axis = Axis::None;
-
-		// Minimum value of the axis
-		float threshold = 0.01f;
-
-		// requires a positive value
-		// otherwise requires a negative value
-		bool positive = true;
-
-		BoundTrigger() = default;
-		BoundTrigger(Axis axis);
-		BoundTrigger(int controller, Axis axis, float threshold, bool positive);
-
-		bool is_down(float axis_value) const;
-
-		// helper functions for frequent use cases
-		static BoundTrigger left_stick_left(int controller, float threshold);
-		static BoundTrigger left_stick_right(int controller, float threshold);
-		static BoundTrigger left_stick_up(int controller, float threshold);
-		static BoundTrigger left_stick_down(int controller, float threshold);
-		static BoundTrigger right_stick_left(int controller, float threshold);
-		static BoundTrigger right_stick_right(int controller, float threshold);
-		static BoundTrigger right_stick_up(int controller, float threshold);
-		static BoundTrigger right_stick_down(int controller, float threshold);
-		static BoundTrigger left_trigger(int controller, float threshold);
-		static BoundTrigger right_trigger(int controller, float threshold);
-	};
-
-	struct BoundButton
-	{
-		// Controller Index we're bound to
-		int controller = 0;
-
-		// Button we're bound to
-		Button button = Button::None;
-
-		BoundButton() = default;
-		BoundButton(Button button);
-		BoundButton(int controller, Button button);
-	};
-
 	// Single input Binding
 	class Binding
 	{
 	public:
+
+		// Represents a Controller Trigger or a single direction of a Controller Axis.
+		struct TriggerBind
+		{
+			// Controller Index we're bound to
+			int controller = 0;
+
+			// The Axis we're bound to
+			Axis axis = Axis::None;
+
+			// Minimum value of the axis
+			float threshold = 0.01f;
+
+			// requires a positive value
+			// otherwise requires a negative value
+			bool positive = true;
+
+			TriggerBind() = default;
+			TriggerBind(Axis axis);
+			TriggerBind(int controller, Axis axis, float threshold, bool positive);
+
+			bool is_down(float axis_value) const;
+		};
+
+		// Represents a Controller Button.
+		struct ButtonBind
+		{
+			// Controller Index we're bound to
+			int controller = 0;
+
+			// Button we're bound to
+			Button button = Button::None;
+
+			ButtonBind() = default;
+			ButtonBind(Button button);
+			ButtonBind(int controller, Button button);
+		};
 
 		// Input Buffer for press events
 		float press_buffer = 0;
@@ -68,15 +56,30 @@ namespace Blah
 
 		// List of bound Keys
 		StackVector<Key, 16> keys;
-		
+
 		// List of bound Buttons
-		StackVector<BoundButton, 16> buttons;
+		StackVector<ButtonBind, 16> buttons;
 
 		// List of bound Triggers / Axis
-		StackVector<BoundTrigger, 16> triggers;
+		StackVector<TriggerBind, 16> triggers;
 
 		// List of bound Mouse buttons
 		StackVector<MouseButton, 16> mouse;
+
+		Binding() = default;
+
+		Binding(float press_buffer)
+			: press_buffer(press_buffer)
+		{
+
+		}
+
+		template<typename ... Args>
+		Binding(float press_buffer, const Args&... args)
+			: press_buffer(press_buffer)
+		{
+			add(args...);
+		}
 
 		// if the binding has been pressed
 		bool pressed() const;
@@ -106,27 +109,34 @@ namespace Blah
 		void consume_release();
 
 		// adds a key to the binding
-		void add(Key key);
+		Binding& add(Key key);
 
 		// adds a button to the binding
-		void add(BoundButton button);
+		Binding& add(ButtonBind button);
 
 		// adds an trigger to the binding
-		void add(BoundTrigger trigger);
+		Binding& add(TriggerBind trigger);
 
 		// adds a mouse button to the binding
-		void add(MouseButton mouse);
+		Binding& add(MouseButton mouse);
 
 		// adds an input to the binding
 		template<typename T, typename T2, typename ... Args>
-		void add(T first, T2 second, const Args&... args)
+		Binding& add(T first, T2 second, const Args&... args)
 		{
 			add(first);
 			add(second, args...);
+			return *this;
 		}
 
+		// adds the left trigger to the binding
+		Binding& add_left_trigger(int controller, float threshold);
+
+		// adds the right trigger to the binding
+		Binding& add_right_trigger(int controller, float threshold);
+
 		// assigns all the bindings to the specific controller
-		void set_controller(int index);
+		Binding& set_controller(int index);
 
 		// removes all bindings
 		void clear();
@@ -169,6 +179,14 @@ namespace Blah
 		// How to handle overlaps (ex. Left and Right are both held)
 		Overlap overlap = Overlap::Newer;
 
+		AxisBinding() = default;
+
+		AxisBinding(const Binding& negative, const Binding& positive, Overlap overlap = Overlap::Newer)
+			: negative(negative)
+			, positive(positive)
+			, overlap(overlap) 
+		{}
+
 		// Current Value from -1 to 1
 		float value() const;
 
@@ -186,20 +204,21 @@ namespace Blah
 
 		// Adds a negative & positive binding pair
 		template<typename NegativeT, typename PositiveT>
-		void add(NegativeT negative, PositiveT positive)
+		AxisBinding& add(NegativeT negative, PositiveT positive)
 		{
 			this->negative.add(negative);
 			this->positive.add(positive);
+			return *this;
 		}
 
 		// Adds a Stick binding
-		void add_left_stick_x(int controller, float threshold);
-		void add_left_stick_y(int controller, float threshold);
-		void add_right_stick_x(int controller, float threshold);
-		void add_right_stick_y(int controller, float threshold);
+		AxisBinding& add_left_stick_x(int controller, float threshold);
+		AxisBinding& add_left_stick_y(int controller, float threshold);
+		AxisBinding& add_right_stick_x(int controller, float threshold);
+		AxisBinding& add_right_stick_y(int controller, float threshold);
 
 		// assigns all the bindings to the specific controller
-		void set_controller(int index);
+		AxisBinding& set_controller(int index);
 
 		// Clears all Bindings
 		void clear();
@@ -209,14 +228,22 @@ namespace Blah
 	{
 	public:
 
-		// An optional threshold for circular thresholds
-		float round_threshold = 0.0f;
-
 		// X Axis Binding
 		AxisBinding x;
 
 		// Y Axis Binding
 		AxisBinding y;
+
+		// An optional threshold for circular thresholds
+		float round_threshold = 0.0f;
+
+		StickBinding() = default;
+
+		StickBinding(const AxisBinding& x, const AxisBinding& y, float round_threshold = 0)
+			: x(x)
+			, y(y)
+			, round_threshold(round_threshold)
+		{}
 
 		// Current Value, -1 to 1
 		Vec2 value() const;
@@ -235,25 +262,26 @@ namespace Blah
 
 		// Adds directional bindings
 		template<typename LeftT, typename RightT, typename UpT, typename DownT>
-		void add(LeftT left, RightT right, UpT up, DownT down)
+		StickBinding& add(LeftT left, RightT right, UpT up, DownT down)
 		{
 			x.negative.add(left);
 			x.positive.add(right);
 			y.negative.add(up);
 			y.positive.add(down);
+			return *this;
 		}
 
 		// Adds the dpad binding
-		void add_dpad(int controller);
+		StickBinding& add_dpad(int controller);
 
 		// Adds the left stick binding
-		void add_left_stick(int controller, float threshold);
+		StickBinding& add_left_stick(int controller, float threshold);
 
 		// Adds the right stick binding
-		void add_right_stick(int controller, float threshold);
+		StickBinding& add_right_stick(int controller, float threshold);
 
 		// assigns all the bindings to the specific controller
-		void set_controller(int index);
+		StickBinding& set_controller(int index);
 
 		// Clears all the bindings
 		void clear();

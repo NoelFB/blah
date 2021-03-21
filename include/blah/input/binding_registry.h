@@ -17,13 +17,13 @@ namespace Blah
 	{
 	public:
 		// registers a new binding
-		static BindingRef register_binding();
+		static BindingRef register_binding(const Binding& binding = Binding());
 
 		// registers a new axis binding
-		static AxisBindingRef register_axis();
+		static AxisBindingRef register_axis(const AxisBinding& binding = AxisBinding());
 
 		// registers a new stick binding
-		static StickBindingRef register_stick();
+		static StickBindingRef register_stick(const StickBinding& binding = StickBinding());
 
 		// updates all the bindings. This is called
 		// automatically by the App loop.

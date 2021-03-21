@@ -6,25 +6,25 @@ Vector<std::weak_ptr<Binding>> BindingRegistry::bindings;
 Vector<std::weak_ptr<AxisBinding>> BindingRegistry::axes;
 Vector<std::weak_ptr<StickBinding>> BindingRegistry::sticks;
 
-BindingRef BindingRegistry::register_binding()
+BindingRef BindingRegistry::register_binding(const Binding& binding)
 {
-	auto binding = std::make_shared<Binding>();
-	bindings.push_back(std::weak_ptr<Binding>(binding));
-	return binding;
+	auto result = std::make_shared<Binding>(binding);
+	bindings.push_back(std::weak_ptr<Binding>(result));
+	return result;
 }
 
-AxisBindingRef BindingRegistry::register_axis()
+AxisBindingRef BindingRegistry::register_axis(const AxisBinding& binding)
 {
-	auto binding = std::make_shared<AxisBinding>();
-	axes.push_back(std::weak_ptr<AxisBinding>(binding));
-	return binding;
+	auto result = std::make_shared<AxisBinding>(binding);
+	axes.push_back(std::weak_ptr<AxisBinding>(result));
+	return result;
 }
 
-StickBindingRef BindingRegistry::register_stick()
+StickBindingRef BindingRegistry::register_stick(const StickBinding& binding)
 {
-	auto binding = std::make_shared<StickBinding>();
-	sticks.push_back(std::weak_ptr<StickBinding>(binding));
-	return binding;
+	auto result = std::make_shared<StickBinding>(binding);
+	sticks.push_back(std::weak_ptr<StickBinding>(result));
+	return result;
 }
 
 void BindingRegistry::update()

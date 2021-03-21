@@ -4,19 +4,19 @@
 
 using namespace Blah;
 
-BoundTrigger::BoundTrigger(Axis axis)
+Binding::TriggerBind::TriggerBind(Axis axis)
 	: axis(axis)
 {
 
 }
 
-BoundTrigger::BoundTrigger(int controller, Axis axis, float threshold, bool positive)
+Binding::TriggerBind::TriggerBind(int controller, Axis axis, float threshold, bool positive)
 	: controller(controller), axis(axis), threshold(threshold), positive(positive)
 {
 
 }
 
-bool BoundTrigger::is_down(float axis_value) const
+bool Binding::TriggerBind::is_down(float axis_value) const
 {
 	if ((axis_value > 0 && positive) || (axis_value < 0 && !positive))
 	{
@@ -27,60 +27,10 @@ bool BoundTrigger::is_down(float axis_value) const
 	return false;
 }
 
-BoundTrigger BoundTrigger::left_stick_left(int controller, float threshold)
-{
-	return BoundTrigger(controller, Axis::LeftX, threshold, false);
-}
-
-BoundTrigger BoundTrigger::left_stick_right(int controller, float threshold)
-{
-	return BoundTrigger(controller, Axis::LeftX, threshold, true);
-}
-
-BoundTrigger BoundTrigger::left_stick_up(int controller, float threshold)
-{
-	return BoundTrigger(controller, Axis::LeftY, threshold, false);
-}
-
-BoundTrigger BoundTrigger::left_stick_down(int controller, float threshold)
-{
-	return BoundTrigger(controller, Axis::LeftY, threshold, true);
-}
-
-BoundTrigger BoundTrigger::right_stick_left(int controller, float threshold)
-{
-	return BoundTrigger(controller, Axis::RightX, threshold, false);
-}
-
-BoundTrigger BoundTrigger::right_stick_right(int controller, float threshold)
-{
-	return BoundTrigger(controller, Axis::RightX, threshold, true);
-}
-
-BoundTrigger BoundTrigger::right_stick_up(int controller, float threshold)
-{
-	return BoundTrigger(controller, Axis::RightY, threshold, false);
-}
-
-BoundTrigger BoundTrigger::right_stick_down(int controller, float threshold)
-{
-	return BoundTrigger(controller, Axis::RightY, threshold, true);
-}
-
-BoundTrigger BoundTrigger::left_trigger(int controller, float threshold)
-{
-	return BoundTrigger(controller, Axis::LeftTrigger, threshold, true);
-}
-
-BoundTrigger BoundTrigger::right_trigger(int controller, float threshold)
-{
-	return BoundTrigger(controller, Axis::RightTrigger, threshold, true);
-}
-
-BoundButton::BoundButton(Button button)
+Binding::ButtonBind::ButtonBind(Button button)
 	: button(button) {}
 
-BoundButton::BoundButton(int controller, Button button)
+Binding::ButtonBind::ButtonBind(int controller, Button button)
 	: controller(controller), button(button) {}
 
 bool Binding::pressed() const
@@ -167,32 +117,50 @@ void Binding::consume_release()
 	m_last_release_time = -1;
 }
 
-void Binding::add(Key key)
+Binding& Binding::add(Key key)
 {
 	keys.push_back(key);
+	return *this;
 }
 
-void Binding::add(BoundButton button)
+Binding& Binding::add(ButtonBind button)
 {
 	buttons.push_back(button);
+	return *this;
 }
 
-void Binding::add(BoundTrigger trigger)
+Binding& Binding::add(TriggerBind trigger)
 {
 	triggers.push_back(trigger);
+	return *this;
 }
 
-void Binding::add(MouseButton button)
+Binding& Binding::add(MouseButton button)
 {
 	mouse.push_back(button);
+	return *this;
 }
 
-void Binding::set_controller(int index)
+Binding& Binding::add_left_trigger(int controller, float threshold)
+{
+	triggers.push_back(TriggerBind(controller, Axis::LeftTrigger, threshold, true));
+	return *this;
+}
+
+Binding& Binding::add_right_trigger(int controller, float threshold)
+{
+	triggers.push_back(TriggerBind(controller, Axis::RightTrigger, threshold, true));
+	return *this;
+}
+
+Binding& Binding::set_controller(int index)
 {
 	for (auto& it : buttons)
 		it.controller = index;
 	for (auto& it : triggers)
 		it.controller = index;
+
+	return *this;
 }
 
 void Binding::clear()
@@ -325,7 +293,7 @@ float Binding::get_value() const
 				highest = mapped_value;
 		}
 	}
-		
+
 	return highest;
 }
 
@@ -333,7 +301,7 @@ float AxisBinding::value() const
 {
 	float neg = negative.value();
 	float pos = positive.value();
-	
+
 	// neither are down
 	if (neg <= 0 && pos <= 0)
 		return 0;
@@ -365,7 +333,7 @@ float AxisBinding::value() const
 	if (negative.timestamp() > positive.timestamp())
 		return -neg;
 	else
-		return pos;		
+		return pos;
 }
 
 int AxisBinding::sign() const
@@ -391,34 +359,39 @@ void AxisBinding::consume_release()
 	positive.consume_release();
 }
 
-void AxisBinding::add_left_stick_x(int controller, float threshold)
+AxisBinding& AxisBinding::add_left_stick_x(int controller, float threshold)
 {
-	negative.add(BoundTrigger::left_stick_left(controller, threshold));
-	positive.add(BoundTrigger::left_stick_right(controller, threshold));
+	negative.add(Binding::TriggerBind(controller, Axis::LeftX, threshold, false));
+	positive.add(Binding::TriggerBind(controller, Axis::LeftX, threshold, true));
+	return *this;
 }
 
-void AxisBinding::add_left_stick_y(int controller, float threshold)
+AxisBinding& AxisBinding::add_left_stick_y(int controller, float threshold)
 {
-	negative.add(BoundTrigger::left_stick_up(controller, threshold));
-	positive.add(BoundTrigger::left_stick_down(controller, threshold));
+	negative.add(Binding::TriggerBind(controller, Axis::LeftY, threshold, false));
+	positive.add(Binding::TriggerBind(controller, Axis::LeftY, threshold, true));
+	return *this;
 }
 
-void AxisBinding::add_right_stick_x(int controller, float threshold)
+AxisBinding& AxisBinding::add_right_stick_x(int controller, float threshold)
 {
-	negative.add(BoundTrigger::right_stick_left(controller, threshold));
-	positive.add(BoundTrigger::right_stick_right(controller, threshold));
+	negative.add(Binding::TriggerBind(controller, Axis::RightX, threshold, false));
+	positive.add(Binding::TriggerBind(controller, Axis::RightX, threshold, true));
+	return *this;
 }
 
-void AxisBinding::add_right_stick_y(int controller, float threshold)
+AxisBinding& AxisBinding::add_right_stick_y(int controller, float threshold)
 {
-	negative.add(BoundTrigger::right_stick_up(controller, threshold));
-	positive.add(BoundTrigger::right_stick_down(controller, threshold));
+	negative.add(Binding::TriggerBind(controller, Axis::RightY, threshold, false));
+	positive.add(Binding::TriggerBind(controller, Axis::RightY, threshold, true));
+	return *this;
 }
 
-void AxisBinding::set_controller(int index)
+AxisBinding& AxisBinding::set_controller(int index)
 {
 	negative.set_controller(index);
 	positive.set_controller(index);
+	return *this;
 }
 
 void AxisBinding::clear()
@@ -459,30 +432,34 @@ void StickBinding::consume_release()
 	y.consume_release();
 }
 
-void StickBinding::add_dpad(int controller)
+StickBinding& StickBinding::add_dpad(int controller)
 {
-	x.negative.add(BoundButton(controller, Button::Left));
-	x.positive.add(BoundButton(controller, Button::Right));
-	y.negative.add(BoundButton(controller, Button::Up));
-	y.positive.add(BoundButton(controller, Button::Down));
+	x.negative.add(Binding::ButtonBind(controller, Button::Left));
+	x.positive.add(Binding::ButtonBind(controller, Button::Right));
+	y.negative.add(Binding::ButtonBind(controller, Button::Up));
+	y.positive.add(Binding::ButtonBind(controller, Button::Down));
+	return *this;
 }
 
-void StickBinding::add_left_stick(int controller, float threshold)
+StickBinding& StickBinding::add_left_stick(int controller, float threshold)
 {
 	x.add_left_stick_x(controller, threshold);
 	y.add_left_stick_y(controller, threshold);
+	return *this;
 }
 
-void StickBinding::add_right_stick(int controller, float threshold)
+StickBinding& StickBinding::add_right_stick(int controller, float threshold)
 {
 	x.add_right_stick_x(controller, threshold);
 	y.add_right_stick_y(controller, threshold);
+	return *this;
 }
 
-void StickBinding::set_controller(int index)
+StickBinding& StickBinding::set_controller(int index)
 {
 	x.set_controller(index);
 	y.set_controller(index);
+	return *this;
 }
 
 void StickBinding::clear()
