@@ -47,6 +47,28 @@ namespace
 		else
 			Log::error(message);
 	}
+
+	int find_joystick_index(SDL_JoystickID instance_id)
+	{
+		for (int i = 0; i < Blah::Input::max_controllers; i++)
+			if (joysticks[i] != nullptr && SDL_JoystickInstanceID(joysticks[i]) == instance_id)
+				return i;
+		return -1;
+	}
+
+	int find_gamepad_index(SDL_JoystickID instance_id)
+	{
+		for (int i = 0; i < Blah::Input::max_controllers; i++)
+		{
+			if (gamepads[i] != nullptr)
+			{
+				auto joystick = SDL_GameControllerGetJoystick(gamepads[i]);
+				if (SDL_JoystickInstanceID(joystick) == instance_id)
+					return i;
+			}
+		}
+		return -1;
+	}
 }
 
 bool PlatformBackend::init(const Config* config)
@@ -247,109 +269,132 @@ void PlatformBackend::frame()
 		// Joystick Controller
 		else if (event.type == SDL_JOYDEVICEADDED)
 		{
-			Sint32 index = event.jdevice.which;
+			auto index = event.jdevice.which;
 
-			if (SDL_IsGameController(index) == SDL_FALSE)
+			if (SDL_IsGameController(index) == SDL_FALSE && index >= 0 && index < Input::max_controllers)
 			{
-				SDL_Joystick* ptr = joysticks[index] = SDL_JoystickOpen(index);
-				const char* name = SDL_JoystickName(ptr);
-				int button_count = SDL_JoystickNumButtons(ptr);
-				int axis_count = SDL_JoystickNumAxes(ptr);
-				u16 vendor = SDL_JoystickGetVendor(ptr);
-				u16 product = SDL_JoystickGetProduct(ptr);
-				u16 version = SDL_JoystickGetProductVersion(ptr);
+				auto ptr = joysticks[index] = SDL_JoystickOpen(index);
+				auto name = SDL_JoystickName(ptr);
+				auto button_count = SDL_JoystickNumButtons(ptr);
+				auto axis_count = SDL_JoystickNumAxes(ptr);
+				auto vendor = SDL_JoystickGetVendor(ptr);
+				auto product = SDL_JoystickGetProduct(ptr);
+				auto version = SDL_JoystickGetProductVersion(ptr);
 
 				InputBackend::on_controller_connect(index, name, 0, button_count, axis_count, vendor, product, version);
 			}
 		}
 		else if (event.type == SDL_JOYDEVICEREMOVED)
 		{
-			Sint32 index = event.jdevice.which;
-
-			if (SDL_IsGameController(index) == SDL_FALSE)
+			auto index = find_joystick_index(event.jdevice.which);
+			if (index >= 0)
 			{
-				InputBackend::on_controller_disconnect(index);
-				SDL_JoystickClose(joysticks[index]);
+				if (SDL_IsGameController(index) == SDL_FALSE)
+				{
+					InputBackend::on_controller_disconnect(index);
+					SDL_JoystickClose(joysticks[index]);
+				}
 			}
 		}
 		else if (event.type == SDL_JOYBUTTONDOWN)
 		{
-			Sint32 index = event.jdevice.which;
-			if (SDL_IsGameController(index) == SDL_FALSE)
-				InputBackend::on_button_down(index, event.jbutton.button);
+			auto index = find_joystick_index(event.jdevice.which);
+			if (index >= 0)
+			{
+				if (SDL_IsGameController(index) == SDL_FALSE)
+					InputBackend::on_button_down(index, event.jbutton.button);
+			}
 		}
 		else if (event.type == SDL_JOYBUTTONUP)
 		{
-			Sint32 index = event.jdevice.which;
-			if (SDL_IsGameController(index) == SDL_FALSE)
-				InputBackend::on_button_up(index, event.jbutton.button);
+			auto index = find_joystick_index(event.jdevice.which);
+			if (index >= 0)
+			{
+				if (SDL_IsGameController(index) == SDL_FALSE)
+					InputBackend::on_button_up(index, event.jbutton.button);
+			}
 		}
 		else if (event.type == SDL_JOYAXISMOTION)
 		{
-			Sint32 index = event.jaxis.which;
-			if (SDL_IsGameController(index) == SDL_FALSE)
+			auto index = find_joystick_index(event.jdevice.which);
+			if (index >= 0)
 			{
-				float value;
-				if (event.jaxis.value >= 0)
-					value = event.jaxis.value / 32767.0f;
-				else
-					value = event.jaxis.value / 32768.0f;
-				InputBackend::on_axis_move(index, event.jaxis.axis, value);
+				if (SDL_IsGameController(index) == SDL_FALSE)
+				{
+					float value;
+					if (event.jaxis.value >= 0)
+						value = event.jaxis.value / 32767.0f;
+					else
+						value = event.jaxis.value / 32768.0f;
+					InputBackend::on_axis_move(index, event.jaxis.axis, value);
+				}
 			}
 		}
 		// Gamepad Controller
 		else if (event.type == SDL_CONTROLLERDEVICEADDED)
 		{
-			Sint32 index = event.cdevice.which;
-			SDL_GameController* ptr = gamepads[index] = SDL_GameControllerOpen(index);
-			const char* name = SDL_GameControllerName(ptr);
-			u16 vendor = SDL_GameControllerGetVendor(ptr);
-			u16 product = SDL_GameControllerGetProduct(ptr);
-			u16 version = SDL_GameControllerGetProductVersion(ptr);
+			auto index = event.cdevice.which;
+			if (index >= 0 && index < Input::max_controllers)
+			{
+				auto ptr = gamepads[index] = SDL_GameControllerOpen(index);
+				auto name = SDL_GameControllerName(ptr);
+				auto vendor = SDL_GameControllerGetVendor(ptr);
+				auto product = SDL_GameControllerGetProduct(ptr);
+				auto version = SDL_GameControllerGetProductVersion(ptr);
 
-			InputBackend::on_controller_connect(index, name, 1, 15, 6, vendor, product, version);
+				InputBackend::on_controller_connect(index, name, 1, 15, 6, vendor, product, version);
+			}
 		}
 		else if (event.type == SDL_CONTROLLERDEVICEREMOVED)
 		{
-			Sint32 index = event.cdevice.which;
-			InputBackend::on_controller_disconnect(index);
-			SDL_GameControllerClose(gamepads[index]);
+			auto index = find_gamepad_index(event.cdevice.which);
+			if (index >= 0)
+			{
+				InputBackend::on_controller_disconnect(index);
+				SDL_GameControllerClose(gamepads[index]);
+			}
 		}
 		else if (event.type == SDL_CONTROLLERBUTTONDOWN)
 		{
-			Sint32 index = event.cbutton.which;
+			auto index = find_gamepad_index(event.cdevice.which);
+			if (index >= 0)
+			{
+				int button = (int)Button::None;
+				if (event.cbutton.button >= 0 && event.cbutton.button < 15)
+					button = event.cbutton.button; // NOTE: These map directly to Engine Buttons enum!
 
-			int button = (int)Button::None;
-			if (event.cbutton.button >= 0 && event.cbutton.button < 15)
-				button = event.cbutton.button; // NOTE: These map directly to Engine Buttons enum!
-
-			InputBackend::on_button_down(index, button);
+				InputBackend::on_button_down(index, button);
+			}
 		}
 		else if (event.type == SDL_CONTROLLERBUTTONUP)
 		{
-			Sint32 index = event.cbutton.which;
+			auto index = find_gamepad_index(event.cdevice.which);
+			if (index >= 0)
+			{
+				int button = (int)Button::None;
+				if (event.cbutton.button >= 0 && event.cbutton.button < 15)
+					button = event.cbutton.button; // NOTE: These map directly to Engine Buttons enum!
 
-			int button = (int)Button::None;
-			if (event.cbutton.button >= 0 && event.cbutton.button < 15)
-				button = event.cbutton.button; // NOTE: These map directly to Engine Buttons enum!
-
-			InputBackend::on_button_up(index, button);
+				InputBackend::on_button_up(index, button);
+			}
 		}
 		else if (event.type == SDL_CONTROLLERAXISMOTION)
 		{
-			Sint32 index = event.caxis.which;
+			auto index = find_gamepad_index(event.cdevice.which);
+			if (index >= 0)
+			{
+				int axis = (int)Axis::None;
+				if (event.caxis.axis >= 0 && event.caxis.axis < 6)
+					axis = event.caxis.axis; // NOTE: These map directly to Engine Axis enum!
 
-			int axis = (int)Axis::None;
-			if (event.caxis.axis >= 0 && event.caxis.axis < 6)
-				axis = event.caxis.axis; // NOTE: These map directly to Engine Axis enum!
+				float value;
+				if (event.caxis.value >= 0)
+					value = event.caxis.value / 32767.0f;
+				else
+					value = event.caxis.value / 32768.0f;
 
-			float value;
-			if (event.caxis.value >= 0)
-				value = event.caxis.value / 32767.0f;
-			else
-				value = event.caxis.value / 32768.0f;
-
-			InputBackend::on_axis_move(index, axis, value);
+				InputBackend::on_axis_move(index, axis, value);
+			}
 		}
 	}
 }
