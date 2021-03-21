@@ -44,7 +44,7 @@ void Str::reserve(int size)
 		{
 			char* local = data();
 			m_buffer = new char[m_capacity];
-			strncpy(m_buffer, local, m_local_size);
+			memcpy(m_buffer, local, m_local_size);
 			m_buffer[m_local_size] = '\0';
 		}
 		// expand from empty buffer

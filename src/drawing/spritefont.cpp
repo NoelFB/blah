@@ -79,7 +79,7 @@ float SpriteFont::width_of(const String& text) const
 	float width = 0;
 	float line_width = 0;
 
-	u32 last;
+	u32 last = 0;
 	for (int i = 0; i < text.length(); i ++)
 	{
 		if (text[i] == '\n')

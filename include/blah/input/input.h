@@ -2,6 +2,7 @@
 
 #include <blah/core/common.h>
 #include <blah/math/vec2.h>
+#include <blah/containers/str.h>
 
 // These are generally copied from the SDL2 Scancode Keys
 #define BLAH_KEY_DEFINITIONS \
@@ -255,12 +256,6 @@ namespace Blah
 
 		// maximum number of keys the input will track
 		constexpr int max_keyboard_keys = 512;
-
-		// maximum length of text input that can be received per-frame
-		constexpr int max_text_input = 256;
-
-		// maximum number of nodes within a virtual input device
-		constexpr int max_virtual_nodes = 32;
 	}
 
 	struct ControllerState
@@ -314,7 +309,7 @@ namespace Blah
 		bool down[Input::max_keyboard_keys];
 		bool released[Input::max_keyboard_keys];
 		u64 timestamp[Input::max_keyboard_keys];
-		char text[Input::max_text_input];
+		String text;
 	};
 
 	struct MouseState

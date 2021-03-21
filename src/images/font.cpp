@@ -5,28 +5,36 @@
 
 using namespace Blah;
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
+
 #define STBTT_STATIC
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "../third_party/stb_truetype.h"
 
-String GetName(stbtt_fontinfo* font, int nameId)
+#pragma clang diagnostic pop
+
+namespace
 {
-	int length = 0;
+	String get_font_name(stbtt_fontinfo* font, int nameId)
+	{
+		int length = 0;
 
-	// get the name
-	const u16* ptr = (const u16*)stbtt_GetFontNameStr(font, &length,
-		STBTT_PLATFORM_ID_MICROSOFT,
-		STBTT_MS_EID_UNICODE_BMP,
-		STBTT_MS_LANG_ENGLISH,
-		nameId);
+		// get the name
+		const u16* ptr = (const u16*)stbtt_GetFontNameStr(font, &length,
+			STBTT_PLATFORM_ID_MICROSOFT,
+			STBTT_MS_EID_UNICODE_BMP,
+			STBTT_MS_LANG_ENGLISH,
+			nameId);
 
-	// we want the size in wide chars
-	length /= 2;
+		// we want the size in wide chars
+		length /= 2;
 
-	String str;
-	if (length > 0)
-		str.append_utf16(ptr, ptr + length, Calc::is_little_endian());
-	return str;
+		String str;
+		if (length > 0)
+			str.append_utf16(ptr, ptr + length, Calc::is_little_endian());
+		return str;
+	}
 }
 
 Font::Font()
@@ -112,8 +120,8 @@ void Font::load(Stream& stream)
 	m_font = new stbtt_fontinfo();
 	auto fn = (stbtt_fontinfo*)m_font;
 	stbtt_InitFont(fn, m_data, 0);
-	m_family_name = GetName(fn, 1);
-	m_style_name = GetName(fn, 2);
+	m_family_name = get_font_name(fn, 1);
+	m_style_name = get_font_name(fn, 2);
 	
 	// properties
 	stbtt_GetFontVMetrics(fn, &m_ascent, &m_descent, &m_line_gap);

@@ -22,6 +22,7 @@ VertexFormat::VertexFormat(std::initializer_list<VertexAttribute> attributes, in
 		{
 			switch (it.type)
 			{
+			case VertexType::None: break;
 			case VertexType::Float: stride += 4; break;
 			case VertexType::Float2: stride += 8; break;
 			case VertexType::Float3: stride += 12; break;
