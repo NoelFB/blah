@@ -187,10 +187,10 @@ namespace Blah
 			Vec2 tex;
 			Color col;
 
-			uint8_t mult;
-			uint8_t wash;
-			uint8_t fill;
-			uint8_t pad;
+			u8 mult;
+			u8 wash;
+			u8 fill;
+			u8 pad;
 		};
 
 		struct DrawBatch
@@ -219,11 +219,11 @@ namespace Blah
 		MeshRef					m_mesh;
 		Mat3x2					m_matrix;
 		ColorMode				m_color_mode;
-		uint8_t					m_tex_mult;
-		uint8_t					m_tex_wash;
+		u8					m_tex_mult;
+		u8					m_tex_wash;
 		DrawBatch				m_batch;
 		Vector<Vertex>			m_vertices;
-		Vector<uint32_t>		m_indices;
+		Vector<u32>		m_indices;
 		Vector<Mat3x2>			m_matrix_stack;
 		Vector<Rect>			m_scissor_stack;
 		Vector<BlendMode>		m_blend_stack;

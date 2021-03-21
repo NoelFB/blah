@@ -1,5 +1,5 @@
 #include <blah/images/packer.h>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 #include <algorithm>
 #include <cstring>
 
@@ -41,22 +41,22 @@ Packer::~Packer()
 	dispose();
 }
 
-void Packer::add(uint64_t id, int width, int height, const Color* pixels)
+void Packer::add(u64 id, int width, int height, const Color* pixels)
 {
 	add_entry(id, width, height, pixels);
 }
 
-void Packer::add(uint64_t id, const Image& image)
+void Packer::add(u64 id, const Image& image)
 {
 	add_entry(id, image.width, image.height, image.pixels);
 }
 
-void Packer::add(uint64_t id, const String& path)
+void Packer::add(u64 id, const String& path)
 {
 	add(id, Image(path.cstr()));
 }
 
-void Packer::add_entry(uint64_t id, int w, int h, const Color* pixels)
+void Packer::add_entry(u64 id, int w, int h, const Color* pixels)
 {
 	m_dirty = true;
 

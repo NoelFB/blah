@@ -1,7 +1,7 @@
 #include <blah/images/image.h>
 #include <blah/streams/stream.h>
 #include <blah/streams/filestream.h>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 
 using namespace Blah;
 
@@ -18,7 +18,7 @@ namespace
 {
 	int Blah_STBI_Read(void* user, char* data, int size)
 	{
-		int64_t read = ((Stream*)user)->read(data, size);
+		i64 read = ((Stream*)user)->read(data, size);
 		return (int)read;
 	}
 
@@ -29,8 +29,8 @@ namespace
 
 	int Blah_STBI_Eof(void* user)
 	{
-		int64_t position = ((Stream*)user)->position();
-		int64_t length = ((Stream*)user)->length();
+		i64 position = ((Stream*)user)->position();
+		i64 length = ((Stream*)user)->length();
 
 		if (position >= length)
 			return 1;
@@ -155,7 +155,7 @@ void Image::from_stream(Stream& stream)
 	callbacks.skip = Blah_STBI_Skip;
 
 	int x, y, comps;
-	uint8_t* data = stbi_load_from_callbacks(&callbacks, &stream, &x, &y, &comps, 4);
+	u8* data = stbi_load_from_callbacks(&callbacks, &stream, &x, &y, &comps, 4);
 
 	if (data == nullptr)
 	{
@@ -186,9 +186,9 @@ void Image::premultiply()
 	{
 		for (int n = 0; n < width * height; n ++)
 		{
-			pixels[n].r = (uint8_t)(pixels[n].r * pixels[n].a / 255);
-			pixels[n].g = (uint8_t)(pixels[n].g * pixels[n].a / 255);
-			pixels[n].b = (uint8_t)(pixels[n].b * pixels[n].a / 255);
+			pixels[n].r = (u8)(pixels[n].r * pixels[n].a / 255);
+			pixels[n].g = (u8)(pixels[n].g * pixels[n].a / 255);
+			pixels[n].b = (u8)(pixels[n].b * pixels[n].a / 255);
 		}
 	}
 }

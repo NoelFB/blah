@@ -1,5 +1,5 @@
 #pragma once
-#include <inttypes.h>
+#include <blah/core/common.h>
 #include <stdarg.h>
 #include <cstdio>
 #include <blah/containers/vector.h>
@@ -78,7 +78,7 @@ namespace Blah
 		
 		// Returns the unicode value at the given index.
 		// Assumes the index is a valid utf8 starting point.
-		uint32_t utf8_at(int index) const;
+		u32 utf8_at(int index) const;
 
 		// Returns the byte-length of the utf8 character.
 		// Assumes the index is a valid utf8 starting point.
@@ -88,7 +88,7 @@ namespace Blah
 		Str& append(char c);
 
 		// appends the given unicode character
-		Str& append(uint32_t c);
+		Str& append(u32 c);
 
 		// appends the given c string
 		Str& append(const char* start, const char* end = nullptr);
@@ -100,7 +100,7 @@ namespace Blah
 		Str& append_fmt(const char* fmt, ...);
 
 		// appends a utf16 string
-		Str& append_utf16(const uint16_t* start, const uint16_t* end = nullptr, bool swapEndian = false);
+		Str& append_utf16(const u16* start, const u16* end = nullptr, bool swapEndian = false);
 
 		// trims whitespace
 		Str& trim();

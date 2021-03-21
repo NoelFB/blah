@@ -1,5 +1,5 @@
 #include <blah/streams/filestream.h>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 #include "../internal/platform_backend.h"
 #include <string.h>
 
@@ -39,7 +39,7 @@ FileStream::~FileStream()
 		PlatformBackend::file_close(m_handle);
 }
 
-int64_t FileStream::length() const
+i64 FileStream::length() const
 {
 	if (m_handle == nullptr)
 		return 0;
@@ -47,7 +47,7 @@ int64_t FileStream::length() const
 	return PlatformBackend::file_length(m_handle);
 }
 
-int64_t FileStream::position() const
+i64 FileStream::position() const
 {
 	if (m_handle == nullptr)
 		return 0;
@@ -55,7 +55,7 @@ int64_t FileStream::position() const
 	return PlatformBackend::file_position(m_handle);
 }
 
-int64_t FileStream::seek(int64_t seek_to)
+i64 FileStream::seek(i64 seek_to)
 {
 	if (m_handle == nullptr)
 		return 0;
@@ -63,7 +63,7 @@ int64_t FileStream::seek(int64_t seek_to)
 	return PlatformBackend::file_seek(m_handle, seek_to);
 }
 
-int64_t FileStream::read_into(void* ptr, int64_t length)
+i64 FileStream::read_into(void* ptr, i64 length)
 {
 	if (m_handle == nullptr)
 	{
@@ -74,7 +74,7 @@ int64_t FileStream::read_into(void* ptr, int64_t length)
 	return PlatformBackend::file_read(m_handle, ptr, length);
 }
 
-int64_t FileStream::write_from(const void* ptr, int64_t length)
+i64 FileStream::write_from(const void* ptr, i64 length)
 {
 	if (length <= 0)
 		return 0;

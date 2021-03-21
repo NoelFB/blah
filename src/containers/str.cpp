@@ -72,9 +72,9 @@ void Str::set_length(int len)
 	m_length = len;
 }
 
-uint32_t Str::utf8_at(int index) const
+u32 Str::utf8_at(int index) const
 {
-	uint32_t charcode = 0;
+	u32 charcode = 0;
 	
 	int t = (unsigned char)(this->operator[](index++));
 	if (t < 128)
@@ -124,7 +124,7 @@ Str& Str::append(char c)
 	return *this;
 }
 
-Str& Str::append(uint32_t c)
+Str& Str::append(u32 c)
 {
 	// one octet
 	if (c < 0x80)
@@ -210,21 +210,21 @@ Str& Str::append_fmt(const char* fmt, ...)
 	return *this;
 }
 
-Str& Str::append_utf16(const uint16_t* start, const uint16_t* end, bool swap_endian)
+Str& Str::append_utf16(const u16* start, const u16* end, bool swap_endian)
 {
 	// converts utf16 into utf8
 	// more info: https://en.wikipedia.org/wiki/UTF-16#Description
 
-	const uint16_t surrogate_min = 0xd800u;
-	const uint16_t surrogate_max = 0xdbffu;
+	const u16 surrogate_min = 0xd800u;
+	const u16 surrogate_max = 0xdbffu;
 
 	while (start != end)
 	{
-		uint16_t next = (*start++);
+		u16 next = (*start++);
 		if (swap_endian)
 			next = ((next & 0xff) << 8 | ((next & 0xff00) >> 8));
 
-		uint32_t cp = 0xffff & next;
+		u32 cp = 0xffff & next;
 
 		if ((cp >= surrogate_min && cp <= surrogate_max))
 		{
@@ -232,7 +232,7 @@ Str& Str::append_utf16(const uint16_t* start, const uint16_t* end, bool swap_end
 			if (swap_endian)
 				next = ((next & 0xff) << 8 | ((next & 0xff00) >> 8));
 
-			uint32_t trail = 0xffff & next;
+			u32 trail = 0xffff & next;
 			cp = (cp << 10) + trail + 0x10000u - (surrogate_min << 10) - 0xdc00u;
 		}
 

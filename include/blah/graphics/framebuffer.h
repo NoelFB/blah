@@ -65,7 +65,7 @@ namespace Blah
 		virtual int height() const = 0;
 
 		// Clears the FrameBuffer
-		virtual void clear(Color color = Color::black, float depth = 1.0f, uint8_t stencil = 0, ClearMask mask = ClearMask::All) = 0;
+		virtual void clear(Color color = Color::black, float depth = 1.0f, u8 stencil = 0, ClearMask mask = ClearMask::All) = 0;
 	};
 
 }

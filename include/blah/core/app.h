@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include <functional>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 
 namespace Blah
 {

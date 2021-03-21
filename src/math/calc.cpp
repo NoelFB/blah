@@ -43,16 +43,6 @@ Vec2 Calc::approach(const Vec2& t, const Vec2& target, float delta)
 	return t + (target - t).normal() * delta;
 }
 
-float Calc::clamp(float t, float min, float max)
-{
-	return t < min ? min : (t > max ? max : t);
-}
-
-int Calc::clamp_int(int t, int min, int max)
-{
-	return t < min ? min : (t > max ? max : t);
-}
-
 float Calc::map(float t, float old_min, float old_max, float new_min, float new_max)
 {
 	return new_min + ((t - old_min) / (old_max - old_min)) * (new_max - new_min);

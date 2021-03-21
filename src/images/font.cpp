@@ -1,7 +1,7 @@
 #include <blah/images/font.h>
 #include <blah/streams/filestream.h>
 #include <blah/math/calc.h>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 
 using namespace Blah;
 
@@ -14,7 +14,7 @@ String GetName(stbtt_fontinfo* font, int nameId)
 	int length = 0;
 
 	// get the name
-	const uint16_t* ptr = (const uint16_t*)stbtt_GetFontNameStr(font, &length,
+	const u16* ptr = (const u16*)stbtt_GetFontNameStr(font, &length,
 		STBTT_PLATFORM_ID_MICROSOFT,
 		STBTT_MS_EID_UNICODE_BMP,
 		STBTT_MS_LANG_ENGLISH,

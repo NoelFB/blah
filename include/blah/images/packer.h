@@ -18,15 +18,15 @@ namespace Blah
 		{
 		friend class Packer;
 		private:
-			int64_t memory_index;
+			i64 memory_index;
 		public:
-			uint64_t id;
+			u64 id;
 			int page;
 			bool empty;
 			RectI frame;
 			RectI packed;
 
-			Entry(uint64_t id, const RectI& frame)
+			Entry(u64 id, const RectI& frame)
 				: memory_index(0), id(id), page(0), empty(true), frame(frame), packed(0, 0, 0, 0) {}
 		};
 
@@ -46,9 +46,9 @@ namespace Blah
 		Packer& operator=(Packer&& src) noexcept;
 		~Packer();
 		
-		void add(uint64_t id, int width, int height, const Color* pixels);
-		void add(uint64_t id, const Image& bitmap);
-		void add(uint64_t id, const String& path);
+		void add(u64 id, int width, int height, const Color* pixels);
+		void add(u64 id, const Image& bitmap);
+		void add(u64 id, const String& path);
 
 		void pack();
 		void clear();
@@ -70,6 +70,6 @@ namespace Blah
 		bool m_dirty;
 		BufferStream m_buffer;
 
-		void add_entry(uint64_t id, int w, int h, const Color* pixels);
+		void add_entry(u64 id, int w, int h, const Color* pixels);
 	};
 }

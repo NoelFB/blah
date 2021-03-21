@@ -1,5 +1,5 @@
 #include <blah/graphics/material.h>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 #include <cstring>
 
 using namespace Blah;
@@ -277,7 +277,7 @@ TextureSampler Material::get_sampler(int slot, int index) const
 	return TextureSampler();
 }
 
-void Material::set_value(const char* name, const float* value, int64_t length)
+void Material::set_value(const char* name, const float* value, i64 length)
 {
 	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 	BLAH_ASSERT(length >= 0, "Length must be >= 0");
@@ -311,7 +311,7 @@ void Material::set_value(const char* name, const float* value, int64_t length)
 	Log::warn("No Uniform '%s' exists", name);
 }
 
-const float* Material::get_value(const char* name, int64_t* length) const
+const float* Material::get_value(const char* name, i64* length) const
 {
 	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 

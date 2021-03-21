@@ -5,7 +5,7 @@
 
 namespace Blah
 {
-	typedef uint32_t Codepoint;
+	typedef u32 Codepoint;
 
 	class Font
 	{

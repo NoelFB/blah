@@ -59,10 +59,10 @@ namespace Blah
 		// Sets the value. `length` is the total number of floats to set
 		// For example if the uniform is a float2[4], a total of 8 float values
 		// can be set.
-		void set_value(const char* name, const float* value, int64_t length);
+		void set_value(const char* name, const float* value, i64 length);
 
 		// Gets a pointer to the values of the given Uniform, or nullptr if it doesn't exist.
-		const float* get_value(const char* name, int64_t* length = nullptr) const;
+		const float* get_value(const char* name, i64* length = nullptr) const;
 
 		// Returns the internal Texture buffer
 		const Vector<TextureRef>& textures() const;

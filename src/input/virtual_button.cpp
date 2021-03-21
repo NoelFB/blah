@@ -1,6 +1,6 @@
 #include <blah/input/virtual_button.h>
 #include <blah/core/time.h>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 
 using namespace Blah;
 

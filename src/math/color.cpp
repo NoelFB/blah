@@ -10,21 +10,21 @@ Color::Color()
 	: r(0), g(0), b(0), a(0) {}
 
 Color::Color(int rgb) :
-	r((uint8_t)((rgb & 0xFF0000) >> 16)),
-	g((uint8_t)((rgb & 0x00FF00) >> 8)),
-	b((uint8_t)(rgb & 0x0000FF)),
+	r((u8)((rgb & 0xFF0000) >> 16)),
+	g((u8)((rgb & 0x00FF00) >> 8)),
+	b((u8)(rgb & 0x0000FF)),
 	a(255) {}
 
 Color::Color(int rgb, float alpha) :
-	r((int)(((uint8_t)((rgb & 0xFF0000) >> 16)) * alpha)),
-	g((int)(((uint8_t)((rgb & 0x00FF00) >> 8)) * alpha)),
-	b((int)(((uint8_t)(rgb & 0x0000FF)) * alpha)),
+	r((int)(((u8)((rgb & 0xFF0000) >> 16)) * alpha)),
+	g((int)(((u8)((rgb & 0x00FF00) >> 8)) * alpha)),
+	b((int)(((u8)(rgb & 0x0000FF)) * alpha)),
 	a((int)(255 * alpha)) {}
 
-Color::Color(uint8_t r, uint8_t g, uint8_t b)
+Color::Color(u8 r, u8 g, u8 b)
 	: r(r), g(g), b(b), a(255) {}
 
-Color::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+Color::Color(u8 r, u8 g, u8 b, u8 a)
 	: r(r), g(g), b(b), a(a) {}
 
 Color::Color(const Vec4& vec4)
@@ -60,13 +60,13 @@ void Color::premultiply()
 	b = b * a / 255;
 }
 
-uint32_t Color::to_rgba() const
+u32 Color::to_rgba() const
 {
 	return
-		((uint32_t)r << 24) |
-		((uint32_t)g << 16) |
-		((uint32_t)b << 8) |
-		(uint32_t)a;
+		((u32)r << 24) |
+		((u32)g << 16) |
+		((u32)b << 8) |
+		(u32)a;
 }
 
 Vec4 Color::to_vec4() const
@@ -110,24 +110,24 @@ String Color::to_hex_rgb() const
 	return str;
 }
 
-Color Color::from_rgba(uint32_t value)
+Color Color::from_rgba(u32 value)
 {
 	return
 	{
-		(uint8_t)((value & 0xFF000000) >> 24),
-		(uint8_t)((value & 0x00FF0000) >> 16),
-		(uint8_t)((value & 0x0000FF00) >> 8),
-		(uint8_t)((value & 0x000000FF))
+		(u8)((value & 0xFF000000) >> 24),
+		(u8)((value & 0x00FF0000) >> 16),
+		(u8)((value & 0x0000FF00) >> 8),
+		(u8)((value & 0x000000FF))
 	};
 }
 
-Color Color::from_rgb(uint32_t value)
+Color Color::from_rgb(u32 value)
 {
 	return
 	{
-		(uint8_t)((value & 0xFF0000) >> 16),
-		(uint8_t)((value & 0x00FF00) >> 8),
-		(uint8_t)((value & 0x0000FF))
+		(u8)((value & 0xFF0000) >> 16),
+		(u8)((value & 0x00FF00) >> 8),
+		(u8)((value & 0x0000FF))
 	};
 }
 
@@ -137,10 +137,10 @@ Color Color::lerp(Color a, Color b, float amount)
 	if (amount > 1) amount = 1;
 
 	return Color(
-		(uint8_t)(a.r + (b.r - a.r) * amount),
-		(uint8_t)(a.g + (b.g - a.g) * amount),
-		(uint8_t)(a.b + (b.b - a.b) * amount),
-		(uint8_t)(a.a + (b.a - a.a) * amount)
+		(u8)(a.r + (b.r - a.r) * amount),
+		(u8)(a.g + (b.g - a.g) * amount),
+		(u8)(a.b + (b.b - a.b) * amount),
+		(u8)(a.a + (b.a - a.a) * amount)
 	);
 }
 
@@ -155,9 +155,9 @@ Color Color::operator*(float multiply) const
 
 Color& Color::operator=(const int rgb)
 {
-	r = (uint8_t)((rgb & 0xFF0000) >> 16);
-	g = (uint8_t)((rgb & 0x00FF00) >> 8);
-	b = (uint8_t)(rgb & 0x0000FF);
+	r = (u8)((rgb & 0xFF0000) >> 16);
+	g = (u8)((rgb & 0x00FF00) >> 8);
+	b = (u8)(rgb & 0x0000FF);
 	a = 255;
 	return *this;
 }

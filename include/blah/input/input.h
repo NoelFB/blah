@@ -1,6 +1,6 @@
 #pragma once
 
-#include <inttypes.h>
+#include <blah/core/common.h>
 #include <blah/math/vec2.h>
 
 // These are generally copied from the SDL2 Scancode Keys
@@ -293,19 +293,19 @@ namespace Blah
 		float axis[Input::max_controller_axis];
 
 		// Timestamp, in milliseconds, since each button was last pressed
-		uint64_t button_timestamp[Input::max_controller_buttons];
+		u64 button_timestamp[Input::max_controller_buttons];
 
 		// Timestamp, in milliseconds, since each axis last had a value set
-		uint64_t axis_timestamp[Input::max_controller_axis];
+		u64 axis_timestamp[Input::max_controller_axis];
 
 		// The USB Vendor ID
-		uint16_t vendor;
+		u16 vendor;
 
 		// The USB Product ID
-		uint16_t product;
+		u16 product;
 
 		// the Product Version
-		uint16_t version;
+		u16 version;
 	};
 
 	struct KeyboardState
@@ -313,7 +313,7 @@ namespace Blah
 		bool pressed[Input::max_keyboard_keys];
 		bool down[Input::max_keyboard_keys];
 		bool released[Input::max_keyboard_keys];
-		uint64_t timestamp[Input::max_keyboard_keys];
+		u64 timestamp[Input::max_keyboard_keys];
 		char text[Input::max_text_input];
 	};
 
@@ -322,7 +322,7 @@ namespace Blah
 		bool pressed[Input::max_mouse_buttons];
 		bool down[Input::max_mouse_buttons];
 		bool released[Input::max_mouse_buttons];
-		uint64_t timestamp[Input::max_mouse_buttons];
+		u64 timestamp[Input::max_mouse_buttons];
 		Vec2 screen_position;
 		Vec2 draw_position;
 		Vec2 position;

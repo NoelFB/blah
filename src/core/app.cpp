@@ -1,5 +1,5 @@
 #include <blah/core/app.h>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 #include <blah/core/time.h>
 #include <blah/math/point.h>
 #include <blah/graphics/framebuffer.h>
@@ -35,8 +35,8 @@ namespace
 	Config app_config;
 	bool app_is_running = false;
 	bool app_is_exiting = false;
-	uint64_t time_last;
-	uint64_t time_accumulator = 0;
+	u64 time_last;
+	u64 time_accumulator = 0;
 
 	void app_iterate()
 	{
@@ -46,9 +46,9 @@ namespace
 		// update at a fixed timerate
 		// TODO: allow a non-fixed step update?
 		{
-			uint64_t time_target = (uint64_t)((1.0 / app_config.target_framerate) * Time::ticks_per_second);
-			uint64_t time_curr = PlatformBackend::ticks();
-			uint64_t time_diff = time_curr - time_last;
+			u64 time_target = (u64)((1.0 / app_config.target_framerate) * Time::ticks_per_second);
+			u64 time_curr = PlatformBackend::ticks();
+			u64 time_diff = time_curr - time_last;
 			time_last = time_curr;
 			time_accumulator += time_diff;
 
@@ -66,7 +66,7 @@ namespace
 
 			// Do not allow us to fall behind too many updates
 			// (otherwise we'll get spiral of death)
-			uint64_t time_maximum = app_config.max_updates * time_target;
+			u64 time_maximum = app_config.max_updates * time_target;
 			if (time_accumulator > time_maximum)
 				time_accumulator = time_maximum;
 
@@ -300,7 +300,7 @@ namespace
 			return App::draw_height();
 		}
 
-		virtual void clear(Color color, float depth, uint8_t stencil, ClearMask mask) override
+		virtual void clear(Color color, float depth, u8 stencil, ClearMask mask) override
 		{
 			GraphicsBackend::clear_backbuffer(color, depth, stencil, mask);
 		}

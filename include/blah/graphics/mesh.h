@@ -1,5 +1,5 @@
 #pragma once
-#include <inttypes.h>
+#include <blah/core/common.h>
 #include <memory>
 #include <blah/containers/stackvector.h>
 
@@ -73,21 +73,21 @@ namespace Blah
 		static MeshRef create();
 
 		// Uploads the given index buffer to the Mesh
-		virtual void index_data(IndexFormat format, const void* indices, int64_t count) = 0;
+		virtual void index_data(IndexFormat format, const void* indices, i64 count) = 0;
 
 		// Uploads the given vertex buffer to the Mesh
-		virtual void vertex_data(const VertexFormat& format, const void* vertices, int64_t count) = 0;
+		virtual void vertex_data(const VertexFormat& format, const void* vertices, i64 count) = 0;
 
 		// Uploads the given instance buffer to the Mesh
-		virtual void instance_data(const VertexFormat& format, const void* instances, int64_t count) = 0;
+		virtual void instance_data(const VertexFormat& format, const void* instances, i64 count) = 0;
 
 		// Gets the index count of the Mesh
-		virtual int64_t index_count() const = 0;
+		virtual i64 index_count() const = 0;
 
 		// Gets the vertex count of the Mesh
-		virtual int64_t vertex_count() const = 0;
+		virtual i64 vertex_count() const = 0;
 
 		// Gets the instance count of the Mesh
-		virtual int64_t instance_count() const = 0;
+		virtual i64 instance_count() const = 0;
 	};
 }

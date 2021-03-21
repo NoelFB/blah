@@ -14,13 +14,13 @@ void Stopwatch::reset()
 	start_time = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now().time_since_epoch()).count();
 }
 
-uint64_t Stopwatch::milliseconds()
+u64 Stopwatch::milliseconds()
 {
 	return microseconds() / 1000;
 }
 
 
-uint64_t Stopwatch::microseconds()
+u64 Stopwatch::microseconds()
 {
 	return std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now().time_since_epoch()).count() - start_time;
 }

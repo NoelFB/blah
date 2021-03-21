@@ -164,12 +164,12 @@ namespace
 	{ \
 		m_batch.elements += 2; \
 		auto _i = m_indices.expand(6); \
-		*_i++ = (uint32_t)m_vertices.size() + 0; \
-		*_i++ = (uint32_t)m_vertices.size() + 1; \
-		*_i++ = (uint32_t)m_vertices.size() + 2; \
-		*_i++ = (uint32_t)m_vertices.size() + 0; \
-		*_i++ = (uint32_t)m_vertices.size() + 2; \
-		*_i++ = (uint32_t)m_vertices.size() + 3; \
+		*_i++ = (u32)m_vertices.size() + 0; \
+		*_i++ = (u32)m_vertices.size() + 1; \
+		*_i++ = (u32)m_vertices.size() + 2; \
+		*_i++ = (u32)m_vertices.size() + 0; \
+		*_i++ = (u32)m_vertices.size() + 2; \
+		*_i++ = (u32)m_vertices.size() + 3; \
 		Vertex* _v = m_vertices.expand(4); \
 		MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash); _v++; \
 		MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash); _v++; \
@@ -181,9 +181,9 @@ namespace
 	{ \
 		m_batch.elements += 1; \
 		auto* _i = m_indices.expand(3); \
-		*_i++ = (uint32_t)m_vertices.size() + 0; \
-		*_i++ = (uint32_t)m_vertices.size() + 1; \
-		*_i++ = (uint32_t)m_vertices.size() + 2; \
+		*_i++ = (u32)m_vertices.size() + 0; \
+		*_i++ = (u32)m_vertices.size() + 1; \
+		*_i++ = (u32)m_vertices.size() + 2; \
 		Vertex* _v = m_vertices.expand(3); \
 		MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash); _v++; \
 		MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash); _v++; \
@@ -423,8 +423,8 @@ void Batch::render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4
 	pass.blend = b.blend;
 	pass.has_scissor = b.scissor.w >= 0 && b.scissor.h >= 0;
 	pass.scissor = b.scissor;
-	pass.index_start = (int64_t)b.offset * 3;
-	pass.index_count = (int64_t)b.elements * 3;
+	pass.index_start = (i64)b.offset * 3;
+	pass.index_count = (i64)b.elements * 3;
 
 	pass.perform();
 }
@@ -1046,7 +1046,7 @@ void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, Tex
 	else
 		offset.y = (font.ascent + font.descent + font.height() - font.height_of(text)) * 0.5f;
 
-	uint32_t last = 0;
+	u32 last = 0;
 	for (int i = 0, l = text.length(); i < l; i++)
 	{
 		if (text[i] == '\n')
@@ -1067,7 +1067,7 @@ void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, Tex
 		}
 
 		// get the character
-		uint32_t next = text.utf8_at(i);
+		u32 next = text.utf8_at(i);
 		const auto& ch = font[next];
 
 		// draw it, if the subtexture exists

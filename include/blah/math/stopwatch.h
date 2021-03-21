@@ -1,5 +1,5 @@
 #pragma once
-#include <inttypes.h>
+#include <blah/core/common.h>
 
 namespace Blah
 {
@@ -8,9 +8,9 @@ namespace Blah
 	public:
 		Stopwatch();
 		void reset();
-		uint64_t microseconds();
-		uint64_t milliseconds();
+		u64 microseconds();
+		u64 milliseconds();
 	private:
-		uint64_t start_time;
+		u64 start_time;
 	};
 }

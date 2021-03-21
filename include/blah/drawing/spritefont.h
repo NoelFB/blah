@@ -1,5 +1,5 @@
 #pragma once
-#include <inttypes.h>
+#include <blah/core/common.h>
 #include <blah/containers/str.h>
 #include <blah/containers/vector.h>
 #include <blah/drawing/subtexture.h>
@@ -21,14 +21,14 @@ namespace Blah
 		};
 	private:
 		// charset & kerning maps
-		std::unordered_map<uint32_t, Character> m_characters;
-		std::unordered_map<uint64_t, float> m_kerning;
+		std::unordered_map<u32, Character> m_characters;
+		std::unordered_map<u64, float> m_kerning;
 
 		// built texture
 		Vector<TextureRef> m_atlas;
 
 	public:
-		static const uint32_t* ASCII;
+		static const u32* ASCII;
 
 		String name;
 		float size;
@@ -41,9 +41,9 @@ namespace Blah
 
 		SpriteFont();
 		SpriteFont(const char* file, float size);
-		SpriteFont(const char* file, float size, const uint32_t* charset);
+		SpriteFont(const char* file, float size, const u32* charset);
 		SpriteFont(const Font& font, float size);
-		SpriteFont(const Font& font, float size, const uint32_t* charset);
+		SpriteFont(const Font& font, float size, const u32* charset);
 		SpriteFont(const SpriteFont&) = delete;
 		SpriteFont(SpriteFont&& src) noexcept;
 		~SpriteFont();
@@ -62,15 +62,15 @@ namespace Blah
 		float width_of_line(const String& text, int start = 0) const;
 		float height_of(const String& text) const;
 
-		void build(const char* file, float size, const uint32_t* charset);
-		void build(const Font& font, float size, const uint32_t* charset);
+		void build(const char* file, float size, const u32* charset);
+		void build(const Font& font, float size, const u32* charset);
 
-		float get_kerning(uint32_t codepoint0, uint32_t codepoint1) const;
-		void set_kerning(uint32_t codepoint0, uint32_t codepoint1, float kerning);
+		float get_kerning(u32 codepoint0, u32 codepoint1) const;
+		void set_kerning(u32 codepoint0, u32 codepoint1, float kerning);
 
-		Character& get_character(uint32_t codepoint) { return m_characters[codepoint]; }
-		const Character& get_character(uint32_t codepoint) const;
-		Character& operator[](uint32_t codepoint) { return m_characters[codepoint]; }
-		const Character& operator[](uint32_t codepoint) const;
+		Character& get_character(u32 codepoint) { return m_characters[codepoint]; }
+		const Character& get_character(u32 codepoint) const;
+		Character& operator[](u32 codepoint) { return m_characters[codepoint]; }
+		const Character& operator[](u32 codepoint) const;
 	};
 }

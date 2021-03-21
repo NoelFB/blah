@@ -1,7 +1,7 @@
 #include <blah/drawing/spritefont.h>
 #include <blah/images/font.h>
 #include <blah/images/packer.h>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 
 using namespace Blah;
 
@@ -13,15 +13,15 @@ SpriteFont::SpriteFont()
 	line_gap = 0;
 }
 
-const uint32_t ascii[]{ 32, 128, 0 };
-const uint32_t* SpriteFont::ASCII = ascii;
+const u32 ascii[]{ 32, 128, 0 };
+const u32* SpriteFont::ASCII = ascii;
 
 SpriteFont::SpriteFont(const char* file, float size)
 {
 	build(file, size, ASCII);
 }
 
-SpriteFont::SpriteFont(const char* file, float size, const uint32_t* charset)
+SpriteFont::SpriteFont(const char* file, float size, const u32* charset)
 {
 	build(file, size, charset);
 }
@@ -31,7 +31,7 @@ SpriteFont::SpriteFont(const Font& font, float size)
 	build(font, size, ASCII);
 }
 
-SpriteFont::SpriteFont(const Font& font, float size, const uint32_t* charset)
+SpriteFont::SpriteFont(const Font& font, float size, const u32* charset)
 {
 	build(font, size, charset);
 }
@@ -79,7 +79,7 @@ float SpriteFont::width_of(const String& text) const
 	float width = 0;
 	float line_width = 0;
 
-	uint32_t last;
+	u32 last;
 	for (int i = 0; i < text.length(); i ++)
 	{
 		if (text[i] == '\n')
@@ -116,7 +116,7 @@ float SpriteFont::width_of_line(const String& text, int start) const
 
 	float width = 0;
 
-	uint32_t last;
+	u32 last;
 	for (int i = start; i < text.length(); i ++)
 	{
 		if (text[i] == '\n')
@@ -157,7 +157,7 @@ float SpriteFont::height_of(const String& text) const
 	return height - line_gap;
 }
 
-void SpriteFont::build(const char* file, float sz, const uint32_t* charset)
+void SpriteFont::build(const char* file, float sz, const u32* charset)
 {
 	dispose();
 
@@ -166,7 +166,7 @@ void SpriteFont::build(const char* file, float sz, const uint32_t* charset)
 		build(font, sz, charset);
 }
 
-void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
+void SpriteFont::build(const Font& font, float size, const u32* charset)
 {
 	dispose();
 
@@ -184,7 +184,7 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 	packer.max_size = 8192;
 	packer.power_of_two = true;
 	
-	std::unordered_map<uint32_t, int> glyphs;
+	std::unordered_map<u32, int> glyphs;
 	Vector<Color> buffer;
 
 	auto ranges = charset;
@@ -231,7 +231,7 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 	// add character subtextures
 	for (auto& it : packer.entries)
 		if (!it.empty)
-			m_characters[(uint32_t)it.id].subtexture = Subtexture(m_atlas[it.page], it.packed, it.frame);
+			m_characters[(u32)it.id].subtexture = Subtexture(m_atlas[it.page], it.packed, it.frame);
 
 	// add kerning
 	for (auto a = glyphs.begin(); a != glyphs.end(); a++)
@@ -243,9 +243,9 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 		}
 }
 
-float SpriteFont::get_kerning(uint32_t codepoint0, uint32_t codepoint1) const
+float SpriteFont::get_kerning(u32 codepoint0, u32 codepoint1) const
 {
-	uint64_t index = ((uint64_t)codepoint0 << 32) | codepoint1;
+	u64 index = ((u64)codepoint0 << 32) | codepoint1;
 
 	auto it = m_kerning.find(index);
 	if (it != m_kerning.end())
@@ -253,9 +253,9 @@ float SpriteFont::get_kerning(uint32_t codepoint0, uint32_t codepoint1) const
 	return 0.0f;
 }
 
-void SpriteFont::set_kerning(uint32_t codepoint0, uint32_t codepoint1, float value)
+void SpriteFont::set_kerning(u32 codepoint0, u32 codepoint1, float value)
 {
-	uint64_t index = ((uint64_t)codepoint0 << 32) | codepoint1;
+	u64 index = ((u64)codepoint0 << 32) | codepoint1;
 
 	if (value == 0)
 	{
@@ -267,7 +267,7 @@ void SpriteFont::set_kerning(uint32_t codepoint0, uint32_t codepoint1, float val
 	}
 }
 
-const SpriteFont::Character& SpriteFont::get_character(uint32_t codepoint) const
+const SpriteFont::Character& SpriteFont::get_character(u32 codepoint) const
 {
 	static const Character empty;
 	auto it = m_characters.find(codepoint);
@@ -276,7 +276,7 @@ const SpriteFont::Character& SpriteFont::get_character(uint32_t codepoint) const
 	return empty;
 }
 
-const SpriteFont::Character& SpriteFont::operator[](uint32_t codepoint) const
+const SpriteFont::Character& SpriteFont::operator[](u32 codepoint) const
 {
 	static const Character empty;
 	auto it = m_characters.find(codepoint);

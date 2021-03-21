@@ -2,7 +2,7 @@
 
 #include "../internal/graphics_backend.h"
 #include "../internal/platform_backend.h"
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 
 namespace Blah
 {
@@ -134,9 +134,9 @@ namespace Blah
 	class Dummy_Mesh : public Mesh
 	{
 	private:
-		int64_t m_index_count = 0;
-		int64_t m_vertex_count = 0;
-		int64_t m_instance_count = 0;
+		i64 m_index_count = 0;
+		i64 m_vertex_count = 0;
+		i64 m_instance_count = 0;
 	public:
 
 		Dummy_Mesh()
@@ -144,32 +144,32 @@ namespace Blah
 
 		}
 
-		virtual void index_data(IndexFormat format, const void* indices, int64_t count) override
+		virtual void index_data(IndexFormat format, const void* indices, i64 count) override
 		{
 			m_index_count = count;
 		}
 
-		virtual void vertex_data(const VertexFormat& format, const void* vertices, int64_t count) override
+		virtual void vertex_data(const VertexFormat& format, const void* vertices, i64 count) override
 		{
 			m_vertex_count = count;
 		}
 
-		virtual void instance_data(const VertexFormat& format, const void* instances, int64_t count) override
+		virtual void instance_data(const VertexFormat& format, const void* instances, i64 count) override
 		{
 			m_instance_count = count;
 		}
 
-		virtual int64_t index_count() const override
+		virtual i64 index_count() const override
 		{
 			return m_index_count;
 		}
 
-		virtual int64_t vertex_count() const override
+		virtual i64 vertex_count() const override
 		{
 			return m_vertex_count;
 		}
 
-		virtual int64_t instance_count() const override
+		virtual i64 instance_count() const override
 		{
 			return m_instance_count;
 		}
@@ -177,7 +177,7 @@ namespace Blah
 
 	bool GraphicsBackend::init()
 	{
-		Log::print("Dummy Renderer");
+		Log::info("Dummy Renderer");
 		return true;
 	}
 

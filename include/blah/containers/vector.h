@@ -1,5 +1,5 @@
 #pragma once
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 #include <type_traits>
 #include <new>
 

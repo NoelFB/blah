@@ -6,7 +6,7 @@
 #include <blah/input/input.h>
 #include <blah/core/app.h>
 #include <blah/core/filesystem.h>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 #include <blah/core/time.h>
 
 #include <SDL.h>
@@ -41,7 +41,7 @@ namespace
 	void sdl_log(void* userdata, int category, SDL_LogPriority priority, const char* message)
 	{
 		if (priority <= SDL_LOG_PRIORITY_INFO)
-			Log::print(message);
+			Log::info(message);
 		else if (priority <= SDL_LOG_PRIORITY_WARN)
 			Log::warn(message);
 		else
@@ -65,7 +65,7 @@ bool PlatformBackend::init(const Config* config)
 	// Get SDL version
 	SDL_version version;
 	SDL_GetVersion(&version);
-	Log::print("SDL v%i.%i.%i", version.major, version.minor, version.patch);
+	Log::info("SDL v%i.%i.%i", version.major, version.minor, version.patch);
 
 	// initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) != 0)
@@ -170,11 +170,11 @@ void PlatformBackend::shutdown()
 	SDL_Quit();
 }
 
-uint64_t PlatformBackend::ticks()
+u64 PlatformBackend::ticks()
 {
 	auto counter = SDL_GetPerformanceCounter();
 	auto per_second = (double)SDL_GetPerformanceFrequency();
-	return (uint64_t)(counter * (Time::ticks_per_second / per_second));
+	return (u64)(counter * (Time::ticks_per_second / per_second));
 }
 
 // Macro defined by X11 conflicts with MouseButton enum
@@ -255,9 +255,9 @@ void PlatformBackend::frame()
 				const char* name = SDL_JoystickName(ptr);
 				int button_count = SDL_JoystickNumButtons(ptr);
 				int axis_count = SDL_JoystickNumAxes(ptr);
-				uint16_t vendor = SDL_JoystickGetVendor(ptr);
-				uint16_t product = SDL_JoystickGetProduct(ptr);
-				uint16_t version = SDL_JoystickGetProductVersion(ptr);
+				u16 vendor = SDL_JoystickGetVendor(ptr);
+				u16 product = SDL_JoystickGetProduct(ptr);
+				u16 version = SDL_JoystickGetProductVersion(ptr);
 
 				InputBackend::on_controller_connect(index, name, 0, button_count, axis_count, vendor, product, version);
 			}
@@ -303,9 +303,9 @@ void PlatformBackend::frame()
 			Sint32 index = event.cdevice.which;
 			SDL_GameController* ptr = gamepads[index] = SDL_GameControllerOpen(index);
 			const char* name = SDL_GameControllerName(ptr);
-			uint16_t vendor = SDL_GameControllerGetVendor(ptr);
-			uint16_t product = SDL_GameControllerGetProduct(ptr);
-			uint16_t version = SDL_GameControllerGetProductVersion(ptr);
+			u16 vendor = SDL_GameControllerGetVendor(ptr);
+			u16 product = SDL_GameControllerGetProduct(ptr);
+			u16 version = SDL_GameControllerGetProductVersion(ptr);
 
 			InputBackend::on_controller_connect(index, name, 1, 15, 6, vendor, product, version);
 		}
@@ -357,7 +357,7 @@ void PlatformBackend::frame()
 void PlatformBackend::sleep(int milliseconds)
 {
 	if (milliseconds >= 0)
-		SDL_Delay((uint32_t)milliseconds);
+		SDL_Delay((u32)milliseconds);
 }
 
 void PlatformBackend::present()
@@ -611,27 +611,27 @@ bool PlatformBackend::file_open(const char* path, PlatformBackend::FileHandle* h
 	return ptr != nullptr;
 }
 
-int64_t PlatformBackend::file_length(PlatformBackend::FileHandle stream)
+i64 PlatformBackend::file_length(PlatformBackend::FileHandle stream)
 {
 	return SDL_RWsize((SDL_RWops*)stream);
 }
 
-int64_t PlatformBackend::file_position(PlatformBackend::FileHandle stream)
+i64 PlatformBackend::file_position(PlatformBackend::FileHandle stream)
 {
 	return SDL_RWtell((SDL_RWops*)stream);
 }
 
-int64_t PlatformBackend::file_seek(PlatformBackend::FileHandle stream, int64_t seekTo)
+i64 PlatformBackend::file_seek(PlatformBackend::FileHandle stream, i64 seekTo)
 {
 	return SDL_RWseek((SDL_RWops*)stream, seekTo, RW_SEEK_SET);
 }
 
-int64_t PlatformBackend::file_read(PlatformBackend::FileHandle stream, void* ptr, int64_t length)
+i64 PlatformBackend::file_read(PlatformBackend::FileHandle stream, void* ptr, i64 length)
 {
 	return SDL_RWread((SDL_RWops*)stream, ptr, sizeof(char), length);
 }
 
-int64_t PlatformBackend::file_write(PlatformBackend::FileHandle stream, const void* ptr, int64_t length)
+i64 PlatformBackend::file_write(PlatformBackend::FileHandle stream, const void* ptr, i64 length)
 {
 	return SDL_RWwrite((SDL_RWops*)stream, ptr, sizeof(char), length);
 }

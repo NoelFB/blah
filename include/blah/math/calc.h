@@ -1,5 +1,5 @@
 #pragma once
-#include <inttypes.h>
+#include <blah/core/common.h>
 #include <blah/math/vec2.h>
 
 namespace Blah
@@ -27,10 +27,6 @@ namespace Blah
 
 		Vec2 approach(const Vec2& t, const Vec2& target, float delta);
 
-		float clamp(float t, float min, float max);
-
-		int clamp_int(int t, int min, int max);
-
 		float map(float t, float old_min, float old_max, float new_min, float new_max);
 
 		float clamped_map(float t, float old_min, float old_max, float new_min, float new_max);
@@ -42,6 +38,9 @@ namespace Blah
 		int abs(int x);
 
 		float abs(float x);
+
+		template<class T>
+		T clamp(T value, T min, T max) { return value < min ? min : (value > max ? max : value); }
 
 		template<class T, class U>
 		T min(T a, U b) { return  (T)(a < b ? a : b); }

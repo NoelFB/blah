@@ -1,6 +1,6 @@
 #pragma once
 #include <blah/math/calc.h>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 
 namespace Blah
 {

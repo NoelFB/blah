@@ -1,7 +1,7 @@
 #include <blah/input/input.h>
 #include <blah/core/app.h>
 #include <blah/core/time.h>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 #include <blah/math/point.h>
 #include "../internal/input_backend.h"
 #include <string.h>
@@ -138,7 +138,7 @@ void InputBackend::on_text_utf8(const char* text)
 	strncat(g_next_state.keyboard.text, text, Blah::Input::max_text_input);
 }
 
-void InputBackend::on_controller_connect(int index, const char* name, int is_gamepad, int button_count, int axis_count, uint16_t vendor, uint16_t product, uint16_t version)
+void InputBackend::on_controller_connect(int index, const char* name, int is_gamepad, int button_count, int axis_count, u16 vendor, u16 product, u16 version)
 {
 	if (index < Blah::Input::max_controllers)
 	{

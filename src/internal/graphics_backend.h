@@ -39,7 +39,7 @@ namespace Blah
 		void render(const RenderPass& pass);
 
 		// Clears the backbuffer
-		void clear_backbuffer(Color color, float depth, uint8_t stencil, ClearMask mask);
+		void clear_backbuffer(Color color, float depth, u8 stencil, ClearMask mask);
 
 		// Creates a new Texture.
 		// if the Texture is invalid, this should return an empty reference.

@@ -2,7 +2,7 @@
 
 #include "blah/core/app.h"
 #include "blah/core/filesystem.h"
-#include "blah/core/log.h"
+#include "blah/core/common.h"
 #include "blah/core/time.h"
 	
 #include "blah/containers/vector.h"
