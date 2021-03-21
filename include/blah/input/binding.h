@@ -7,6 +7,9 @@
 namespace Blah
 {
 	// Single input Binding
+	// You must call Binding::update() every frame to poll the input state.
+	// Alternatively, bindings can be registered to BindingRegistry which will
+	// automatically update them.
 	class Binding
 	{
 	public:
@@ -158,7 +161,10 @@ namespace Blah
 		float get_value() const;
 	};
 
-	// Represents a Bound Axis (ex. Left/Right movement, or a Trigger)
+	// Axis Binding (ex. Left/Right movement, or a Trigger)
+	// You must call AxisBinding::update() every frame to poll the input state.
+	// Alternatively, bindings can be registered to BindingRegistry which will
+	// automatically update them.
 	class AxisBinding
 	{
 	public:
@@ -224,6 +230,10 @@ namespace Blah
 		void clear();
 	};
 
+	// Stick Binding (ex. Joystick, Dpad, Arrow Keys, WASD, etc)
+	// You must call StickBinding::update() every frame to poll the input state.
+	// Alternatively, bindings can be registered to BindingRegistry which will
+	// automatically update them.
 	class StickBinding
 	{
 	public:

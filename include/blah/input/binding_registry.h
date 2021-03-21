@@ -9,10 +9,8 @@ namespace Blah
 	using AxisBindingRef = std::shared_ptr<AxisBinding>;
 	using StickBindingRef = std::shared_ptr<StickBinding>;
 
-	// Optional registry to automatically update bindings.
-	// You can register different types of bindings here and until they are
-	// no longer used, they will be updated without having to explicitely call
-	// their update methods
+	// An Optional registry to automatically update Input Bindings.
+	// Once registered here, you do not need to explicitely call their update methods.
 	class BindingRegistry
 	{
 	public:
