@@ -5,12 +5,13 @@ A small 2D C++ Game Framework, using few dependencies and simple code to mainain
 
 #### building
  - Requires C++17 and CMake 3.12+
- - Platform Backend
+ - A single *Platform* backend must be enabled:
 	- [SDL2](https://github.com/NoelFB/blah/blob/master/src/internal/platform_backend_sdl2.cpp) can be enabled in CMake with `SDL2_ENABLED`, and setting `SDL2_INCLUDE_DIRS` and `SDL2_LIBRARIES`
- - Graphics Backend
+	- Additional backends can be added by implementing the [Platform Backend](https://github.com/NoelFB/blah/blob/master/src/internal/platform_backend.h)
+ - A single *Graphics* backend must be enabled:
 	- [OpenGL](https://github.com/NoelFB/blah/blob/master/src/internal/graphics_backend_gl.cpp) can be enabled in CMake with `OPENGL_ENABLED`.
 	- [D3D11](https://github.com/NoelFB/blah/blob/master/src/internal/graphics_backend_d3d11.cpp) can be enabled in CMake with `D3D11_ENABLED`.
- - Other backends can be added by implementing the [Platform Backend](https://github.com/NoelFB/blah/blob/master/src/internal/platform_backend.h) or [Graphics Backend](https://github.com/NoelFB/blah/blob/master/src/internal/graphics_backend.h).
+	- Additional backends can be added by implementing the [Graphics Backend](https://github.com/NoelFB/blah/blob/master/src/internal/graphics_backend.h).
  
 #### notes
  - There's no Shader abstraction, so the [Sprite Batcher](https://github.com/NoelFB/blah/blob/master/include/blah/drawing/batch.h) has hard-coded GLSL/HLSL. This will need to change.
