@@ -56,7 +56,7 @@ Font::Font(Stream& stream) : Font()
 	load(stream);
 }
 
-Font::Font(const char* path) : Font()
+Font::Font(const FilePath& path) : Font()
 {
 	FileStream fs(path, FileMode::Read);
 	if (fs.is_readable())
@@ -142,14 +142,14 @@ void Font::dispose()
 	m_style_name.dispose();
 }
 
-const char* Font::family_name() const
+const String& Font::family_name() const
 {
-	return m_family_name.cstr();
+	return m_family_name;
 }
 
-const char* Font::style_name() const
+const String& Font::style_name() const
 {
-	return m_style_name.cstr();
+	return m_style_name;
 }
 
 int Font::ascent() const
@@ -199,9 +199,9 @@ float Font::get_kerning(int glyph1, int glyph2, float scale) const
 	return stbtt_GetGlyphKernAdvance((stbtt_fontinfo*)m_font, glyph1, glyph2) * scale;
 }
 
-Font::Char Font::get_character(int glyph, float scale) const
+Font::Character Font::get_character(int glyph, float scale) const
 {
-	Char ch;
+	Character ch;
 
 	if (!m_font)
 		return ch;
@@ -227,7 +227,7 @@ Font::Char Font::get_character(int glyph, float scale) const
 	return ch;
 }
 
-bool Font::get_image(const Font::Char& ch, Color* pixels) const
+bool Font::get_image(const Font::Character& ch, Color* pixels) const
 {
 	if (ch.has_glyph)
 	{
@@ -249,6 +249,16 @@ bool Font::get_image(const Font::Char& ch, Color* pixels) const
 	}
 
 	return false;
+}
+
+Image Font::get_image(const Font::Character& ch) const
+{
+	Image img(ch.width, ch.height);
+
+	if (get_image(ch, img.pixels))
+		return img;
+
+	return Image();
 }
 
 bool Font::is_valid() const

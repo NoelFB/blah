@@ -31,6 +31,7 @@ namespace Blah
 		Back = 2,
 	};
 
+	// A single draw call
 	struct RenderPass
 	{
 		// Framebuffer to draw to

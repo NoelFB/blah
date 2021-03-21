@@ -21,6 +21,8 @@ namespace Blah
 	class FrameBuffer;
 	using FrameBufferRef = std::shared_ptr<FrameBuffer>;
 
+	// FrameBuffer is a 2D Buffer that can be drawn to.
+	// It can hold up to 4 color Textures, and 1 Depth/Stencil Texture.
 	class FrameBuffer
 	{
 	protected:

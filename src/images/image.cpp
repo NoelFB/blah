@@ -8,7 +8,6 @@ using namespace Blah;
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_JPEG
 #define STBI_ONLY_PNG
-#define STBI_ONLY_BMP
 #include "../third_party/stb_image.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -59,7 +58,7 @@ Image::Image(Stream& stream)
 	from_stream(stream);
 }
 
-Image::Image(const char* file)
+Image::Image(const FilePath& file)
 {
 	width = height = 0;
 	pixels = nullptr;
@@ -175,6 +174,7 @@ void Image::dispose()
 		stbi_image_free(pixels);
 	else
 		delete[] pixels;
+
 	pixels = nullptr;
 	width = height = 0;
 	m_stbi_ownership = false;
@@ -203,7 +203,7 @@ void Image::set_pixels(const RectI& rect, Color* data)
 	}
 }
 
-bool Image::save_png(const char* file) const
+bool Image::save_png(const FilePath& file) const
 {
 	FileStream fs(file, FileMode::Write);
 	return save_png(fs);
@@ -232,7 +232,7 @@ bool Image::save_png(Stream& stream) const
 	return false;
 }
 
-bool Image::save_jpg(const char* file, int quality) const
+bool Image::save_jpg(const FilePath& file, int quality) const
 {
 	FileStream fs(file, FileMode::Write);
 	return save_jpg(fs, quality);
@@ -269,33 +269,31 @@ bool Image::save_jpg(Stream& stream, int quality) const
 	return false;
 }
 
-
-
-void Image::get_pixels(Color* dest, const Point& destPos, const Point& destSize, RectI sourceRect)
+void Image::get_pixels(Color* dest, const Point& dest_pos, const Point& dest_size, RectI source_rect)
 {
 	// can't be outside of the source image
-	if (sourceRect.x < 0) sourceRect.x = 0;
-	if (sourceRect.y < 0) sourceRect.y = 0;
-	if (sourceRect.x + sourceRect.w > width) sourceRect.w = width - sourceRect.x;
-	if (sourceRect.y + sourceRect.h > height) sourceRect.h = height - sourceRect.y;
+	if (source_rect.x < 0) source_rect.x = 0;
+	if (source_rect.y < 0) source_rect.y = 0;
+	if (source_rect.x + source_rect.w > width) source_rect.w = width - source_rect.x;
+	if (source_rect.y + source_rect.h > height) source_rect.h = height - source_rect.y;
 
 	// can't be larger than our destination
-	if (sourceRect.w > destSize.x - destPos.x)
-		sourceRect.w = destSize.x - destPos.x;
-	if (sourceRect.h > destSize.y - destPos.y)
-		sourceRect.h = destSize.y - destPos.y;
+	if (source_rect.w > dest_size.x - dest_pos.x)
+		source_rect.w = dest_size.x - dest_pos.x;
+	if (source_rect.h > dest_size.y - dest_pos.y)
+		source_rect.h = dest_size.y - dest_pos.y;
 
-	for (int y = 0; y < sourceRect.h; y++)
+	for (int y = 0; y < source_rect.h; y++)
 	{
-		int to = destPos.x + (destPos.y + y) * destSize.x;
-		int from = sourceRect.x + (sourceRect.y + y) * width;
-		memcpy(dest + to, pixels + from, sizeof(Color) * (int)sourceRect.w);
+		int to = dest_pos.x + (dest_pos.y + y) * dest_size.x;
+		int from = source_rect.x + (source_rect.y + y) * width;
+		memcpy(dest + to, pixels + from, sizeof(Color) * (int)source_rect.w);
 	}
 }
 
-Image Image::get_sub_image(const RectI& sourceRect)
+Image Image::get_sub_image(const RectI& source_rect)
 {
-	Image img(sourceRect.w, sourceRect.h);
-	get_pixels(img.pixels, Point::zero, Point(img.width, img.height), sourceRect);
+	Image img(source_rect.w, source_rect.h);
+	get_pixels(img.pixels, Point::zero, Point(img.width, img.height), source_rect);
 	return img;
 }

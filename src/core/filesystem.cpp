@@ -1,4 +1,5 @@
 #include <blah/core/filesystem.h>
+#include <blah/streams/filestream.h>
 #include "../internal/platform_backend.h"
 
 using namespace Blah;
@@ -11,6 +12,11 @@ bool File::exists(const FilePath& path)
 bool File::remove(const FilePath& path)
 {
 	return PlatformBackend::file_delete(path.cstr());
+}
+
+FileStream File::open(const FilePath& path , FileMode mode)
+{
+	return FileStream(path, mode);
 }
 
 bool Directory::create(const FilePath& path)

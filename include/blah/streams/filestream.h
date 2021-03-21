@@ -8,7 +8,7 @@ namespace Blah
 	{
 	public:
 		FileStream();
-		FileStream(const char* path, FileMode mode = FileMode::ReadWrite);
+		FileStream(const FilePath& path, FileMode mode = FileMode::ReadWrite);
 		FileStream(FileStream&& fs) noexcept;
 		FileStream& operator=(FileStream&& fs) noexcept;
 		~FileStream();
@@ -16,9 +16,9 @@ namespace Blah
 		virtual i64 length() const override;
 		virtual i64 position() const override;
 		virtual i64 seek(i64 seekTo) override;
-		virtual bool is_open() const override { return m_handle != nullptr; }
-		virtual bool is_readable() const override { return m_handle != nullptr && (m_mode == FileMode::ReadWrite || m_mode == FileMode::Read); }
-		virtual bool is_writable() const override { return m_handle != nullptr && (m_mode == FileMode::ReadWrite || m_mode == FileMode::Write); }
+		virtual bool is_open() const override;
+		virtual bool is_readable() const override;
+		virtual bool is_writable() const override;
 		virtual void close() override;
 
 	protected:
@@ -26,7 +26,7 @@ namespace Blah
 		virtual i64 write_from(const void* ptr, i64 length) override;
 
 	private:
-		FileMode	m_mode;
-		void*		m_handle;
+		FileMode m_mode;
+		void*    m_handle;
 	};
 }

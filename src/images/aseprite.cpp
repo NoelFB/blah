@@ -2,15 +2,11 @@
 #include <blah/streams/filestream.h>
 #include <blah/core/filesystem.h>
 #include <blah/core/common.h>
+#include <blah/math/calc.h>
 
 #define STBI_NO_STDIO
 #define STBI_ONLY_ZLIB
 #include "../third_party/stb_image.h"
-
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-#define MUL_UN8(a, b, t) \
-	((t) = (a) * (u16)(b) + 0x80, ((((t) >> 8) + (t) ) >> 8))
 
 using namespace Blah;
 
@@ -19,7 +15,7 @@ Aseprite::Aseprite()
 
 }
 
-Aseprite::Aseprite(const char* path)
+Aseprite::Aseprite(const FilePath& path)
 {
 	FileStream fs(path, FileMode::Read);
 	parse(fs);
@@ -406,6 +402,9 @@ void Aseprite::parse_slice(Stream& stream, int frame)
 	}
 }
 
+#define MUL_UN8(a, b, t) \
+	((t) = (a) * (u16)(b) + 0x80, ((((t) >> 8) + (t) ) >> 8))
+
 void Aseprite::render_cel(Cel* cel, Frame* frame)
 {
 	Layer& layer = layers[cel->layer_index];
@@ -436,16 +435,16 @@ void Aseprite::render_cel(Cel* cel, Frame* frame)
 	auto dstH = frame->image.height;
 
 	// blit pixels
-	int left = MAX(0, srcX);
-	int right = MIN(dstW, srcX + srcW);
-	int top = MAX(0, srcY);
-	int bottom = MIN(dstH, srcY + srcH);
+	int left = Calc::max(0, srcX);
+	int right = Calc::min(dstW, srcX + srcW);
+	int top = Calc::max(0, srcY);
+	int bottom = Calc::min(dstH, srcY + srcH);
 
 	if (layer.blendmode == 0)
 	{
-		for (int dx = left, sx = -MIN(srcX, 0); dx < right; dx++, sx++)
+		for (int dx = left, sx = -Calc::min(srcX, 0); dx < right; dx++, sx++)
 		{
-			for (int dy = top, sy = -MIN(srcY, 0); dy < bottom; dy++, sy++)
+			for (int dy = top, sy = -Calc::min(srcY, 0); dy < bottom; dy++, sy++)
 			{
 				Color* srcColor = (src + sx + sy * srcW);
 				Color* dstColor = (dst + dx + dy * dstW);

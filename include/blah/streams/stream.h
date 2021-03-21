@@ -36,7 +36,7 @@ namespace Blah
 		// closes the stream
 		virtual void close() = 0;
 
-		// pipes the contents of this tream to another stream
+		// pipes the contents of this stream to another stream
 		i64 pipe(Stream& to, i64 length);
 
 		// reads the amount of bytes into the given buffer, and returns the amount read

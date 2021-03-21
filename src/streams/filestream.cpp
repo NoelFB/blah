@@ -11,7 +11,7 @@ FileStream::FileStream()
 	m_mode = FileMode::None;
 }
 
-FileStream::FileStream(const char* path, FileMode mode)
+FileStream::FileStream(const FilePath& path, FileMode mode)
 	: m_mode(mode)
 {
 	if (!PlatformBackend::file_open(path, &m_handle, mode))
@@ -61,6 +61,21 @@ i64 FileStream::seek(i64 seek_to)
 		return 0;
 
 	return PlatformBackend::file_seek(m_handle, seek_to);
+}
+
+bool FileStream::is_open() const
+{
+	return m_handle != nullptr;
+}
+
+bool FileStream::is_readable() const
+{
+	return m_handle != nullptr && (m_mode == FileMode::ReadWrite || m_mode == FileMode::Read);
+}
+
+bool FileStream::is_writable() const
+{
+	return m_handle != nullptr && (m_mode == FileMode::ReadWrite || m_mode == FileMode::Write);
 }
 
 i64 FileStream::read_into(void* ptr, i64 length)

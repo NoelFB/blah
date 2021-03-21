@@ -10,6 +10,7 @@ namespace Blah
 	class Material;
 	typedef std::shared_ptr<Material> MaterialRef;
 
+	// Materials hold values that can be assigned to a shader during rendering
 	class Material final
 	{
 	private:

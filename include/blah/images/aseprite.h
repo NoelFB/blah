@@ -3,12 +3,13 @@
 #include <blah/images/image.h>
 #include <blah/containers/str.h>
 #include <blah/streams/stream.h>
+#include <blah/core/filesystem.h>
 
 namespace Blah
 {
 	// A simple Aseprite file parser.
 	// This implementation does not support Aseprite blendmodes,
-	// besides the default blend mode.
+	// aside from the default blend mode.
 	class Aseprite
 	{
 	public:
@@ -125,12 +126,12 @@ namespace Blah
 
 		Vector<Layer> layers;
 		Vector<Frame> frames;
-		Vector<Tag> tags;
+		Vector<Tag>   tags;
 		Vector<Slice> slices;
 		Vector<Color> palette;
 
 		Aseprite();
-		Aseprite(const char* path);
+		Aseprite(const FilePath& path);
 		Aseprite(Stream& stream);
 		Aseprite(const Aseprite& src);
 		Aseprite(Aseprite&& src) noexcept;

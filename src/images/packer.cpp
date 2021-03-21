@@ -19,7 +19,7 @@ Packer::Packer(Packer&& src) noexcept
 	padding = src.padding;
 	m_dirty = src.m_dirty;
 	pages = std::move(src.pages);
-	entries = std::move(src.entries);
+	m_entries = std::move(src.m_entries);
 	m_buffer = std::move(src.m_buffer);
 }
 
@@ -31,7 +31,7 @@ Packer& Packer::operator=(Packer&& src) noexcept
 	padding = src.padding;
 	m_dirty = src.m_dirty;
 	pages = std::move(src.pages);
-	entries = std::move(src.entries);
+	m_entries = std::move(src.m_entries);
 	m_buffer = std::move(src.m_buffer);
 	return *this;
 }
@@ -51,7 +51,7 @@ void Packer::add(u64 id, const Image& image)
 	add_entry(id, image.width, image.height, image.pixels);
 }
 
-void Packer::add(u64 id, const String& path)
+void Packer::add(u64 id, const FilePath& path)
 {
 	add(id, Image(path.cstr()));
 }
@@ -125,7 +125,12 @@ void Packer::add_entry(u64 id, int w, int h, const Color* pixels)
 		}
 	}
 
-	entries.push_back(entry);
+	m_entries.push_back(entry);
+}
+
+const Vector<Packer::Entry>& Packer::entries() const
+{
+	return m_entries;
 }
 
 void Packer::pack()
@@ -137,7 +142,7 @@ void Packer::pack()
 	pages.clear();
 
 	// only if we have stuff to pack
-	auto count = entries.size();
+	auto count = m_entries.size();
 	if (count > 0)
 	{
 		// get all the sources sorted largest -> smallest
@@ -146,8 +151,8 @@ void Packer::pack()
 			sources.resize(count);
 			int index = 0;
 
-			for (int i = 0; i < entries.size(); i++)
-				sources[index++] = &entries[i];
+			for (int i = 0; i < m_entries.size(); i++)
+				sources[index++] = &m_entries[i];
 
 			std::sort(sources.begin(), sources.end(), [](Packer::Entry* a, Packer::Entry* b)
 			{
@@ -292,14 +297,14 @@ void Packer::pack()
 void Packer::clear()
 {
 	pages.clear();
-	entries.clear();
+	m_entries.clear();
 	m_dirty = false;
 }
 
 void Packer::dispose()
 {
 	pages.clear();
-	entries.clear();
+	m_entries.clear();
 	m_buffer.close();
 	max_size = 0;
 	power_of_two = 0;

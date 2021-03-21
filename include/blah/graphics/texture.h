@@ -18,6 +18,7 @@ namespace Blah
 	class Texture;
 	typedef std::shared_ptr<Texture> TextureRef;
 
+	// A 2D Texture held by the GPU to be used during rendering
 	class Texture
 	{
 	protected:

@@ -53,6 +53,7 @@ namespace Blah
 	class Mesh;
 	typedef std::shared_ptr<Mesh> MeshRef;
 
+	// A Mesh is a set of Indices and Vertices which are used for drawing
 	class Mesh
 	{
 	protected:

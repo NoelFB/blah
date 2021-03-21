@@ -4,6 +4,7 @@
 
 namespace Blah
 {
+	struct Vec3;
 	struct Vec4;
 
 	struct Color
@@ -18,20 +19,22 @@ namespace Blah
 		Color(int rgb, float alpha);
 		Color(u8 r, u8 g, u8 b);
 		Color(u8 r, u8 g, u8 b, u8 a);
+		Color(const Vec3& vec3);
+		Color(const Vec3& vec3, float alpha);
 		Color(const Vec4& vec4);
 
 		// Parses a Hex string in the format of "#00000000" or "0x00000000" or "00000000"
-		Color(const char* hexCstr);
+		Color(const String& hex_string);
 
 		// Premultiplies the Color
 		void premultiply();
 
+		// Returns an RGBA hex string of the color
+		String to_hex_rgba() const;
+
 		// Sets a Hex string to the given buffer, in the format of RRGGBBAA
 		// The buffer must be at least 8 bytes long
 		void to_hex_rgba(char* buffer) const;
-
-		// Returns an RGBA hex string of the color
-		String to_hex_rgba() const;
 
 		// Sets a Hex string to the given buffer, in the format of RRGGBB
 		// The buffer must be at least 6 bytes long

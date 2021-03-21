@@ -1,4 +1,5 @@
 #include <blah/math/color.h>
+#include <blah/math/vec3.h>
 #include <blah/math/vec4.h>
 
 using namespace Blah;
@@ -7,45 +8,69 @@ char const hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B
 #define LT_HEX_VALUE(n) ((n >= '0' && n <= '9') ? (n - '0') : ((n >= 'A' && n <= 'F') ? (10 + n - 'A') : ((n >= 'a' && n <= 'f') ? (10 + n - 'a') : 0)))
 
 Color::Color()
-	: r(0), g(0), b(0), a(0) {}
+	: r(0)
+	, g(0)
+	, b(0)
+	, a(0) {}
 
-Color::Color(int rgb) :
-	r((u8)((rgb & 0xFF0000) >> 16)),
-	g((u8)((rgb & 0x00FF00) >> 8)),
-	b((u8)(rgb & 0x0000FF)),
-	a(255) {}
+Color::Color(int rgb)
+	: r((u8)((rgb & 0xFF0000) >> 16))
+	, g((u8)((rgb & 0x00FF00) >> 8))
+	, b((u8)(rgb & 0x0000FF))
+	, a(255) {}
 
-Color::Color(int rgb, float alpha) :
-	r((int)(((u8)((rgb & 0xFF0000) >> 16)) * alpha)),
-	g((int)(((u8)((rgb & 0x00FF00) >> 8)) * alpha)),
-	b((int)(((u8)(rgb & 0x0000FF)) * alpha)),
-	a((int)(255 * alpha)) {}
+Color::Color(int rgb, float alpha)
+	: r((int)(((u8)((rgb & 0xFF0000) >> 16)) * alpha))
+	, g((int)(((u8)((rgb & 0x00FF00) >> 8)) * alpha))
+	, b((int)(((u8)(rgb & 0x0000FF)) * alpha))
+	, a((int)(255 * alpha)) {}
 
 Color::Color(u8 r, u8 g, u8 b)
-	: r(r), g(g), b(b), a(255) {}
+	: r(r)
+	, g(g)
+	, b(b)
+	, a(255) {}
 
 Color::Color(u8 r, u8 g, u8 b, u8 a)
-	: r(r), g(g), b(b), a(a) {}
+	: r(r)
+	, g(g)
+	, b(b)
+	, a(a) {}
+
+Color::Color(const Vec3& vec3)
+	: r((int)(vec3.x * 255))
+	, g((int)(vec3.y * 255))
+	, b((int)(vec3.z * 255))
+	, a((int)(255)) {}
+
+Color::Color(const Vec3& vec3, float alpha)
+	: r((int)(vec3.x * alpha * 255))
+	, g((int)(vec3.y* alpha * 255))
+	, b((int)(vec3.z* alpha * 255))
+	, a((int)(alpha * 255)) {}
 
 Color::Color(const Vec4& vec4)
-	: r((int)(vec4.x * 255)), g((int)(vec4.y * 255)), b((int)(vec4.z * 255)), a((int)(vec4.w * 255)) {}
+	: r((int)(vec4.x * 255))
+	, g((int)(vec4.y * 255))
+	, b((int)(vec4.z * 255))
+	, a((int)(vec4.w * 255)) {}
 
-Color::Color(const char* value) : r(0), g(0), b(0), a(255)
+Color::Color(const String& value) 
+	: r(0)
+	, g(0)
+	, b(0)
+	, a(255)
 {
-	int length = 0;
-	while (value[length] != '\0' && length < 10)
-		length ++;
-
 	int offset = 0;
-	if (length > 0 && value[0] == '#')
+	if (value.length() > 0 && value[0] == '#')
 		offset = 1;
-	else if (length >= 1 && value[0] == '0' && (value[1] == 'x' || value[1] == 'X'))
+	else if (value.length() >= 1 && value[0] == '0' && (value[1] == 'x' || value[1] == 'X'))
 		offset = 2;
 
-	if (length - offset >= 8)
+	if (value.length() - offset >= 8)
 		a = (LT_HEX_VALUE(value[offset + 6]) << 4) + LT_HEX_VALUE(value[offset + 7]);
 
-	if (length - offset >= 6)
+	if (value.length() - offset >= 6)
 	{
 		r = (LT_HEX_VALUE(value[offset + 0]) << 4) + LT_HEX_VALUE(value[offset + 1]);
 		g = (LT_HEX_VALUE(value[offset + 2]) << 4) + LT_HEX_VALUE(value[offset + 3]);
