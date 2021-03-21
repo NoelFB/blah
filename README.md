@@ -17,7 +17,6 @@ A small 2D C++ Game Framework, using few dependencies and simple code to mainain
  - Only floatN/mat3x2/mat4x4 uniforms are supported.
  - There's no Audio API or backend implementation yet.
  - No threaded rendering so it will explode if you try that.
- - No Audio API implemented yet.
 
 #### a sample application
 
