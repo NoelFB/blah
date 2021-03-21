@@ -28,9 +28,8 @@
 #include "blah/images/packer.h"
 
 #include "blah/input/input.h"
-#include "blah/input/virtual_stick.h"
-#include "blah/input/virtual_button.h"
-#include "blah/input/virtual_axis.h"
+#include "blah/input/binding.h"
+#include "blah/input/binding_registry.h"
 
 #include "blah/math/calc.h"
 #include "blah/math/circle.h"

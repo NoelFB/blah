@@ -9,7 +9,7 @@ add_library(blah
 
 	src/core/app.cpp
 	src/core/filesystem.cpp
-	src/core/log.cpp
+	src/core/common.cpp
 	src/core/time.cpp
 
 	src/graphics/blend.cpp
@@ -21,9 +21,8 @@ add_library(blah
 	src/graphics/texture.cpp
 
 	src/input/input.cpp
-	src/input/virtual_stick.cpp
-	src/input/virtual_button.cpp
-	src/input/virtual_axis.cpp
+	src/input/binding.cpp
+	src/input/binding_registry.cpp
 	
 	src/containers/str.cpp
 	
@@ -53,7 +52,6 @@ add_library(blah
 	src/streams/filestream.cpp
 	src/streams/memorystream.cpp
 	src/streams/stream.cpp
-
 
 	src/internal/graphics_backend_gl.cpp
 	src/internal/graphics_backend_d3d11.cpp

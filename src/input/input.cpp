@@ -1,4 +1,5 @@
 #include <blah/input/input.h>
+#include <blah/input/binding_registry.h>
 #include <blah/core/app.h>
 #include <blah/core/time.h>
 #include <blah/core/common.h>
@@ -66,6 +67,9 @@ void InputBackend::frame()
 			}
 		}
 	}
+
+	// update bindings
+	BindingRegistry::update();
 }
 
 void InputBackend::on_mouse_move(float x, float y)
