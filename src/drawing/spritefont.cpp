@@ -5,6 +5,15 @@
 
 using namespace Blah;
 
+CharacterRange::CharacterRange()
+	: from(0), to(0) {}
+CharacterRange::CharacterRange(u32 single)
+	: from(single), to(single) {}
+CharacterRange::CharacterRange(u32 from, u32 to)
+	: from(from), to(to) {}
+
+const CharacterSet CharacterRange::ASCII = CharacterSet({ CharacterRange(32, 128) });
+
 SpriteFont::SpriteFont()
 {
 	size = 0;
@@ -13,25 +22,22 @@ SpriteFont::SpriteFont()
 	line_gap = 0;
 }
 
-const u32 ascii[]{ 32, 128, 0 };
-const u32* SpriteFont::ASCII = ascii;
-
 SpriteFont::SpriteFont(const char* file, float size)
 {
-	build(file, size, ASCII);
+	build(file, size, CharacterRange::ASCII);
 }
 
-SpriteFont::SpriteFont(const char* file, float size, const u32* charset)
+SpriteFont::SpriteFont(const char* file, float size, const CharacterSet& charset)
 {
 	build(file, size, charset);
 }
 
 SpriteFont::SpriteFont(const Font& font, float size)
 {
-	build(font, size, ASCII);
+	build(font, size, CharacterRange::ASCII);
 }
 
-SpriteFont::SpriteFont(const Font& font, float size, const u32* charset)
+SpriteFont::SpriteFont(const Font& font, float size, const CharacterSet& charset)
 {
 	build(font, size, charset);
 }
@@ -157,7 +163,7 @@ float SpriteFont::height_of(const String& text) const
 	return height - line_gap;
 }
 
-void SpriteFont::build(const char* file, float sz, const u32* charset)
+void SpriteFont::build(const char* file, float sz, const CharacterSet& charset)
 {
 	dispose();
 
@@ -166,7 +172,7 @@ void SpriteFont::build(const char* file, float sz, const u32* charset)
 		build(font, sz, charset);
 }
 
-void SpriteFont::build(const Font& font, float size, const u32* charset)
+void SpriteFont::build(const Font& font, float size, const CharacterSet& charset)
 {
 	dispose();
 
@@ -187,11 +193,10 @@ void SpriteFont::build(const Font& font, float size, const u32* charset)
 	std::unordered_map<u32, int> glyphs;
 	Vector<Color> buffer;
 
-	auto ranges = charset;
-	while (*ranges != 0)
+	for (auto& range : charset)
 	{
-		auto from = *ranges;
-		auto to = *(ranges + 1);
+		auto from = range.from;
+		auto to = range.to + 1;
 
 		BLAH_ASSERT(to >= from, "Charset Range must be in pairs of [min,max]");
 
@@ -218,8 +223,6 @@ void SpriteFont::build(const Font& font, float size, const u32* charset)
 					packer.add(i, ch.width, ch.height, buffer.data());
 			}
 		}
-
-		ranges += 2;
 	}
 
 	buffer.clear();

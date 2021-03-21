@@ -10,6 +10,21 @@ namespace Blah
 {
 	class Font;
 
+	struct CharacterRange;
+	using CharacterSet = Vector<CharacterRange>;
+
+	struct CharacterRange
+	{
+		u32 from;
+		u32 to;
+
+		CharacterRange();
+		CharacterRange(u32 single);
+		CharacterRange(u32 from, u32 to);
+
+		static const CharacterSet ASCII;
+	};
+
 	class SpriteFont
 	{
 	public:
@@ -28,7 +43,6 @@ namespace Blah
 		Vector<TextureRef> m_atlas;
 
 	public:
-		static const u32* ASCII;
 
 		String name;
 		float size;
@@ -36,14 +50,11 @@ namespace Blah
 		float descent;
 		float line_gap;
 
-		// Note:
-		// charset is a list of range pairs, until a 0 terminator (ex. 32,128,0)
-
 		SpriteFont();
 		SpriteFont(const char* file, float size);
-		SpriteFont(const char* file, float size, const u32* charset);
+		SpriteFont(const char* file, float size, const CharacterSet& charset);
 		SpriteFont(const Font& font, float size);
-		SpriteFont(const Font& font, float size, const u32* charset);
+		SpriteFont(const Font& font, float size, const CharacterSet& charset);
 		SpriteFont(const SpriteFont&) = delete;
 		SpriteFont(SpriteFont&& src) noexcept;
 		~SpriteFont();
@@ -62,8 +73,8 @@ namespace Blah
 		float width_of_line(const String& text, int start = 0) const;
 		float height_of(const String& text) const;
 
-		void build(const char* file, float size, const u32* charset);
-		void build(const Font& font, float size, const u32* charset);
+		void build(const char* file, float size, const CharacterSet& charset);
+		void build(const Font& font, float size, const CharacterSet& charset);
 
 		float get_kerning(u32 codepoint0, u32 codepoint1) const;
 		void set_kerning(u32 codepoint0, u32 codepoint1, float kerning);
