@@ -699,7 +699,7 @@ namespace Blah
 		state.last_size = Point(App::draw_width(), App::draw_height());
 
 		// Define Swap Chain
-		DXGI_SWAP_CHAIN_DESC desc;
+		DXGI_SWAP_CHAIN_DESC desc = {};
 		desc.BufferDesc.RefreshRate.Numerator = 0;
 		desc.BufferDesc.RefreshRate.Denominator = 1;
 		desc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
@@ -709,8 +709,6 @@ namespace Blah
 		desc.BufferCount = 1;
 		desc.OutputWindow = (HWND)PlatformBackend::d3d11_get_hwnd();
 		desc.Windowed = true;
-		desc.Flags = 0;
-		desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
 		// Creation Flags
 		UINT flags = D3D11_CREATE_DEVICE_SINGLETHREADED;

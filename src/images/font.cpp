@@ -5,14 +5,18 @@
 
 using namespace Blah;
 
+#ifdef __CLANG__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-function"
+#endif
 
 #define STBTT_STATIC
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "../third_party/stb_truetype.h"
 
+#ifdef __CLANG__
 #pragma clang diagnostic pop
+#endif
 
 namespace
 {
