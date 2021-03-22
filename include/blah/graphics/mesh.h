@@ -5,6 +5,7 @@
 
 namespace Blah
 {
+	// Supported Vertex value types
 	enum class VertexType
 	{
 		None,
@@ -20,6 +21,7 @@ namespace Blah
 		UShort4
 	};
 
+	// Vertex Attribute information
 	struct VertexAttribute
 	{
 		// Location / Attribute Index
@@ -32,6 +34,8 @@ namespace Blah
 		bool normalized = false;
 	};
 
+	// Vertex Format information.
+	// Holds a list of attributes and total stride per-vertex.
 	struct VertexFormat
 	{
 		// List of Attributes
@@ -44,9 +48,13 @@ namespace Blah
 		VertexFormat(std::initializer_list<VertexAttribute> attributes, int stride = 0);
 	};
 
+	// Supported Vertex Index formats
 	enum class IndexFormat
 	{
+		// Indices are 16 bit unsigned integers
 		UInt16,
+
+		// Indices are 32 bit unsigned integers
 		UInt32
 	};
 

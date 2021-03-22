@@ -11,13 +11,16 @@ add_library(blah
 	src/core/filesystem.cpp
 	src/core/common.cpp
 	src/core/time.cpp
-
+	
+	src/graphics/batch.cpp
 	src/graphics/blend.cpp
 	src/graphics/framebuffer.cpp
 	src/graphics/material.cpp
 	src/graphics/mesh.cpp
 	src/graphics/renderpass.cpp
 	src/graphics/shader.cpp
+	src/graphics/spritefont.cpp
+	src/graphics/subtexture.cpp
 	src/graphics/texture.cpp
 
 	src/input/input.cpp
@@ -25,10 +28,6 @@ add_library(blah
 	src/input/binding_registry.cpp
 	
 	src/containers/str.cpp
-	
-	src/drawing/batch.cpp
-	src/drawing/spritefont.cpp
-	src/drawing/subtexture.cpp
 
 	src/images/aseprite.cpp
 	src/images/font.cpp

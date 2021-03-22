@@ -11,6 +11,7 @@
 
 namespace Blah
 {
+	// Depth comparison function to use during a draw call
 	enum class Compare
 	{
 		None,
@@ -24,10 +25,16 @@ namespace Blah
 		GreatorOrEqual
 	};
 
+	// Cull mode during a draw call
 	enum class Cull
 	{
+		// No Culling enabled
 		None = 0,
+
+		// Cull front faces
 		Front = 1,
+
+		// Cull back faces
 		Back = 2,
 	};
 

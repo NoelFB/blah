@@ -9,9 +9,9 @@
 #include "blah/containers/stackvector.h"
 #include "blah/containers/str.h"
 	
-#include "blah/drawing/batch.h"
-#include "blah/drawing/spritefont.h"
-#include "blah/drawing/subtexture.h"
+#include "blah/graphics/batch.h"
+#include "blah/graphics/spritefont.h"
+#include "blah/graphics/subtexture.h"
 
 #include "blah/graphics/blend.h"
 #include "blah/graphics/framebuffer.h"

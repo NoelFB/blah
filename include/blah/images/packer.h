@@ -11,7 +11,7 @@
 namespace Blah
 {
 	// Texture Packer, which takes source images and combines
-	// them into a single large texture.
+	// them into a single large texture. Useful for 2D sprite batching.
 	class Packer
 	{
 	public:

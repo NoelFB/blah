@@ -5,8 +5,8 @@
 #include <blah/math/mat3x2.h>
 #include <blah/math/mat4x4.h>
 #include <blah/math/color.h>
-#include <blah/drawing/subtexture.h>
-#include <blah/drawing/spritefont.h>
+#include <blah/graphics/subtexture.h>
+#include <blah/graphics/spritefont.h>
 #include <blah/containers/vector.h>
 #include <blah/graphics/blend.h>
 #include <blah/graphics/sampler.h>
@@ -15,9 +15,14 @@
 
 namespace Blah
 {
+	// Spritebatcher Color Mode
 	enum class ColorMode
 	{
+		// Draws textures and shapes normally
 		Normal,
+
+		// Ignores the texture color but still uses transparency, essentially
+		// drawing the "shape" of the texture a solid color
 		Wash
 	};
 
@@ -38,7 +43,7 @@ namespace Blah
 	inline TextAlign operator|(TextAlign lhs, TextAlign rhs) { return static_cast<TextAlign>(static_cast<char>(lhs) | static_cast<char>(rhs)); }
 	inline TextAlign operator&(TextAlign lhs, TextAlign rhs) { return static_cast<TextAlign>(static_cast<char>(lhs) & static_cast<char>(rhs)); }
 
-	// A simple 2D sprite batcher, used for drawing shapes and textures
+	// A 2D sprite batcher, used for drawing shapes and textures
 	class Batch
 	{
 	public:

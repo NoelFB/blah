@@ -46,6 +46,7 @@ namespace Blah
 		RGBA = Red | Green | Blue | Alpha,
 	};
 
+	// BlendMode using for rendering
 	struct BlendMode
 	{
 		// Normal, pre-multiplied, Blend Mode

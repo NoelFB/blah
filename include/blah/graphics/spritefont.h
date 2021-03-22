@@ -2,7 +2,7 @@
 #include <blah/core/common.h>
 #include <blah/containers/str.h>
 #include <blah/containers/vector.h>
-#include <blah/drawing/subtexture.h>
+#include <blah/graphics/subtexture.h>
 #include <blah/math/vec2.h>
 #include <blah/core/filesystem.h>
 #include <unordered_map>

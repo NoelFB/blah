@@ -10,6 +10,7 @@ namespace Blah
 	class StrOf;
 	using String = StrOf<64>;
 
+	// A simple String implementation
 	class Str
 	{
 	public:
@@ -138,8 +139,10 @@ namespace Blah
 		// returns a substring of the string
 		String substr(int start, int end) const;
 
+		// Splits the string into a vector of strings
 		Vector<String> split(char ch) const;
 
+		// replaces all occurances of old string with the new string
 		Str& replace(const Str& old_str, const Str& new_str);
 
 		// replaces all occurances of the given character in the string
@@ -171,9 +174,14 @@ namespace Blah
 
 		// returns a pointer to the heap buffer or to our stack allocation
 		char* data()			 { return (m_buffer != nullptr ? m_buffer : ((char*)(this) + sizeof(Str))); }
+
+		// returns a pointer to the heap buffer or to our stack allocation
 		const char* data() const { return (m_buffer != nullptr ? m_buffer : ((char*)(this) + sizeof(Str))); }
 
+		// assigns the contents of the string
 		void set(const Str& str) { set(str.cstr(), str.cstr() + str.m_length); }
+
+		// assigns the contents of the string
 		void set(const char* start, const char* end = nullptr);
 
 	private:
@@ -187,6 +195,7 @@ namespace Blah
 	// combine string
 	inline Str operator+(const Str& lhs, const Str& rhs) { Str str; str.append(lhs).append(rhs); return str; }
 
+	// A string with a local stack buffer of size T
 	template<int T>
 	class StrOf : public Str
 	{

@@ -1,4 +1,4 @@
-#include <blah/drawing/batch.h>
+#include <blah/graphics/batch.h>
 #include <blah/graphics/texture.h>
 #include <blah/graphics/framebuffer.h>
 #include <blah/graphics/mesh.h>

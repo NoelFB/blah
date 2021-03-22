@@ -6,6 +6,7 @@
 
 namespace Blah
 {
+	// A lightweight Vector implementation
 	template<class T>
 	class Vector
 	{

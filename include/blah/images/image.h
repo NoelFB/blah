@@ -8,7 +8,8 @@ namespace Blah
 {
 	class Stream;
 
-	// A simple 2D Bitmap
+	// A 2D Bitmap stored on the CPU.
+	// For drawing images to the screen, use a Texture.
 	class Image
 	{
 	public:

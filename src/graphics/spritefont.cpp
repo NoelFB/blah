@@ -1,4 +1,4 @@
-#include <blah/drawing/spritefont.h>
+#include <blah/graphics/spritefont.h>
 #include <blah/images/font.h>
 #include <blah/images/packer.h>
 #include <blah/core/common.h>
