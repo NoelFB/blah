@@ -37,7 +37,7 @@ namespace Blah
 
 		// Call this when a Controller is connected. Note that the Name parameter must be kept valid
 		// until on_controller_disconnect is called with the same index.
-		void on_controller_connect(int index, const char* name, int isGamepad, int buttonCount, int axisCount, uint16_t vendor, uint16_t product, uint16_t version);
+		void on_controller_connect(int index, const char* name, int isGamepad, int buttonCount, int axisCount, u16 vendor, u16 product, u16 version);
 
 		// Call this when a controller is disconnected
 		void on_controller_disconnect(int index);

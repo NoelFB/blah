@@ -1,11 +1,11 @@
-#ifdef BLAH_USE_D3D11
+#ifdef BLAH_GRAPHICS_D3D11
 
 // TODO:
 // Note the D3D11 Implementation is still a work-in-progress
 
 #include "../internal/graphics_backend.h"
 #include "../internal/platform_backend.h"
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
@@ -36,7 +36,7 @@ namespace Blah
 
 		struct StoredInputLayout
 		{
-			uint32_t shader_hash;
+			u32 shader_hash;
 			VertexFormat format;
 			ID3D11InputLayout* layout;
 		};
@@ -144,6 +144,9 @@ namespace Blah
 				desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 				m_size = width * height * 4;
 				is_depth_stencil = true;
+				break;
+			case TextureFormat::None:
+			case TextureFormat::Count:
 				break;
 			}
 
@@ -349,7 +352,7 @@ namespace Blah
 			return m_attachments[0]->height();
 		}
 
-		virtual void clear(Color color, float depth, uint8_t stencil, ClearMask mask) override
+		virtual void clear(Color color, float depth, u8 stencil, ClearMask mask) override
 		{
 			float col[4] = { color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f };
 
@@ -386,7 +389,7 @@ namespace Blah
 		Vector<Vector<float>> fragment_uniform_values;
 		StackVector<ShaderData::HLSL_Attribute, 16> attributes;
 		Vector<UniformInfo> uniform_list;
-		uint32_t hash = 0;
+		u32 hash = 0;
 		bool valid = false;
 
 		D3D11_Shader(const ShaderData* data)
@@ -542,10 +545,10 @@ namespace Blah
 	class D3D11_Mesh : public Mesh
 	{
 	private:
-		int64_t m_vertex_count = 0;
-		int64_t m_vertex_capacity = 0;
-		int64_t m_index_count = 0;
-		int64_t m_index_capacity = 0;
+		i64 m_vertex_count = 0;
+		i64 m_vertex_capacity = 0;
+		i64 m_index_count = 0;
+		i64 m_index_capacity = 0;
 
 	public:
 		ID3D11Buffer* vertex_buffer = nullptr;
@@ -567,7 +570,7 @@ namespace Blah
 				index_buffer->Release();
 		}
 
-		virtual void index_data(IndexFormat format, const void* indices, int64_t count) override
+		virtual void index_data(IndexFormat format, const void* indices, i64 count) override
 		{
 			m_index_count = count;
 
@@ -579,8 +582,8 @@ namespace Blah
 
 				switch (format)
 				{
-				case IndexFormat::UInt16: index_stride = sizeof(int16_t); break;
-				case IndexFormat::UInt32: index_stride = sizeof(int32_t); break;
+				case IndexFormat::UInt16: index_stride = sizeof(i16); break;
+				case IndexFormat::UInt32: index_stride = sizeof(i32); break;
 				}
 
 				if (m_index_capacity > 0 && indices)
@@ -589,7 +592,7 @@ namespace Blah
 					if (index_buffer)
 						index_buffer->Release();
 					index_buffer = nullptr;
-				
+
 					// buffer description
 					D3D11_BUFFER_DESC desc = { 0 };
 					desc.ByteWidth = (UINT)(index_stride * m_index_capacity);
@@ -621,7 +624,7 @@ namespace Blah
 			}
 		}
 
-		virtual void vertex_data(const VertexFormat& format, const void* vertices, int64_t count) override
+		virtual void vertex_data(const VertexFormat& format, const void* vertices, i64 count) override
 		{
 			m_vertex_count = count;
 
@@ -669,22 +672,22 @@ namespace Blah
 			}
 		}
 
-		virtual void instance_data(const VertexFormat& format, const void* instances, int64_t count) override
+		virtual void instance_data(const VertexFormat& format, const void* instances, i64 count) override
 		{
 
 		}
 
-		virtual int64_t index_count() const override
+		virtual i64 index_count() const override
 		{
 			return m_index_count;
 		}
 
-		virtual int64_t vertex_count() const override
+		virtual i64 vertex_count() const override
 		{
 			return m_vertex_count;
 		}
 
-		virtual int64_t instance_count() const override
+		virtual i64 instance_count() const override
 		{
 			return 0;
 		}
@@ -696,7 +699,7 @@ namespace Blah
 		state.last_size = Point(App::draw_width(), App::draw_height());
 
 		// Define Swap Chain
-		DXGI_SWAP_CHAIN_DESC desc = { 0 };
+		DXGI_SWAP_CHAIN_DESC desc = {};
 		desc.BufferDesc.RefreshRate.Numerator = 0;
 		desc.BufferDesc.RefreshRate.Denominator = 1;
 		desc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
@@ -705,7 +708,6 @@ namespace Blah
 		desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		desc.BufferCount = 1;
 		desc.OutputWindow = (HWND)PlatformBackend::d3d11_get_hwnd();
-		//desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		desc.Windowed = true;
 
 		// Creation Flags
@@ -764,10 +766,10 @@ namespace Blah
 				dxgi_device->GetAdapter(&dxgi_adapter);
 				dxgi_adapter->GetDesc(&adapter_desc);
 
-				Log::print("D3D11 %ls", adapter_desc.Description);
+				Log::info("D3D11 %ls", adapter_desc.Description);
 			}
 			else
-				Log::print("D3D11");
+				Log::info("D3D11");
 		}
 
 		return true;
@@ -1056,7 +1058,7 @@ namespace Blah
 		}
 	}
 
-	void GraphicsBackend::clear_backbuffer(Color color, float depth, uint8_t stencil, ClearMask mask)
+	void GraphicsBackend::clear_backbuffer(Color color, float depth, u8 stencil, ClearMask mask)
 	{
 		if (((int)mask & (int)ClearMask::Color) == (int)ClearMask::Color)
 		{
@@ -1243,6 +1245,9 @@ namespace Blah
 				int size = 0;
 				switch (it.type)
 				{
+				case UniformType::None: break;
+				case UniformType::Texture2D: break;
+				case UniformType::Sampler2D: break;
 				case UniformType::Float: size = 1; break;
 				case UniformType::Float2: size = 2; break;
 				case UniformType::Float3: size = 3; break;
@@ -1282,7 +1287,7 @@ namespace Blah
 			{
 				bool same_format = true;
 				for (int n = 0; same_format && n < format.attributes.size(); n++)
-					if (it.format.attributes[n].index != format.attributes[n].index || 
+					if (it.format.attributes[n].index != format.attributes[n].index ||
 						it.format.attributes[n].type != format.attributes[n].type ||
 						it.format.attributes[n].normalized != format.attributes[n].normalized)
 						same_format = false;
@@ -1304,6 +1309,7 @@ namespace Blah
 			{
 				switch (format.attributes[i].type)
 				{
+				case VertexType::None: break;
 				case VertexType::Float: it->Format = DXGI_FORMAT_R32_FLOAT;  break;
 				case VertexType::Float2: it->Format = DXGI_FORMAT_R32G32_FLOAT; break;
 				case VertexType::Float3: it->Format = DXGI_FORMAT_R32G32B32_FLOAT; break;
@@ -1320,6 +1326,7 @@ namespace Blah
 			{
 				switch (format.attributes[i].type)
 				{
+				case VertexType::None: break;
 				case VertexType::Float: it->Format = DXGI_FORMAT_R32_FLOAT;  break;
 				case VertexType::Float2: it->Format = DXGI_FORMAT_R32G32_FLOAT; break;
 				case VertexType::Float3: it->Format = DXGI_FORMAT_R32G32B32_FLOAT; break;
@@ -1396,7 +1403,7 @@ namespace Blah
 			desc.RenderTarget[0].DestBlendAlpha = blend_factor(blend.alpha_dst);
 		}
 
-		for (int i = 1; i < 8; i ++)
+		for (int i = 1; i < 8; i++)
 			desc.RenderTarget[i] = desc.RenderTarget[0];
 
 		ID3D11BlendState* blend_state = nullptr;
@@ -1428,22 +1435,25 @@ namespace Blah
 
 		switch (sampler.filter)
 		{
+		case TextureFilter::None: break;
 		case TextureFilter::Nearest: desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT; break;
 		case TextureFilter::Linear: desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; break;
 		}
 
 		switch (sampler.wrap_x)
 		{
+		case TextureWrap::None: break;
 		case TextureWrap::Clamp: desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP; break;
 		case TextureWrap::Repeat: desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP; break;
 		}
 
 		switch (sampler.wrap_y)
 		{
+		case TextureWrap::None: break;
 		case TextureWrap::Clamp: desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP; break;
 		case TextureWrap::Repeat: desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP; break;
 		}
-		
+
 		ID3D11SamplerState* result;
 		auto hr = state.device->CreateSamplerState(&desc, &result);
 
@@ -1512,15 +1522,15 @@ namespace Blah
 
 		switch (pass.depth)
 		{
-			case Compare::None: desc.DepthFunc = D3D11_COMPARISON_NEVER; break;
-			case Compare::Always: desc.DepthFunc = D3D11_COMPARISON_ALWAYS; break;
-			case Compare::Never: desc.DepthFunc = D3D11_COMPARISON_NEVER; break;
-			case Compare::Less: desc.DepthFunc = D3D11_COMPARISON_LESS; break;
-			case Compare::Equal: desc.DepthFunc = D3D11_COMPARISON_EQUAL; break;
-			case Compare::LessOrEqual: desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; break;
-			case Compare::Greater: desc.DepthFunc = D3D11_COMPARISON_GREATER; break;
-			case Compare::NotEqual: desc.DepthFunc = D3D11_COMPARISON_NOT_EQUAL; break;
-			case Compare::GreatorOrEqual: desc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL; break;
+		case Compare::None: desc.DepthFunc = D3D11_COMPARISON_NEVER; break;
+		case Compare::Always: desc.DepthFunc = D3D11_COMPARISON_ALWAYS; break;
+		case Compare::Never: desc.DepthFunc = D3D11_COMPARISON_NEVER; break;
+		case Compare::Less: desc.DepthFunc = D3D11_COMPARISON_LESS; break;
+		case Compare::Equal: desc.DepthFunc = D3D11_COMPARISON_EQUAL; break;
+		case Compare::LessOrEqual: desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; break;
+		case Compare::Greater: desc.DepthFunc = D3D11_COMPARISON_GREATER; break;
+		case Compare::NotEqual: desc.DepthFunc = D3D11_COMPARISON_NOT_EQUAL; break;
+		case Compare::GreatorOrEqual: desc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL; break;
 		}
 
 		ID3D11DepthStencilState* result;
@@ -1538,4 +1548,4 @@ namespace Blah
 	}
 }
 
-#endif // BLAH_USE_D3D11
+#endif // BLAH_GRAPHICS_D3D11

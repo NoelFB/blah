@@ -1,4 +1,4 @@
-#ifdef BLAH_USE_SDL2
+#ifdef BLAH_PLATFORM_SDL2
 
 #include "../internal/platform_backend.h"
 #include "../internal/input_backend.h"
@@ -6,7 +6,7 @@
 #include <blah/input/input.h>
 #include <blah/core/app.h>
 #include <blah/core/filesystem.h>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 #include <blah/core/time.h>
 
 #include <SDL.h>
@@ -41,11 +41,33 @@ namespace
 	void sdl_log(void* userdata, int category, SDL_LogPriority priority, const char* message)
 	{
 		if (priority <= SDL_LOG_PRIORITY_INFO)
-			Log::print(message);
+			Log::info(message);
 		else if (priority <= SDL_LOG_PRIORITY_WARN)
 			Log::warn(message);
 		else
 			Log::error(message);
+	}
+
+	int find_joystick_index(SDL_JoystickID instance_id)
+	{
+		for (int i = 0; i < Blah::Input::max_controllers; i++)
+			if (joysticks[i] != nullptr && SDL_JoystickInstanceID(joysticks[i]) == instance_id)
+				return i;
+		return -1;
+	}
+
+	int find_gamepad_index(SDL_JoystickID instance_id)
+	{
+		for (int i = 0; i < Blah::Input::max_controllers; i++)
+		{
+			if (gamepads[i] != nullptr)
+			{
+				auto joystick = SDL_GameControllerGetJoystick(gamepads[i]);
+				if (SDL_JoystickInstanceID(joystick) == instance_id)
+					return i;
+			}
+		}
+		return -1;
 	}
 }
 
@@ -65,7 +87,7 @@ bool PlatformBackend::init(const Config* config)
 	// Get SDL version
 	SDL_version version;
 	SDL_GetVersion(&version);
-	Log::print("SDL v%i.%i.%i", version.major, version.minor, version.patch);
+	Log::info("SDL v%i.%i.%i", version.major, version.minor, version.patch);
 
 	// initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) != 0)
@@ -170,11 +192,11 @@ void PlatformBackend::shutdown()
 	SDL_Quit();
 }
 
-uint64_t PlatformBackend::ticks()
+u64 PlatformBackend::ticks()
 {
 	auto counter = SDL_GetPerformanceCounter();
 	auto per_second = (double)SDL_GetPerformanceFrequency();
-	return (uint64_t)(counter * (Time::ticks_per_second / per_second));
+	return (u64)(counter * (Time::ticks_per_second / per_second));
 }
 
 // Macro defined by X11 conflicts with MouseButton enum
@@ -247,109 +269,132 @@ void PlatformBackend::frame()
 		// Joystick Controller
 		else if (event.type == SDL_JOYDEVICEADDED)
 		{
-			Sint32 index = event.jdevice.which;
+			auto index = event.jdevice.which;
 
-			if (SDL_IsGameController(index) == SDL_FALSE)
+			if (SDL_IsGameController(index) == SDL_FALSE && index >= 0 && index < Input::max_controllers)
 			{
-				SDL_Joystick* ptr = joysticks[index] = SDL_JoystickOpen(index);
-				const char* name = SDL_JoystickName(ptr);
-				int button_count = SDL_JoystickNumButtons(ptr);
-				int axis_count = SDL_JoystickNumAxes(ptr);
-				uint16_t vendor = SDL_JoystickGetVendor(ptr);
-				uint16_t product = SDL_JoystickGetProduct(ptr);
-				uint16_t version = SDL_JoystickGetProductVersion(ptr);
+				auto ptr = joysticks[index] = SDL_JoystickOpen(index);
+				auto name = SDL_JoystickName(ptr);
+				auto button_count = SDL_JoystickNumButtons(ptr);
+				auto axis_count = SDL_JoystickNumAxes(ptr);
+				auto vendor = SDL_JoystickGetVendor(ptr);
+				auto product = SDL_JoystickGetProduct(ptr);
+				auto version = SDL_JoystickGetProductVersion(ptr);
 
 				InputBackend::on_controller_connect(index, name, 0, button_count, axis_count, vendor, product, version);
 			}
 		}
 		else if (event.type == SDL_JOYDEVICEREMOVED)
 		{
-			Sint32 index = event.jdevice.which;
-
-			if (SDL_IsGameController(index) == SDL_FALSE)
+			auto index = find_joystick_index(event.jdevice.which);
+			if (index >= 0)
 			{
-				InputBackend::on_controller_disconnect(index);
-				SDL_JoystickClose(joysticks[index]);
+				if (SDL_IsGameController(index) == SDL_FALSE)
+				{
+					InputBackend::on_controller_disconnect(index);
+					SDL_JoystickClose(joysticks[index]);
+				}
 			}
 		}
 		else if (event.type == SDL_JOYBUTTONDOWN)
 		{
-			Sint32 index = event.jdevice.which;
-			if (SDL_IsGameController(index) == SDL_FALSE)
-				InputBackend::on_button_down(index, event.jbutton.button);
+			auto index = find_joystick_index(event.jdevice.which);
+			if (index >= 0)
+			{
+				if (SDL_IsGameController(index) == SDL_FALSE)
+					InputBackend::on_button_down(index, event.jbutton.button);
+			}
 		}
 		else if (event.type == SDL_JOYBUTTONUP)
 		{
-			Sint32 index = event.jdevice.which;
-			if (SDL_IsGameController(index) == SDL_FALSE)
-				InputBackend::on_button_up(index, event.jbutton.button);
+			auto index = find_joystick_index(event.jdevice.which);
+			if (index >= 0)
+			{
+				if (SDL_IsGameController(index) == SDL_FALSE)
+					InputBackend::on_button_up(index, event.jbutton.button);
+			}
 		}
 		else if (event.type == SDL_JOYAXISMOTION)
 		{
-			Sint32 index = event.jaxis.which;
-			if (SDL_IsGameController(index) == SDL_FALSE)
+			auto index = find_joystick_index(event.jdevice.which);
+			if (index >= 0)
 			{
-				float value;
-				if (event.jaxis.value >= 0)
-					value = event.jaxis.value / 32767.0f;
-				else
-					value = event.jaxis.value / 32768.0f;
-				InputBackend::on_axis_move(index, event.jaxis.axis, value);
+				if (SDL_IsGameController(index) == SDL_FALSE)
+				{
+					float value;
+					if (event.jaxis.value >= 0)
+						value = event.jaxis.value / 32767.0f;
+					else
+						value = event.jaxis.value / 32768.0f;
+					InputBackend::on_axis_move(index, event.jaxis.axis, value);
+				}
 			}
 		}
 		// Gamepad Controller
 		else if (event.type == SDL_CONTROLLERDEVICEADDED)
 		{
-			Sint32 index = event.cdevice.which;
-			SDL_GameController* ptr = gamepads[index] = SDL_GameControllerOpen(index);
-			const char* name = SDL_GameControllerName(ptr);
-			uint16_t vendor = SDL_GameControllerGetVendor(ptr);
-			uint16_t product = SDL_GameControllerGetProduct(ptr);
-			uint16_t version = SDL_GameControllerGetProductVersion(ptr);
+			auto index = event.cdevice.which;
+			if (index >= 0 && index < Input::max_controllers)
+			{
+				auto ptr = gamepads[index] = SDL_GameControllerOpen(index);
+				auto name = SDL_GameControllerName(ptr);
+				auto vendor = SDL_GameControllerGetVendor(ptr);
+				auto product = SDL_GameControllerGetProduct(ptr);
+				auto version = SDL_GameControllerGetProductVersion(ptr);
 
-			InputBackend::on_controller_connect(index, name, 1, 15, 6, vendor, product, version);
+				InputBackend::on_controller_connect(index, name, 1, 15, 6, vendor, product, version);
+			}
 		}
 		else if (event.type == SDL_CONTROLLERDEVICEREMOVED)
 		{
-			Sint32 index = event.cdevice.which;
-			InputBackend::on_controller_disconnect(index);
-			SDL_GameControllerClose(gamepads[index]);
+			auto index = find_gamepad_index(event.cdevice.which);
+			if (index >= 0)
+			{
+				InputBackend::on_controller_disconnect(index);
+				SDL_GameControllerClose(gamepads[index]);
+			}
 		}
 		else if (event.type == SDL_CONTROLLERBUTTONDOWN)
 		{
-			Sint32 index = event.cbutton.which;
+			auto index = find_gamepad_index(event.cdevice.which);
+			if (index >= 0)
+			{
+				int button = (int)Button::None;
+				if (event.cbutton.button >= 0 && event.cbutton.button < 15)
+					button = event.cbutton.button; // NOTE: These map directly to Engine Buttons enum!
 
-			int button = (int)Button::None;
-			if (event.cbutton.button >= 0 && event.cbutton.button < 15)
-				button = event.cbutton.button; // NOTE: These map directly to Engine Buttons enum!
-
-			InputBackend::on_button_down(index, button);
+				InputBackend::on_button_down(index, button);
+			}
 		}
 		else if (event.type == SDL_CONTROLLERBUTTONUP)
 		{
-			Sint32 index = event.cbutton.which;
+			auto index = find_gamepad_index(event.cdevice.which);
+			if (index >= 0)
+			{
+				int button = (int)Button::None;
+				if (event.cbutton.button >= 0 && event.cbutton.button < 15)
+					button = event.cbutton.button; // NOTE: These map directly to Engine Buttons enum!
 
-			int button = (int)Button::None;
-			if (event.cbutton.button >= 0 && event.cbutton.button < 15)
-				button = event.cbutton.button; // NOTE: These map directly to Engine Buttons enum!
-
-			InputBackend::on_button_up(index, button);
+				InputBackend::on_button_up(index, button);
+			}
 		}
 		else if (event.type == SDL_CONTROLLERAXISMOTION)
 		{
-			Sint32 index = event.caxis.which;
+			auto index = find_gamepad_index(event.cdevice.which);
+			if (index >= 0)
+			{
+				int axis = (int)Axis::None;
+				if (event.caxis.axis >= 0 && event.caxis.axis < 6)
+					axis = event.caxis.axis; // NOTE: These map directly to Engine Axis enum!
 
-			int axis = (int)Axis::None;
-			if (event.caxis.axis >= 0 && event.caxis.axis < 6)
-				axis = event.caxis.axis; // NOTE: These map directly to Engine Axis enum!
+				float value;
+				if (event.caxis.value >= 0)
+					value = event.caxis.value / 32767.0f;
+				else
+					value = event.caxis.value / 32768.0f;
 
-			float value;
-			if (event.caxis.value >= 0)
-				value = event.caxis.value / 32767.0f;
-			else
-				value = event.caxis.value / 32768.0f;
-
-			InputBackend::on_axis_move(index, axis, value);
+				InputBackend::on_axis_move(index, axis, value);
+			}
 		}
 	}
 }
@@ -357,7 +402,7 @@ void PlatformBackend::frame()
 void PlatformBackend::sleep(int milliseconds)
 {
 	if (milliseconds >= 0)
-		SDL_Delay((uint32_t)milliseconds);
+		SDL_Delay((u32)milliseconds);
 }
 
 void PlatformBackend::present()
@@ -611,27 +656,27 @@ bool PlatformBackend::file_open(const char* path, PlatformBackend::FileHandle* h
 	return ptr != nullptr;
 }
 
-int64_t PlatformBackend::file_length(PlatformBackend::FileHandle stream)
+i64 PlatformBackend::file_length(PlatformBackend::FileHandle stream)
 {
 	return SDL_RWsize((SDL_RWops*)stream);
 }
 
-int64_t PlatformBackend::file_position(PlatformBackend::FileHandle stream)
+i64 PlatformBackend::file_position(PlatformBackend::FileHandle stream)
 {
 	return SDL_RWtell((SDL_RWops*)stream);
 }
 
-int64_t PlatformBackend::file_seek(PlatformBackend::FileHandle stream, int64_t seekTo)
+i64 PlatformBackend::file_seek(PlatformBackend::FileHandle stream, i64 seekTo)
 {
 	return SDL_RWseek((SDL_RWops*)stream, seekTo, RW_SEEK_SET);
 }
 
-int64_t PlatformBackend::file_read(PlatformBackend::FileHandle stream, void* ptr, int64_t length)
+i64 PlatformBackend::file_read(PlatformBackend::FileHandle stream, void* ptr, i64 length)
 {
 	return SDL_RWread((SDL_RWops*)stream, ptr, sizeof(char), length);
 }
 
-int64_t PlatformBackend::file_write(PlatformBackend::FileHandle stream, const void* ptr, int64_t length)
+i64 PlatformBackend::file_write(PlatformBackend::FileHandle stream, const void* ptr, i64 length)
 {
 	return SDL_RWwrite((SDL_RWops*)stream, ptr, sizeof(char), length);
 }
@@ -677,4 +722,4 @@ void* PlatformBackend::d3d11_get_hwnd()
 #endif
 }
 
-#endif // BLAH_USE_SDL2
+#endif // BLAH_PLATFORM_SDL2

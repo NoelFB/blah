@@ -1,5 +1,5 @@
 #include <blah/graphics/renderpass.h>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 #include "../internal/graphics_backend.h"
 
 using namespace Blah;
@@ -38,7 +38,7 @@ void RenderPass::perform()
 	}
 
 	// Validate Index Count
-	int64_t index_count = pass.mesh->index_count();
+	i64 index_count = pass.mesh->index_count();
 	if (pass.index_start + pass.index_count > index_count)
 	{
 		Log::warn(
@@ -54,7 +54,7 @@ void RenderPass::perform()
 	}
 
 	// Validate Instance Count
-	int64_t instance_count = pass.mesh->instance_count();
+	i64 instance_count = pass.mesh->instance_count();
 	if (pass.instance_count > instance_count)
 	{
 		Log::warn(

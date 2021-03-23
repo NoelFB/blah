@@ -10,7 +10,7 @@ namespace Blah
 		Vec2 a;
 		Vec2 b;
 
-		Line() {}
+		Line() = default;
 		Line(float x0, float y0, float x1, float y1);
 		Line(const Vec2& start, const Vec2& end);
 

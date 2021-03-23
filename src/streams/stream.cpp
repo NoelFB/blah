@@ -4,10 +4,10 @@
 
 using namespace Blah;
 
-int64_t Stream::pipe(Stream& stream, int64_t length)
+i64 Stream::pipe(Stream& stream, i64 length)
 {
 	const int BUFFER_LENGTH = 4096;
-	int64_t result = 0;
+	i64 result = 0;
 
 	char buffer[BUFFER_LENGTH];
 	while (length > 0)
@@ -59,12 +59,12 @@ String Stream::read_line()
 	return result;
 }
 
-int64_t Stream::write(const void* buffer, int64_t length) 
+i64 Stream::write(const void* buffer, i64 length) 
 { 
 	return write_from(buffer, length);
 }
 
-int64_t Stream::write(const String& string)
+i64 Stream::write(const String& string)
 {
 	return write_from(string.begin(), string.length());
 }

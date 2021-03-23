@@ -6,7 +6,7 @@ using namespace Blah;
 MemoryStream::MemoryStream()
 	: m_data(nullptr), m_length(0), m_position(0) {}
 
-MemoryStream::MemoryStream(char* data, int64_t length)
+MemoryStream::MemoryStream(char* data, i64 length)
 	: m_data(data), m_length(length), m_position(0) {}
 
 MemoryStream::MemoryStream(MemoryStream&& src) noexcept
@@ -28,7 +28,7 @@ MemoryStream& MemoryStream::operator=(MemoryStream&& src) noexcept
 	return *this;
 }
 
-int64_t MemoryStream::read_into(void* ptr, int64_t len)
+i64 MemoryStream::read_into(void* ptr, i64 len)
 {
 	if (len < 0 || ptr == nullptr)
 		return 0;
@@ -41,7 +41,7 @@ int64_t MemoryStream::read_into(void* ptr, int64_t len)
 	return len;
 }
 
-int64_t MemoryStream::write_from(const void* ptr, int64_t len)
+i64 MemoryStream::write_from(const void* ptr, i64 len)
 {
 	if (len < 0 || ptr == nullptr)
 		return 0;

@@ -1,5 +1,5 @@
 #pragma once
-#include <inttypes.h>
+#include <blah/core/common.h>
 #include <blah/core/filesystem.h>
 #include <blah/containers/vector.h>
 
@@ -22,7 +22,7 @@ namespace Blah
 		void shutdown();
 
 		// The time, in ticks (microseconds) since the Application was started
-		uint64_t ticks();
+		u64 ticks();
 
 		// Called every frame
 		void frame();
@@ -91,19 +91,19 @@ namespace Blah
 		bool file_open(const char* path, FileHandle* handle, FileMode mode);
 
 		// Returns the length of the file
-		int64_t file_length(FileHandle file);
+		i64 file_length(FileHandle file);
 
 		// Returns the Position of the file
-		int64_t file_position(FileHandle file);
+		i64 file_position(FileHandle file);
 
 		// Seeks the Position of the file and returns the new position from the start of the file
-		int64_t file_seek(FileHandle file, int64_t seekTo);
+		i64 file_seek(FileHandle file, i64 seekTo);
 
 		// Reads a specific number of elements of a given size from the file into ptr
-		int64_t file_read(FileHandle file, void* ptr, int64_t size);
+		i64 file_read(FileHandle file, void* ptr, i64 size);
 
 		// Writes a specific number of elements of the given size from ptr to the file
-		int64_t file_write(FileHandle file, const void* ptr, int64_t size);
+		i64 file_write(FileHandle file, const void* ptr, i64 size);
 
 		// Closes a file
 		void file_close(FileHandle file);

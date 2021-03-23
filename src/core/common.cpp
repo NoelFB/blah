@@ -1,11 +1,11 @@
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 #include <blah/core/app.h>
 #include <stdarg.h> // for logging methods
 #include <stdio.h>  // for sprintf
 
 using namespace Blah;
 
-void Log::print(const char* format, ...)
+void Log::info(const char* format, ...)
 {
 	char msg[BLAH_MESSAGE];
 	va_list ap;

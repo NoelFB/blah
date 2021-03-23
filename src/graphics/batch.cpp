@@ -1,4 +1,4 @@
-#include <blah/drawing/batch.h>
+#include <blah/graphics/batch.h>
 #include <blah/graphics/texture.h>
 #include <blah/graphics/framebuffer.h>
 #include <blah/graphics/mesh.h>
@@ -15,9 +15,7 @@ namespace
 	// TODO:
 	// This shader needs to be graphics API agnostic
 
-#ifdef BLAH_USE_OPENGL
-
-	const ShaderData shader_data = {
+	const ShaderData opengl_shader_data = {
 		// vertex shader
 #ifdef __EMSCRIPTEN__
 		"#version 300 es\n"
@@ -61,8 +59,6 @@ namespace
 		"		v_type.z * v_col;\n"
 		"}"
 	};
-
-#elif BLAH_USE_D3D11
 
 	const char* d3d11_shader = ""
 		"cbuffer constants : register(b0)\n"
@@ -110,7 +106,7 @@ namespace
 		"		input.mask.z * input.color;\n"
 		"}\n";
 
-	const ShaderData shader_data = {
+	const ShaderData d3d11_shader_data = {
 		d3d11_shader,
 		d3d11_shader,
 		{
@@ -120,10 +116,6 @@ namespace
 			{ "MASK", 0 },
 		}
 	};
-
-#else
-	const ShaderData shader_data;
-#endif
 
 	const VertexFormat format = VertexFormat(
 		{
@@ -164,12 +156,12 @@ namespace
 	{ \
 		m_batch.elements += 2; \
 		auto _i = m_indices.expand(6); \
-		*_i++ = (uint32_t)m_vertices.size() + 0; \
-		*_i++ = (uint32_t)m_vertices.size() + 1; \
-		*_i++ = (uint32_t)m_vertices.size() + 2; \
-		*_i++ = (uint32_t)m_vertices.size() + 0; \
-		*_i++ = (uint32_t)m_vertices.size() + 2; \
-		*_i++ = (uint32_t)m_vertices.size() + 3; \
+		*_i++ = (u32)m_vertices.size() + 0; \
+		*_i++ = (u32)m_vertices.size() + 1; \
+		*_i++ = (u32)m_vertices.size() + 2; \
+		*_i++ = (u32)m_vertices.size() + 0; \
+		*_i++ = (u32)m_vertices.size() + 2; \
+		*_i++ = (u32)m_vertices.size() + 3; \
 		Vertex* _v = m_vertices.expand(4); \
 		MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash); _v++; \
 		MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash); _v++; \
@@ -181,9 +173,9 @@ namespace
 	{ \
 		m_batch.elements += 1; \
 		auto* _i = m_indices.expand(3); \
-		*_i++ = (uint32_t)m_vertices.size() + 0; \
-		*_i++ = (uint32_t)m_vertices.size() + 1; \
-		*_i++ = (uint32_t)m_vertices.size() + 2; \
+		*_i++ = (u32)m_vertices.size() + 0; \
+		*_i++ = (u32)m_vertices.size() + 1; \
+		*_i++ = (u32)m_vertices.size() + 2; \
 		Vertex* _v = m_vertices.expand(3); \
 		MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash); _v++; \
 		MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash); _v++; \
@@ -384,7 +376,12 @@ void Batch::render(const FrameBufferRef& target, const Mat4x4& matrix)
 			m_mesh = Mesh::create();
 
 		if (!m_default_shader)
-			m_default_shader = Shader::create(shader_data);
+		{
+			if (App::renderer() == Renderer::OpenGL)
+				m_default_shader = Shader::create(opengl_shader_data);
+			else if (App::renderer() == Renderer::D3D11)
+				m_default_shader = Shader::create(d3d11_shader_data);
+		}
 
 		if (!m_default_material)
 			m_default_material = Material::create(m_default_shader);
@@ -423,8 +420,8 @@ void Batch::render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4
 	pass.blend = b.blend;
 	pass.has_scissor = b.scissor.w >= 0 && b.scissor.h >= 0;
 	pass.scissor = b.scissor;
-	pass.index_start = (int64_t)b.offset * 3;
-	pass.index_count = (int64_t)b.elements * 3;
+	pass.index_start = (i64)b.offset * 3;
+	pass.index_count = (i64)b.elements * 3;
 
 	pass.perform();
 }
@@ -1046,7 +1043,7 @@ void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, Tex
 	else
 		offset.y = (font.ascent + font.descent + font.height() - font.height_of(text)) * 0.5f;
 
-	uint32_t last = 0;
+	u32 last = 0;
 	for (int i = 0, l = text.length(); i < l; i++)
 	{
 		if (text[i] == '\n')
@@ -1067,7 +1064,7 @@ void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, Tex
 		}
 
 		// get the character
-		uint32_t next = text.utf8_at(i);
+		u32 next = text.utf8_at(i);
 		const auto& ch = font[next];
 
 		// draw it, if the subtexture exists

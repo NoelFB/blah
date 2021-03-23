@@ -5,40 +5,71 @@
 namespace Blah
 {
 	using FilePath = StrOf<265>;
+	class FileStream;
 	
 	enum class FileMode
 	{
-		None		= 0,
-		Read		= 1 << 1,
-		Write		= 1 << 2,
-		ReadWrite	= Read | Write,
+		None       = 0,
+		Read       = 1 << 0,
+		Write      = 1 << 1,
+		ReadWrite  = Read | Write,
 	};
 
 	namespace Directory
 	{
+		// Creates a new directory at the given location.
+		// Returns false if unable to create the directory.
 		bool create(const FilePath& path);
+
+		// Returns whether the given directory exists
 		bool exists(const FilePath& path);
+
+		// Tries to delete a path and returns whether it was successful
 		bool remove(const FilePath& path);
-		Vector<FilePath> enumerate(const FilePath& str, bool recursive = true);
+
+		// Enumerates over a directory and returns a list of files & directories
+		Vector<FilePath> enumerate(const FilePath& path, bool recursive = true);
+
+		// Opens the path in the File Explorer / Finder
 		void explore(const FilePath& path);
 	}
 
 	namespace File
 	{
+		// Checks if the given file exists
 		bool exists(const FilePath& path);
+
+		// Tries to delete a file and returns whether it was successful
 		bool remove(const FilePath& path);
+
+		// Opens the given file and returns a stream
+		FileStream open(const FilePath& path, FileMode mode = FileMode::ReadWrite);
 	}
 
 	namespace Path
 	{
+		// Returns the file name of the path
 		FilePath get_file_name(const FilePath& path);
+
+		// Returns the file name of the path, without the file extension
 		FilePath get_file_name_no_ext(const FilePath& path);
+
+		// Returns the path without any file extensions
 		FilePath get_path_no_ext(const FilePath& path);
+
+		// Returns relative path
 		FilePath get_path_after(const FilePath& path, const FilePath& after);
+
+		// Gets the top directory name from the path
 		FilePath get_directory_name(const FilePath& path);
+
+		// Normalizes a path (removes ../, changes \\ to /, removes redundant slashes, etc)
 		FilePath normalize(const FilePath& path);
+
+		// Joins two paths together
 		FilePath join(const FilePath& a, const FilePath& b);
 
+		// Joins two paths together
 		template<typename ... Args>
 		FilePath join(const FilePath& a, const FilePath& b, const Args&... args)
 		{

@@ -72,6 +72,7 @@ namespace Blah
 	class Shader;
 	typedef std::shared_ptr<Shader> ShaderRef;
 
+	// A shader used during Rendering
 	class Shader
 	{
 	protected:

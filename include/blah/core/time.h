@@ -1,21 +1,21 @@
 #pragma once
-#include <inttypes.h>
+#include <blah/core/common.h>
 
 namespace Blah
 {
 	struct Time
 	{
 		// ticks per second (microseconds, in this case)
-		static constexpr uint64_t ticks_per_second = 1000000;
+		static constexpr u64 ticks_per_second = 1000000;
 
 		// uptime, in ticks
-		static uint64_t ticks;
+		static u64 ticks;
 
 		// uptime, in seconds
 		static double seconds;
 
 		// previous frame uptime, in ticks
-		static uint64_t previous_ticks;
+		static u64 previous_ticks;
 
 		// previous frame uptime, in seconds
 		static double previous_seconds;

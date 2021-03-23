@@ -1,5 +1,5 @@
 #pragma once
-#include <inttypes.h>
+#include <blah/core/common.h>
 #include <blah/math/rect.h>
 #include <blah/containers/str.h>
 #include <blah/graphics/texture.h>
@@ -11,6 +11,7 @@
 
 namespace Blah
 {
+	// Depth comparison function to use during a draw call
 	enum class Compare
 	{
 		None,
@@ -24,13 +25,20 @@ namespace Blah
 		GreatorOrEqual
 	};
 
+	// Cull mode during a draw call
 	enum class Cull
 	{
+		// No Culling enabled
 		None = 0,
+
+		// Cull front faces
 		Front = 1,
+
+		// Cull back faces
 		Back = 2,
 	};
 
+	// A single draw call
 	struct RenderPass
 	{
 		// Framebuffer to draw to
@@ -55,13 +63,13 @@ namespace Blah
 		Rect scissor;
 
 		// First index in the Mesh to draw from
-		int64_t index_start;
+		i64 index_start;
 
 		// Total amount of indices to draw from the Mesh
-		int64_t index_count;
+		i64 index_count;
 
 		// Total amount of instances to draw from the Mesh
-		int64_t instance_count;
+		i64 instance_count;
 
 		// Depth Compare Function
 		Compare depth;

@@ -5,11 +5,22 @@ namespace Blah
 {
 	enum class TextureFormat
 	{
+		// Invalid Format
 		None,
+
+		// Single 8-bit channe;
 		R,
+
+		// 2 8-bit channels
 		RG,
+
+		// 4 8-bit channels
 		RGBA,
+
+		// Depth 24, Stencil 8
 		DepthStencil,
+
+		// Total Formats
 		Count
 	};
 
@@ -18,6 +29,7 @@ namespace Blah
 	class Texture;
 	typedef std::shared_ptr<Texture> TextureRef;
 
+	// A 2D Texture held by the GPU to be used during rendering
 	class Texture
 	{
 	protected:

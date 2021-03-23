@@ -5,8 +5,8 @@
 #include <blah/math/mat3x2.h>
 #include <blah/math/mat4x4.h>
 #include <blah/math/color.h>
-#include <blah/drawing/subtexture.h>
-#include <blah/drawing/spritefont.h>
+#include <blah/graphics/subtexture.h>
+#include <blah/graphics/spritefont.h>
 #include <blah/containers/vector.h>
 #include <blah/graphics/blend.h>
 #include <blah/graphics/sampler.h>
@@ -15,9 +15,14 @@
 
 namespace Blah
 {
+	// Spritebatcher Color Mode
 	enum class ColorMode
 	{
+		// Draws textures and shapes normally
 		Normal,
+
+		// Ignores the texture color but still uses transparency, essentially
+		// drawing the "shape" of the texture a solid color
 		Wash
 	};
 
@@ -38,7 +43,7 @@ namespace Blah
 	inline TextAlign operator|(TextAlign lhs, TextAlign rhs) { return static_cast<TextAlign>(static_cast<char>(lhs) | static_cast<char>(rhs)); }
 	inline TextAlign operator&(TextAlign lhs, TextAlign rhs) { return static_cast<TextAlign>(static_cast<char>(lhs) & static_cast<char>(rhs)); }
 
-	// A simple 2D sprite batcher, used for drawing shapes and textures
+	// A 2D sprite batcher, used for drawing shapes and textures
 	class Batch
 	{
 	public:
@@ -187,10 +192,10 @@ namespace Blah
 			Vec2 tex;
 			Color col;
 
-			uint8_t mult;
-			uint8_t wash;
-			uint8_t fill;
-			uint8_t pad;
+			u8 mult;
+			u8 wash;
+			u8 fill;
+			u8 pad;
 		};
 
 		struct DrawBatch
@@ -214,23 +219,23 @@ namespace Blah
 				scissor(0, 0, -1, -1) {}
 		};
 
-		static ShaderRef		m_default_shader;
-		MaterialRef				m_default_material;
-		MeshRef					m_mesh;
-		Mat3x2					m_matrix;
-		ColorMode				m_color_mode;
-		uint8_t					m_tex_mult;
-		uint8_t					m_tex_wash;
-		DrawBatch				m_batch;
-		Vector<Vertex>			m_vertices;
-		Vector<uint32_t>		m_indices;
-		Vector<Mat3x2>			m_matrix_stack;
-		Vector<Rect>			m_scissor_stack;
-		Vector<BlendMode>		m_blend_stack;
-		Vector<MaterialRef>		m_material_stack;
-		Vector<ColorMode>		m_color_mode_stack;
-		Vector<int>				m_layer_stack;
-		Vector<DrawBatch>		m_batches;
+		static ShaderRef m_default_shader;
+		MaterialRef m_default_material;
+		MeshRef m_mesh;
+		Mat3x2 m_matrix;
+		ColorMode m_color_mode;
+		u8 m_tex_mult;
+		u8 m_tex_wash;
+		DrawBatch m_batch;
+		Vector<Vertex> m_vertices;
+		Vector<u32> m_indices;
+		Vector<Mat3x2> m_matrix_stack;
+		Vector<Rect> m_scissor_stack;
+		Vector<BlendMode> m_blend_stack;
+		Vector<MaterialRef> m_material_stack;
+		Vector<ColorMode> m_color_mode_stack;
+		Vector<int> m_layer_stack;
+		Vector<DrawBatch> m_batches;
 
 		void render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4x4& matrix);
 	};

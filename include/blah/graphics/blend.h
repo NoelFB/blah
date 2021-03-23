@@ -1,5 +1,5 @@
 #pragma once
-#include <inttypes.h>
+#include <blah/core/common.h>
 
 namespace Blah
 {
@@ -46,6 +46,7 @@ namespace Blah
 		RGBA = Red | Green | Blue | Alpha,
 	};
 
+	// BlendMode using for rendering
 	struct BlendMode
 	{
 		// Normal, pre-multiplied, Blend Mode
@@ -61,7 +62,7 @@ namespace Blah
 		BlendFactor alpha_src;
 		BlendFactor alpha_dst;
 		BlendMask mask;
-		uint32_t rgba;
+		u32 rgba;
 
 		BlendMode() = default;
 
@@ -78,7 +79,7 @@ namespace Blah
 		BlendMode(
 			BlendOp color_op, BlendFactor color_src, BlendFactor color_dst,
 			BlendOp alpha_op, BlendFactor alpha_src, BlendFactor alpha_dst,
-			BlendMask blend_mask, uint32_t blend_rgba) :
+			BlendMask blend_mask, u32 blend_rgba) :
 			color_op(color_op),
 			color_src(color_src),
 			color_dst(color_dst),

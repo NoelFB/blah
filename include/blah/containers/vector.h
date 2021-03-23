@@ -1,10 +1,12 @@
 #pragma once
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 #include <type_traits>
+#include <initializer_list>
 #include <new>
 
 namespace Blah
 {
+	// A lightweight Vector implementation
 	template<class T>
 	class Vector
 	{
@@ -19,6 +21,7 @@ namespace Blah
 		Vector(int capacity);
 		Vector(const Vector& src);
 		Vector(Vector&& src) noexcept;
+		Vector(std::initializer_list<T> list);
 		~Vector();
 
 		Vector& operator=(const Vector& src);
@@ -93,6 +96,17 @@ namespace Blah
 		src.m_buffer = nullptr;
 		src.m_capacity = 0;
 		src.m_count = 0;
+	}
+
+
+	template<class T>
+	inline Vector<T>::Vector(std::initializer_list<T> list)
+	{
+		m_buffer = nullptr;
+		m_count = m_capacity = 0;
+		reserve(list.size());
+		for (auto& it : list)
+			push_back(std::move(it));
 	}
 
 	template<class T>

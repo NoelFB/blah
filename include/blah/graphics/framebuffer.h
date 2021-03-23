@@ -4,16 +4,8 @@
 #include <blah/math/color.h>
 #include <memory>
 
-// 4 color attachments + 1 depth/stencil
-#define BLAH_ATTACHMENTS 5
-
 namespace Blah
 {
-	typedef StackVector<TextureRef, BLAH_ATTACHMENTS> Attachments;
-
-	class FrameBuffer;
-	typedef std::shared_ptr<FrameBuffer> FrameBufferRef;
-
 	enum class ClearMask
 	{
 		None = 0,
@@ -23,6 +15,14 @@ namespace Blah
 		All = (int)Color | (int)Depth | (int)Stencil
 	};
 
+	// Up to 4 color attachments + 1 depth/stencil
+	using Attachments = StackVector<TextureRef, 5>;
+
+	class FrameBuffer;
+	using FrameBufferRef = std::shared_ptr<FrameBuffer>;
+
+	// FrameBuffer is a 2D Buffer that can be drawn to.
+	// It can hold up to 4 color Textures, and 1 Depth/Stencil Texture.
 	class FrameBuffer
 	{
 	protected:
@@ -65,7 +65,7 @@ namespace Blah
 		virtual int height() const = 0;
 
 		// Clears the FrameBuffer
-		virtual void clear(Color color = Color::black, float depth = 1.0f, uint8_t stencil = 0, ClearMask mask = ClearMask::All) = 0;
+		virtual void clear(Color color = Color::black, float depth = 1.0f, u8 stencil = 0, ClearMask mask = ClearMask::All) = 0;
 	};
 
 }

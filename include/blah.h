@@ -2,16 +2,16 @@
 
 #include "blah/core/app.h"
 #include "blah/core/filesystem.h"
-#include "blah/core/log.h"
+#include "blah/core/common.h"
 #include "blah/core/time.h"
 	
 #include "blah/containers/vector.h"
 #include "blah/containers/stackvector.h"
 #include "blah/containers/str.h"
 	
-#include "blah/drawing/batch.h"
-#include "blah/drawing/spritefont.h"
-#include "blah/drawing/subtexture.h"
+#include "blah/graphics/batch.h"
+#include "blah/graphics/spritefont.h"
+#include "blah/graphics/subtexture.h"
 
 #include "blah/graphics/blend.h"
 #include "blah/graphics/framebuffer.h"
@@ -28,9 +28,8 @@
 #include "blah/images/packer.h"
 
 #include "blah/input/input.h"
-#include "blah/input/virtual_stick.h"
-#include "blah/input/virtual_button.h"
-#include "blah/input/virtual_axis.h"
+#include "blah/input/binding.h"
+#include "blah/input/binding_registry.h"
 
 #include "blah/math/calc.h"
 #include "blah/math/circle.h"

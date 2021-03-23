@@ -1,9 +1,18 @@
-#include <blah/drawing/spritefont.h>
+#include <blah/graphics/spritefont.h>
 #include <blah/images/font.h>
 #include <blah/images/packer.h>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 
 using namespace Blah;
+
+SpriteFont::CharRange::CharRange()
+	: from(0), to(0) {}
+SpriteFont::CharRange::CharRange(Codepoint single)
+	: from(single), to(single) {}
+SpriteFont::CharRange::CharRange(Codepoint from, Codepoint to)
+	: from(from), to(to) {}
+
+const SpriteFont::CharSet SpriteFont::CharRange::ASCII = SpriteFont::CharSet({ CharRange(32, 128) });
 
 SpriteFont::SpriteFont()
 {
@@ -13,27 +22,24 @@ SpriteFont::SpriteFont()
 	line_gap = 0;
 }
 
-const uint32_t ascii[]{ 32, 128, 0 };
-const uint32_t* SpriteFont::ASCII = ascii;
-
-SpriteFont::SpriteFont(const char* file, float size)
+SpriteFont::SpriteFont(const FilePath& file, float size)
 {
-	build(file, size, ASCII);
+	rebuild(file, size, CharRange::ASCII);
 }
 
-SpriteFont::SpriteFont(const char* file, float size, const uint32_t* charset)
+SpriteFont::SpriteFont(const FilePath& file, float size, const CharSet& charset)
 {
-	build(file, size, charset);
+	rebuild(file, size, charset);
 }
 
 SpriteFont::SpriteFont(const Font& font, float size)
 {
-	build(font, size, ASCII);
+	rebuild(font, size, CharRange::ASCII);
 }
 
-SpriteFont::SpriteFont(const Font& font, float size, const uint32_t* charset)
+SpriteFont::SpriteFont(const Font& font, float size, const CharSet& charset)
 {
-	build(font, size, charset);
+	rebuild(font, size, charset);
 }
 
 SpriteFont::SpriteFont(SpriteFont&& src) noexcept
@@ -79,7 +85,7 @@ float SpriteFont::width_of(const String& text) const
 	float width = 0;
 	float line_width = 0;
 
-	uint32_t last;
+	Codepoint last = 0;
 	for (int i = 0; i < text.length(); i ++)
 	{
 		if (text[i] == '\n')
@@ -116,7 +122,7 @@ float SpriteFont::width_of_line(const String& text, int start) const
 
 	float width = 0;
 
-	uint32_t last;
+	Codepoint last = 0;
 	for (int i = start; i < text.length(); i ++)
 	{
 		if (text[i] == '\n')
@@ -157,16 +163,16 @@ float SpriteFont::height_of(const String& text) const
 	return height - line_gap;
 }
 
-void SpriteFont::build(const char* file, float sz, const uint32_t* charset)
+void SpriteFont::rebuild(const FilePath& file, float sz, const CharSet& charset)
 {
 	dispose();
 
 	Font font(file);
 	if (font.is_valid())
-		build(font, sz, charset);
+		rebuild(font, sz, charset);
 }
 
-void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
+void SpriteFont::rebuild(const Font& font, float size, const CharSet& charset)
 {
 	dispose();
 
@@ -184,14 +190,13 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 	packer.max_size = 8192;
 	packer.power_of_two = true;
 	
-	std::unordered_map<uint32_t, int> glyphs;
+	std::unordered_map<Codepoint, int> glyphs;
 	Vector<Color> buffer;
 
-	auto ranges = charset;
-	while (*ranges != 0)
+	for (auto& range : charset)
 	{
-		auto from = *ranges;
-		auto to = *(ranges + 1);
+		auto from = range.from;
+		auto to = range.to + 1;
 
 		BLAH_ASSERT(to >= from, "Charset Range must be in pairs of [min,max]");
 
@@ -204,7 +209,7 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 			glyphs[i] = glyph;
 
 			// add character
-			Font::Char ch = font.get_character(glyph, scale);
+			auto ch = font.get_character(glyph, scale);
 			m_characters[i].advance = ch.advance;
 			m_characters[i].offset = Vec2(ch.offset_x, ch.offset_y);
 
@@ -218,8 +223,6 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 					packer.add(i, ch.width, ch.height, buffer.data());
 			}
 		}
-
-		ranges += 2;
 	}
 
 	buffer.clear();
@@ -229,9 +232,9 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 		m_atlas.push_back(Texture::create(it));
 
 	// add character subtextures
-	for (auto& it : packer.entries)
+	for (auto& it : packer.entries())
 		if (!it.empty)
-			m_characters[(uint32_t)it.id].subtexture = Subtexture(m_atlas[it.page], it.packed, it.frame);
+			m_characters[(Codepoint)it.id].subtexture = Subtexture(m_atlas[it.page], it.packed, it.frame);
 
 	// add kerning
 	for (auto a = glyphs.begin(); a != glyphs.end(); a++)
@@ -243,9 +246,9 @@ void SpriteFont::build(const Font& font, float size, const uint32_t* charset)
 		}
 }
 
-float SpriteFont::get_kerning(uint32_t codepoint0, uint32_t codepoint1) const
+float SpriteFont::get_kerning(Codepoint codepoint0, Codepoint codepoint1) const
 {
-	uint64_t index = ((uint64_t)codepoint0 << 32) | codepoint1;
+	u64 index = ((u64)codepoint0 << 32) | codepoint1;
 
 	auto it = m_kerning.find(index);
 	if (it != m_kerning.end())
@@ -253,9 +256,9 @@ float SpriteFont::get_kerning(uint32_t codepoint0, uint32_t codepoint1) const
 	return 0.0f;
 }
 
-void SpriteFont::set_kerning(uint32_t codepoint0, uint32_t codepoint1, float value)
+void SpriteFont::set_kerning(Codepoint codepoint0, Codepoint codepoint1, float value)
 {
-	uint64_t index = ((uint64_t)codepoint0 << 32) | codepoint1;
+	u64 index = ((u64)codepoint0 << 32) | codepoint1;
 
 	if (value == 0)
 	{
@@ -267,7 +270,12 @@ void SpriteFont::set_kerning(uint32_t codepoint0, uint32_t codepoint1, float val
 	}
 }
 
-const SpriteFont::Character& SpriteFont::get_character(uint32_t codepoint) const
+SpriteFont::Character& SpriteFont::get_character(Codepoint codepoint)
+{
+	return m_characters[codepoint];
+}
+
+const SpriteFont::Character& SpriteFont::get_character(Codepoint codepoint) const
 {
 	static const Character empty;
 	auto it = m_characters.find(codepoint);
@@ -276,7 +284,12 @@ const SpriteFont::Character& SpriteFont::get_character(uint32_t codepoint) const
 	return empty;
 }
 
-const SpriteFont::Character& SpriteFont::operator[](uint32_t codepoint) const
+SpriteFont::Character& SpriteFont::operator[](Codepoint codepoint)
+{
+	return m_characters[codepoint];
+}
+
+const SpriteFont::Character& SpriteFont::operator[](Codepoint codepoint) const
 {
 	static const Character empty;
 	auto it = m_characters.find(codepoint);

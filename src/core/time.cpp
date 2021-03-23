@@ -10,8 +10,8 @@ namespace
 	}
 }
 
-uint64_t Time::ticks = 0;
-uint64_t Time::previous_ticks = 0;
+u64 Time::ticks = 0;
+u64 Time::previous_ticks = 0;
 double Time::seconds = 0;
 double Time::previous_seconds = 0;
 float Time::delta = 0;

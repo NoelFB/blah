@@ -1,8 +1,8 @@
-#ifdef BLAH_USE_OPENGL
+#ifdef BLAH_GRAPHICS_OPENGL
 
 #include "../internal/graphics_backend.h"
 #include "../internal/platform_backend.h"
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
@@ -401,7 +401,7 @@ namespace Blah
 		else if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
 			Log::warn("GL (%s:%s) %s", typeName, severityName, message);
 		else
-			Log::print("GL (%s) %s", typeName, message);
+			Log::info("GL (%s) %s", typeName, message);
 	}
 
 	// assign attributes
@@ -484,7 +484,7 @@ namespace Blah
 				components = 4;
 			}
 
-			uint32_t location = (uint32_t)(attribute.index);
+			u32 location = (u32)(attribute.index);
 			gl.EnableVertexAttribArray(location);
 			gl.VertexAttribPointer(location, components, type, attribute.normalized, format.stride, (void*)ptr);
 			gl.VertexAttribDivisor(location, divisor);
@@ -674,7 +674,7 @@ namespace Blah
 		GLuint m_id;
 		int m_width;
 		int m_height;
-		StackVector<TextureRef, BLAH_ATTACHMENTS> m_attachments;
+		StackVector<TextureRef, Attachments::MaxCapacity> m_attachments;
 
 	public:
 
@@ -749,7 +749,7 @@ namespace Blah
 			return m_height;
 		}
 
-		virtual void clear(Color color, float depth, uint8_t stencil, ClearMask mask) override
+		virtual void clear(Color color, float depth, u8 stencil, ClearMask mask) override
 		{
 			int clear = 0;
 
@@ -967,13 +967,13 @@ namespace Blah
 		GLuint m_index_buffer;
 		GLuint m_vertex_buffer;
 		GLuint m_instance_buffer;
-		int64_t m_index_count;
-		int64_t m_vertex_count;
-		int64_t m_instance_count;
-		uint16_t m_vertex_size;
-		uint16_t m_instance_size;
-		uint8_t m_vertex_attribs_enabled;
-		uint8_t m_instance_attribs_enabled;
+		i64 m_index_count;
+		i64 m_vertex_count;
+		i64 m_instance_count;
+		u16 m_vertex_size;
+		u16 m_instance_size;
+		u8 m_vertex_attribs_enabled;
+		u8 m_instance_attribs_enabled;
 		Vector<GLuint> m_vertex_attribs;
 		Vector<GLuint> m_instance_attribs;
 		GLenum m_index_format;
@@ -1026,7 +1026,7 @@ namespace Blah
 			return m_index_size;
 		}
 
-		virtual void index_data(IndexFormat format, const void* indices, int64_t count) override
+		virtual void index_data(IndexFormat format, const void* indices, i64 count) override
 		{
 			m_index_count = count;
 
@@ -1053,7 +1053,7 @@ namespace Blah
 			gl.BindVertexArray(0);
 		}
 
-		virtual void vertex_data(const VertexFormat& format, const void* vertices, int64_t count) override
+		virtual void vertex_data(const VertexFormat& format, const void* vertices, i64 count) override
 		{
 			m_vertex_count = count;
 
@@ -1074,7 +1074,7 @@ namespace Blah
 			gl.BindVertexArray(0);
 		}
 
-		virtual void instance_data(const VertexFormat& format, const void* instances, int64_t count) override
+		virtual void instance_data(const VertexFormat& format, const void* instances, i64 count) override
 		{
 			m_instance_count = count;
 
@@ -1095,17 +1095,17 @@ namespace Blah
 			gl.BindVertexArray(0);
 		}
 
-		virtual int64_t index_count() const override
+		virtual i64 index_count() const override
 		{
 			return m_index_count;
 		}
 
-		virtual int64_t vertex_count() const override
+		virtual i64 vertex_count() const override
 		{
 			return m_vertex_count;
 		}
 
-		virtual int64_t instance_count() const override
+		virtual i64 instance_count() const override
 		{
 			return m_instance_count;
 		}
@@ -1147,7 +1147,7 @@ namespace Blah
 		gl.GetIntegerv(0x0D33, &gl.max_texture_size);
 
 		// log
-		Log::print("OpenGL %s, %s",
+		Log::info("OpenGL %s, %s",
 			gl.GetString(GL_VERSION),
 			gl.GetString(GL_RENDERER));
 
@@ -1496,7 +1496,7 @@ namespace Blah
 		}
 	}
 
-	void GraphicsBackend::clear_backbuffer(Color color, float depth, uint8_t stencil, ClearMask mask)
+	void GraphicsBackend::clear_backbuffer(Color color, float depth, u8 stencil, ClearMask mask)
 	{
 		int clear = 0;
 
@@ -1517,4 +1517,4 @@ namespace Blah
 	}
 }
 
-#endif // BLAH_USE_OPENGL
+#endif // BLAH_GRAPHICS_OPENGL

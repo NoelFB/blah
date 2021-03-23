@@ -1,5 +1,5 @@
 #pragma once
-#include <inttypes.h>
+#include <blah/core/common.h>
 #include <blah/containers/str.h>
 #include <blah/streams/endian.h>
 #include <string.h>
@@ -16,13 +16,13 @@ namespace Blah
 		virtual ~Stream() = default;
 
 		// returns the length of the stream
-		virtual int64_t length() const = 0;
+		virtual i64 length() const = 0;
 
 		// returns the position of the stream
-		virtual int64_t position() const = 0;
+		virtual i64 position() const = 0;
 
 		// seeks the position of the stream
-		virtual int64_t seek(int64_t seek_to) = 0;
+		virtual i64 seek(i64 seek_to) = 0;
 
 		// returns true of the stream is open
 		virtual bool is_open() const = 0;
@@ -36,11 +36,11 @@ namespace Blah
 		// closes the stream
 		virtual void close() = 0;
 
-		// pipes the contents of this tream to another stream
-		int64_t pipe(Stream& to, int64_t length);
+		// pipes the contents of this stream to another stream
+		i64 pipe(Stream& to, i64 length);
 
 		// reads the amount of bytes into the given buffer, and returns the amount read
-		int64_t read(void* buffer, int64_t length) { return read_into(buffer, length); }
+		i64 read(void* buffer, i64 length) { return read_into(buffer, length); }
 
 		// reads a string. if length < 0, assumes null-terminated
 		String read_string(int length = -1);
@@ -67,21 +67,21 @@ namespace Blah
 		}
 
 		// writes the amount of bytes to the stream from the given buffer, and returns the amount written
-		int64_t write(const void* buffer, int64_t length);
+		i64 write(const void* buffer, i64 length);
 
 		// writes the contents of a string to the stream
-		int64_t write(const String& string);
+		i64 write(const String& string);
 
 		// writes a number
 		template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
-		int64_t write(const T& value)
+		i64 write(const T& value)
 		{
 			return write<T>(value, Endian::Little);
 		}
 
 		// writes a number
 		template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
-		int64_t write(const T& value, Endian endian)
+		i64 write(const T& value, Endian endian)
 		{
 			T writing = value;
 
@@ -93,9 +93,9 @@ namespace Blah
 
 	protected:
 		// reads from the stream into the given buffer, and returns the number of bytes read
-		virtual int64_t read_into(void* buffer, int64_t length) = 0;
+		virtual i64 read_into(void* buffer, i64 length) = 0;
 
 		// writes from the stream from the given buffer, and returns the number of bytes written
-		virtual int64_t write_from(const void* buffer, int64_t length) = 0;
+		virtual i64 write_from(const void* buffer, i64 length) = 0;
 	};
 }

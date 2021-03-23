@@ -1,5 +1,5 @@
 #include <blah/math/mat4x4.h>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 
 using namespace Blah;
 

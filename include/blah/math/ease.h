@@ -1,6 +1,6 @@
 #pragma once
 #include <blah/math/calc.h>
-#include <blah/core/log.h>
+#include <blah/core/common.h>
 
 namespace Blah
 {
@@ -8,6 +8,7 @@ namespace Blah
 
 	enum class Easers
 	{
+		Linear,
 		QuadIn, QuadOut, QuadInOut,
 		CubeIn, CubeOut, CubeInOut,
 		QuartIn, QuartOut, QuartInOut,
@@ -28,43 +29,41 @@ namespace Blah
 			For previews go here: https://easings.net/
 		*/
 
-		inline float linear(float t)
+		constexpr float linear(float t)
 		{
 			return t;
 		}
 
-		inline float quad_in(float t)
+		constexpr float quad_in(float t)
 		{
 			return t * t;
 		}
 
-		inline float quad_out(float t)
+		constexpr float quad_out(float t)
 		{
 			return -(t * (t - 2));
 		}
 
-		inline float quad_in_out(float t)
+		constexpr float quad_in_out(float t)
 		{
 			if (t < 0.5f)
 				return 2 * t * t;
 			else
-			{
 				return (-2 * t * t) + (4 * t) - 1;
-			}
 		}
 
-		inline float cube_in(float t)
+		constexpr float cube_in(float t)
 		{
 			return t * t * t;
 		}
 
-		inline float cube_out(float t)
+		constexpr float cube_out(float t)
 		{
 			float f = (t - 1);
 			return f * f * f + 1;
 		}
 
-		inline float cube_in_out(float t)
+		constexpr float cube_in_out(float t)
 		{
 			if (t < 0.5f)
 				return 4 * t * t * t;
@@ -75,18 +74,18 @@ namespace Blah
 			}
 		}
 
-		inline float quart_in(float t)
+		constexpr float quart_in(float t)
 		{
 			return t * t * t * t;
 		}
 
-		inline float quart_out(float t)
+		constexpr float quart_out(float t)
 		{
 			float f = (t - 1);
 			return f * f * f * (1 - t) + 1;
 		}
 
-		inline float quart_in_out(float t)
+		constexpr float quart_in_out(float t)
 		{
 			if (t < 0.5f)
 				return 8 * t * t * t * t;
@@ -97,18 +96,18 @@ namespace Blah
 			}
 		}
 
-		inline float quint_in(float t)
+		constexpr float quint_in(float t)
 		{
 			return t * t * t * t * t;
 		}
 
-		inline float quint_out(float t)
+		constexpr float quint_out(float t)
 		{
 			float f = (t - 1);
 			return f * f * f * f * f + 1;
 		}
 
-		inline float quint_in_out(float t)
+		constexpr float quint_in_out(float t)
 		{
 			if (t < 0.5f)
 				return 16 * t * t * t * t * t;
@@ -216,7 +215,7 @@ namespace Blah
 			}
 		}
 
-		inline float bounce_out(float t)
+		constexpr float bounce_out(float t)
 		{
 			if (t < 4 / 11.0f)
 				return (121 * t * t) / 16.0f;
@@ -228,12 +227,12 @@ namespace Blah
 				return (54 / 5.0f * t * t) - (513 / 25.0f * t) + 268 / 25.0f;
 		}
 
-		inline float bounce_in(float t)
+		constexpr float bounce_in(float t)
 		{
 			return 1 - bounce_out(1 - t);
 		}
 
-		inline float bounce_in_out(float t)
+		constexpr float bounce_in_out(float t)
 		{
 			if (t < 0.5f)
 				return 0.5f * bounce_in(t * 2);
@@ -245,6 +244,8 @@ namespace Blah
 		{
 			switch (e)
 			{
+			case Easers::Linear: return &linear;
+
 			case Easers::CubeIn: return &cube_in;
 			case Easers::CubeOut: return &cube_out;
 			case Easers::CubeInOut: return &cube_in_out;
@@ -296,6 +297,7 @@ namespace Blah
 		{
 			switch (e)
 			{
+			case Easers::Linear: return "Linear";
 			case Easers::CubeIn: return "CubeIn";
 			case Easers::CubeOut: return "CubeOut";
 			case Easers::CubeInOut: return "CubeInOut";

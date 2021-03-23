@@ -31,7 +31,7 @@ Vec2 Line::closest_point(const Vec2& pt) const
 	Vec2 v = b - a;
 	Vec2 w = pt - a;
 	float t = Vec2::dot(w, v) / Vec2::dot(v, v);
-	t = Calc::clamp(t, 0, 1);
+	t = Calc::clamp(t, 0.0f, 1.0f);
 
 	return v * t + a;
 }
