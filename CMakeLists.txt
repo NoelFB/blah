@@ -46,8 +46,8 @@ add_library(blah
 	src/math/rectI.cpp
 	src/math/stopwatch.cpp
 	src/math/vec2.cpp
-	
-	src/streams/bufferstream.cpp	
+
+	src/streams/bufferstream.cpp
 	src/streams/filestream.cpp
 	src/streams/memorystream.cpp
 	src/streams/stream.cpp
@@ -59,7 +59,7 @@ add_library(blah
 	src/internal/platform_backend_win32.cpp
 )
 
-target_include_directories(blah 
+target_include_directories(blah
 	PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	PRIVATE
@@ -76,12 +76,15 @@ set(LIBS "")
 
 # use the OpenGL Graphics Backend
 if (GRAPHICS_OPENGL)
+
 	add_compile_definitions(BLAH_GRAPHICS_OPENGL)
 
 # use the D3D11 Graphics Backend
 elseif (GRAPHICS_D3D11)
+
 	add_compile_definitions(BLAH_GRAPHICS_D3D11)
 	set(LIBS ${LIBS} d3d11.lib dxguid.lib D3Dcompiler.lib)
+
 endif()
 
 # use the SDL2 Platform Backend
@@ -89,20 +92,49 @@ endif()
 if (PLATFORM_SDL2)
 	add_compile_definitions(BLAH_PLATFORM_SDL2)
 
-	if (${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
+	# Emscripten can import SDL2 directly
+	if (EMSCRIPTEN)
+
   		set_target_properties(blah PROPERTIES COMPILE_FLAGS "-s USE_SDL=2")
-	else()
-		if (NOT DEFINED SDL2_INCLUDE_DIRS OR NOT DEFINED SDL2_LIBRARIES)
-			find_package(SDL2 REQUIRED)
+
+	# Load SDL2 Normally
+    else()
+
+		# Try to find SDL2
+		if (DEFINED SDL2_LIBRARIES AND DEFINED SDL2_INCLUDE_DIRS)
+			set(SDL2_FOUND true)
+		else()
+			find_package(SDL2 QUIET)
 		endif()
 		
-		target_include_directories(blah PUBLIC "$<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>")
+		# If CMake cannot find SDL2 library, then it gets downloaded and compiled that way
+		if (NOT ${SDL2_FOUND})
+
+			include(FetchContent)
+			FetchContent_Declare(
+				SDL2
+				GIT_REPOSITORY https://github.com/libsdl-org/SDL
+				GIT_TAG release-2.0.14 # grab latest stable release
+			)
+			FetchContent_GetProperties(SDL2)
+			if (NOT sdl2_POPULATED)
+				FetchContent_Populate(SDL2)
+				add_subdirectory(${sdl2_SOURCE_DIR} ${sdl2_BINARY_DIR})
+			endif()
+
+		endif()
+
+		# Add Library and Include Dirs
 		set(LIBS ${LIBS} ${SDL2_LIBRARIES})
-	endif()
+		target_include_directories(blah PUBLIC ${SDL2_INCLUDE_DIRS})
+
+    endif()
 
 # use the Win32 Platform Backend
 elseif (PLATFORM_WIN32)
+
 	add_compile_definitions(BLAH_PLATFORM_WIN32)
+
 endif()
 
 target_link_libraries(blah PUBLIC ${LIBS})
