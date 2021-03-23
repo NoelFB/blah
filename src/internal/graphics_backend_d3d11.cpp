@@ -1,4 +1,4 @@
-#ifdef BLAH_USE_D3D11
+#ifdef BLAH_GRAPHICS_D3D11
 
 // TODO:
 // Note the D3D11 Implementation is still a work-in-progress
@@ -592,7 +592,7 @@ namespace Blah
 					if (index_buffer)
 						index_buffer->Release();
 					index_buffer = nullptr;
-				
+
 					// buffer description
 					D3D11_BUFFER_DESC desc = { 0 };
 					desc.ByteWidth = (UINT)(index_stride * m_index_capacity);
@@ -1287,7 +1287,7 @@ namespace Blah
 			{
 				bool same_format = true;
 				for (int n = 0; same_format && n < format.attributes.size(); n++)
-					if (it.format.attributes[n].index != format.attributes[n].index || 
+					if (it.format.attributes[n].index != format.attributes[n].index ||
 						it.format.attributes[n].type != format.attributes[n].type ||
 						it.format.attributes[n].normalized != format.attributes[n].normalized)
 						same_format = false;
@@ -1403,7 +1403,7 @@ namespace Blah
 			desc.RenderTarget[0].DestBlendAlpha = blend_factor(blend.alpha_dst);
 		}
 
-		for (int i = 1; i < 8; i ++)
+		for (int i = 1; i < 8; i++)
 			desc.RenderTarget[i] = desc.RenderTarget[0];
 
 		ID3D11BlendState* blend_state = nullptr;
@@ -1453,7 +1453,7 @@ namespace Blah
 		case TextureWrap::Clamp: desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP; break;
 		case TextureWrap::Repeat: desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP; break;
 		}
-		
+
 		ID3D11SamplerState* result;
 		auto hr = state.device->CreateSamplerState(&desc, &result);
 
@@ -1522,15 +1522,15 @@ namespace Blah
 
 		switch (pass.depth)
 		{
-			case Compare::None: desc.DepthFunc = D3D11_COMPARISON_NEVER; break;
-			case Compare::Always: desc.DepthFunc = D3D11_COMPARISON_ALWAYS; break;
-			case Compare::Never: desc.DepthFunc = D3D11_COMPARISON_NEVER; break;
-			case Compare::Less: desc.DepthFunc = D3D11_COMPARISON_LESS; break;
-			case Compare::Equal: desc.DepthFunc = D3D11_COMPARISON_EQUAL; break;
-			case Compare::LessOrEqual: desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; break;
-			case Compare::Greater: desc.DepthFunc = D3D11_COMPARISON_GREATER; break;
-			case Compare::NotEqual: desc.DepthFunc = D3D11_COMPARISON_NOT_EQUAL; break;
-			case Compare::GreatorOrEqual: desc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL; break;
+		case Compare::None: desc.DepthFunc = D3D11_COMPARISON_NEVER; break;
+		case Compare::Always: desc.DepthFunc = D3D11_COMPARISON_ALWAYS; break;
+		case Compare::Never: desc.DepthFunc = D3D11_COMPARISON_NEVER; break;
+		case Compare::Less: desc.DepthFunc = D3D11_COMPARISON_LESS; break;
+		case Compare::Equal: desc.DepthFunc = D3D11_COMPARISON_EQUAL; break;
+		case Compare::LessOrEqual: desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; break;
+		case Compare::Greater: desc.DepthFunc = D3D11_COMPARISON_GREATER; break;
+		case Compare::NotEqual: desc.DepthFunc = D3D11_COMPARISON_NOT_EQUAL; break;
+		case Compare::GreatorOrEqual: desc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL; break;
 		}
 
 		ID3D11DepthStencilState* result;
@@ -1548,4 +1548,4 @@ namespace Blah
 	}
 }
 
-#endif // BLAH_USE_D3D11
+#endif // BLAH_GRAPHICS_D3D11

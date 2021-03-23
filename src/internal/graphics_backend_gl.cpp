@@ -1,4 +1,4 @@
-#ifdef BLAH_USE_OPENGL
+#ifdef BLAH_GRAPHICS_OPENGL
 
 #include "../internal/graphics_backend.h"
 #include "../internal/platform_backend.h"
@@ -674,7 +674,7 @@ namespace Blah
 		GLuint m_id;
 		int m_width;
 		int m_height;
-		StackVector<TextureRef, BLAH_ATTACHMENTS> m_attachments;
+		StackVector<TextureRef, Attachments::MaxCapacity> m_attachments;
 
 	public:
 
@@ -1517,4 +1517,4 @@ namespace Blah
 	}
 }
 
-#endif // BLAH_USE_OPENGL
+#endif // BLAH_GRAPHICS_OPENGL

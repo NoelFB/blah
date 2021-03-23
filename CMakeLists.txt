@@ -56,6 +56,7 @@ add_library(blah
 	src/internal/graphics_backend_d3d11.cpp
 	src/internal/graphics_backend_dummy.cpp
 	src/internal/platform_backend_sdl2.cpp
+	src/internal/platform_backend_win32.cpp
 )
 
 target_include_directories(blah 
@@ -66,26 +67,28 @@ target_include_directories(blah
 )
 
 # Platform Variables
-set(SDL2_ENABLED true CACHE BOOL "Use SDL2 as the System implementation")
-set(OPENGL_ENABLED true CACHE BOOL "Use OpenGL graphics implementation")
-set(D3D11_ENABLED false CACHE BOOL "Use D3D11 graphics implementation")
+set(PLATFORM_SDL2 true CACHE BOOL "Use SDL2 Platform Backend")
+set(PLATFORM_WIN32 false CACHE BOOL "Use Win32 Platform Backend")
+set(GRAPHICS_OPENGL true CACHE BOOL "Use OpenGL Graphics Backend")
+set(GRAPHICS_D3D11 false CACHE BOOL "Use D3D11 Graphics Backend")
 
 set(LIBS "")
 
-# add OpenGL definition if we're using it
-if (OPENGL_ENABLED)
-	add_compile_definitions(BLAH_USE_OPENGL)
-endif()
+# use the OpenGL Graphics Backend
+if (GRAPHICS_OPENGL)
+	add_compile_definitions(BLAH_GRAPHICS_OPENGL)
 
-# add D3D11 definition if we're using it
-if (D3D11_ENABLED)
-	add_compile_definitions(BLAH_USE_D3D11)
+# use the D3D11 Graphics Backend
+elseif (GRAPHICS_D3D11)
+	add_compile_definitions(BLAH_GRAPHICS_D3D11)
 	set(LIBS ${LIBS} d3d11.lib dxguid.lib D3Dcompiler.lib)
 endif()
 
-# Link and create SDL2 Definition if we're using it
-if (SDL2_ENABLED)
-	add_compile_definitions(BLAH_USE_SDL2)
+# use the SDL2 Platform Backend
+# Link and create SDL2 Definition
+if (PLATFORM_SDL2)
+	add_compile_definitions(BLAH_PLATFORM_SDL2)
+
 	if (${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
   		set_target_properties(blah PROPERTIES COMPILE_FLAGS "-s USE_SDL=2")
 	else()
@@ -96,6 +99,10 @@ if (SDL2_ENABLED)
 		target_include_directories(blah PUBLIC "$<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>")
 		set(LIBS ${LIBS} ${SDL2_LIBRARIES})
 	endif()
+
+# use the Win32 Platform Backend
+elseif (PLATFORM_WIN32)
+	add_compile_definitions(BLAH_PLATFORM_WIN32)
 endif()
 
 target_link_libraries(blah PUBLIC ${LIBS})

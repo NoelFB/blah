@@ -15,9 +15,7 @@ namespace
 	// TODO:
 	// This shader needs to be graphics API agnostic
 
-#ifdef BLAH_USE_OPENGL
-
-	const ShaderData shader_data = {
+	const ShaderData opengl_shader_data = {
 		// vertex shader
 #ifdef __EMSCRIPTEN__
 		"#version 300 es\n"
@@ -61,8 +59,6 @@ namespace
 		"		v_type.z * v_col;\n"
 		"}"
 	};
-
-#elif BLAH_USE_D3D11
 
 	const char* d3d11_shader = ""
 		"cbuffer constants : register(b0)\n"
@@ -110,7 +106,7 @@ namespace
 		"		input.mask.z * input.color;\n"
 		"}\n";
 
-	const ShaderData shader_data = {
+	const ShaderData d3d11_shader_data = {
 		d3d11_shader,
 		d3d11_shader,
 		{
@@ -120,10 +116,6 @@ namespace
 			{ "MASK", 0 },
 		}
 	};
-
-#else
-	const ShaderData shader_data;
-#endif
 
 	const VertexFormat format = VertexFormat(
 		{
@@ -384,7 +376,12 @@ void Batch::render(const FrameBufferRef& target, const Mat4x4& matrix)
 			m_mesh = Mesh::create();
 
 		if (!m_default_shader)
-			m_default_shader = Shader::create(shader_data);
+		{
+			if (App::renderer() == Renderer::OpenGL)
+				m_default_shader = Shader::create(opengl_shader_data);
+			else if (App::renderer() == Renderer::D3D11)
+				m_default_shader = Shader::create(d3d11_shader_data);
+		}
 
 		if (!m_default_material)
 			m_default_material = Material::create(m_default_shader);

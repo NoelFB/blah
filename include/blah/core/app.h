@@ -102,7 +102,9 @@ namespace Blah
 		// Returns whether the application is running
 		bool is_running();
 
-		// Exits the application
+		// Exits the application.
+		// This only signals for the application to close, it will not stop
+		// until the current update and render calls are finished.
 		void exit();
 
 		// Gets the config data used to run the application
@@ -120,16 +122,20 @@ namespace Blah
 		// Gets the height of the window
 		int height();
 		
-		// Gets the drawable width of the window
+		// Gets the drawable width of the window, in pixels.
+		// This may differ from the width when on platforms with High DPI Displays.
 		int draw_width();
 
-		// Gets the drawable height of the window
+		// Gets the drawable height of the window, in pixels.
+		// This may differ from the height when on platforms with High DPI Displays.
 		int draw_height();
 
-		// Gets the content scale based on the OS
+		// Gets the content scale based on the platform.
+		// macOS is usually 2.0, other platforms vary.
 		float content_scale();
 
-		// Toggles fullscreen
+		// Toggles fullscreen if supported on the platform.
+		// Otherwise this function does nothing.
 		void fullscreen(bool enabled);
 
 		// Returns the Rendering API in use

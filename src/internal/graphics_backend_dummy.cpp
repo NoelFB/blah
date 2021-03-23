@@ -1,4 +1,4 @@
-#if !(defined(BLAH_USE_OPENGL) || defined(BLAH_USE_D3D11))
+#if !(defined(BLAH_GRAPHICS_OPENGL) || defined(BLAH_GRAPHICS_D3D11))
 
 #include "../internal/graphics_backend.h"
 #include "../internal/platform_backend.h"
@@ -193,7 +193,7 @@ namespace Blah
 
 	const RendererFeatures& GraphicsBackend::features()
 	{
-		static const RendererFeatures features { false, true, 4096 };
+		static const RendererFeatures features{ false, true, 4096 };
 		return features;
 	}
 
@@ -232,4 +232,4 @@ namespace Blah
 	}
 }
 
-#endif // !(defined(BLAH_USE_OPENGL) || defined(BLAH_USE_D3D11))
+#endif // !(defined(BLAH_GRAPHICS_OPENGL) || defined(BLAH_GRAPHICS_D3D11))

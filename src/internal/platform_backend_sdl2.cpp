@@ -1,4 +1,4 @@
-#ifdef BLAH_USE_SDL2
+#ifdef BLAH_PLATFORM_SDL2
 
 #include "../internal/platform_backend.h"
 #include "../internal/input_backend.h"
@@ -722,4 +722,4 @@ void* PlatformBackend::d3d11_get_hwnd()
 #endif
 }
 
-#endif // BLAH_USE_SDL2
+#endif // BLAH_PLATFORM_SDL2
