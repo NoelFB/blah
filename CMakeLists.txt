@@ -95,10 +95,10 @@ if (PLATFORM_SDL2)
 	# Emscripten can import SDL2 directly
 	if (EMSCRIPTEN)
 
-  		set_target_properties(blah PROPERTIES COMPILE_FLAGS "-s USE_SDL=2")
+		set_target_properties(blah PROPERTIES COMPILE_FLAGS "-s USE_SDL=2")
 
 	# Load SDL2 Normally
-    else()
+	else()
 
 		# Try to find SDL2
 		if (DEFINED SDL2_LIBRARIES AND DEFINED SDL2_INCLUDE_DIRS)
@@ -128,7 +128,7 @@ if (PLATFORM_SDL2)
 		set(LIBS ${LIBS} ${SDL2_LIBRARIES})
 		target_include_directories(blah PUBLIC ${SDL2_INCLUDE_DIRS})
 
-    endif()
+	endif()
 
 # use the Win32 Platform Backend
 elseif (PLATFORM_WIN32)
