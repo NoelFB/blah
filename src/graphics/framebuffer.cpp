@@ -5,20 +5,18 @@ using namespace Blah;
 
 FrameBufferRef FrameBuffer::create(int width, int height)
 {
-	static const TextureFormat attachment = TextureFormat::RGBA;
-	return create(width, height, &attachment, 1);
+	return create(width, height, { TextureFormat::RGBA });
 }
 
-FrameBufferRef FrameBuffer::create(int width, int height, const TextureFormat* attachments, int attachment_count)
+FrameBufferRef FrameBuffer::create(int width, int height, const AttachmentFormats& attachments)
 {
 	BLAH_ASSERT(width > 0 && height > 0, "FrameBuffer width and height must be larger than 0");
-	BLAH_ASSERT(attachment_count <= Attachments::MaxCapacity, "Exceeded maximum attachment count");
-	BLAH_ASSERT(attachment_count > 0, "At least one attachment must be provided");
+	BLAH_ASSERT(attachments.size() > 0, "At least one attachment must be provided");
 
 	int color_count = 0;
 	int depth_count = 0;
 
-	for (int i = 0; i < attachment_count; i++)
+	for (int i = 0; i < attachments.size(); i++)
 	{
 		BLAH_ASSERT((int)attachments[i] > (int)TextureFormat::None && (int)attachments[i] < (int)TextureFormat::Count, "Invalid texture format");
 
@@ -31,5 +29,5 @@ FrameBufferRef FrameBuffer::create(int width, int height, const TextureFormat* a
 	BLAH_ASSERT(depth_count <= 1, "FrameBuffer can only have 1 Depth/Stencil Texture");
 	BLAH_ASSERT(color_count <= Attachments::MaxCapacity - 1, "Exceeded maximum Color attachment count");
 
-	return GraphicsBackend::create_framebuffer(width, height, attachments, attachment_count);
+	return GraphicsBackend::create_framebuffer(width, height, attachments.data(), attachments.size());
 }

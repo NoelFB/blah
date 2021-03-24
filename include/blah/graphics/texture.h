@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <blah/core/filesystem.h>
 
 namespace Blah
 {
@@ -50,12 +51,9 @@ namespace Blah
 		static TextureRef create(const Image& image);
 
 		// Creates a new Texture.
+		// If image data is provided, it should be the full size of the texture.
 		// If the Texture creation fails, it will return an invalid TextureRef.
-		static TextureRef create(int width, int height, unsigned char* rgba);
-
-		// Creates a new Texture.
-		// If the Texture creation fails, it will return an invalid TextureRef.
-		static TextureRef create(int width, int height, TextureFormat format);
+		static TextureRef create(int width, int height, TextureFormat format, unsigned char* data = nullptr);
 
 		// Creates a new Texture from a Stream.
 		// If the Texture creation fails, it will return an invalid TextureRef.
@@ -63,7 +61,7 @@ namespace Blah
 
 		// Creates a new Texture from a File.
 		// If the Texture creation fails, it will return an invalid TextureRef.
-		static TextureRef create(const char* file);
+		static TextureRef create(const FilePath& file);
 
 		// gets the width of the texture
 		virtual int width() const = 0;
@@ -75,12 +73,11 @@ namespace Blah
 		virtual TextureFormat format() const = 0;
 
 		// Sets the data of the Texture.
-		// Note that the pixel buffer should be in the same format as the Texture. There is no row padding.
-		// If the pixel buffer isn't the same size as the texture, it will set the minimum available amount of data.
+		// Note that the data should be the same format and size as the Texture. There is no row padding.
 		virtual void set_data(unsigned char* data) = 0;
 
 		// Gets the data of the Texture.
-		// Note that the pixel buffer will be written to in the same format as the Texture,
+		// Note that the data will be written to in the same format as the Texture,
 		// and you should allocate enough space for the full texture. There is no row padding.
 		virtual void get_data(unsigned char* data) = 0;
 

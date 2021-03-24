@@ -335,9 +335,9 @@ const float* Material::get_value(const char* name, i64* length) const
 		offset += calc_uniform_size(uniform);
 	}
 
+	Log::warn("No Uniform '%s' exists", name);
 	*length = 0;
 	return nullptr;
-	Log::warn("No Uniform '%s' exists", name);
 }
 
 const Vector<TextureRef>& Material::textures() const

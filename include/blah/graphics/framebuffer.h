@@ -17,6 +17,7 @@ namespace Blah
 
 	// Up to 4 color attachments + 1 depth/stencil
 	using Attachments = StackVector<TextureRef, 5>;
+	using AttachmentFormats = StackVector<TextureFormat, 5>;
 
 	class FrameBuffer;
 	using FrameBufferRef = std::shared_ptr<FrameBuffer>;
@@ -44,7 +45,7 @@ namespace Blah
 
 		// Creates a new FrameBuffer with the given Texture Attachments. You must provide at least one Attachment.
 		// If the FrameBuffer creation fails, it will return an invalid FrameBufferRef.
-		static FrameBufferRef create(int width, int height, const TextureFormat* attachments, int attachmentCount);
+		static FrameBufferRef create(int width, int height, const AttachmentFormats& attachments);
 
 		// Gets the list of Attachments from the FrameBuffer
 		virtual Attachments& attachments() = 0;

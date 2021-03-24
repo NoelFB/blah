@@ -8,54 +8,28 @@ using namespace Blah;
 
 TextureRef Texture::create(const Image& image)
 {
-	auto tex = create(image.width, image.height, TextureFormat::RGBA);
-	if (tex)
-		tex->set_data((unsigned char*)image.pixels);
-	return tex;
+	return create(image.width, image.height, TextureFormat::RGBA, (unsigned char*)image.pixels);
 }
 
-TextureRef Texture::create(int width, int height, unsigned char* rgba)
-{
-	auto tex = create(width, height, TextureFormat::RGBA);
-	if (tex)
-		tex->set_data(rgba);
-	return tex;
-}
-
-TextureRef Texture::create(int width, int height, TextureFormat format)
+TextureRef Texture::create(int width, int height, TextureFormat format, unsigned char* data)
 {
 	BLAH_ASSERT(width > 0 && height > 0, "Texture width and height must be larger than 0");
 	BLAH_ASSERT((int)format > (int)TextureFormat::None && (int)format < (int)TextureFormat::Count, "Invalid texture format");
 
-	return GraphicsBackend::create_texture(width, height, format);
+	auto tex = GraphicsBackend::create_texture(width, height, format);
+
+	if (tex && data != nullptr)
+		tex->set_data(data);
+
+	return tex;
 }
 
 TextureRef Texture::create(Stream& stream)
 {
-	Image img = Image(stream);
-
-	if (img.pixels && img.width > 0 && img.height > 0)
-	{
-		auto tex = create(img.width, img.height, TextureFormat::RGBA);
-		if (tex)
-			tex->set_data((unsigned char*)img.pixels);
-		return tex;
-	}
-
-	return TextureRef();
+	return create(Image(stream));
 }
 
-TextureRef Texture::create(const char* file)
+TextureRef Texture::create(const FilePath& file)
 {
-	Image img = Image(file);
-
-	if (img.pixels)
-	{
-		auto tex = create(img.width, img.height, TextureFormat::RGBA);
-		if (tex)
-			tex->set_data((unsigned char*)img.pixels);
-		return tex;
-	}
-
-	return TextureRef();
+	return create(Image(file));
 }
