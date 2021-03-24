@@ -61,7 +61,6 @@ LRESULT CALLBACK blah_window_procedure(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 bool PlatformBackend::init(const Config* config)
 {
 	// Required to call this for Windows
-	// I'm not sure why SDL2 doesn't do this on Windows automatically?
 	SetProcessDPIAware();
 
 	// Get the hInstance
@@ -409,8 +408,6 @@ float PlatformBackend::get_content_scale()
 
 	return (raw_value / base_raw_value);
 }
-
-// FILE IO
 
 const char* PlatformBackend::app_path()
 {
