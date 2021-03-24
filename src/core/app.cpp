@@ -278,18 +278,6 @@ namespace
 			return empty_attachments;
 		}
 
-		virtual TextureRef& attachment(int index) override
-		{
-			BLAH_ASSERT(false, "Backbuffer doesn't have any attachments");
-			return empty_texture;
-		}
-
-		virtual const TextureRef& attachment(int index) const override
-		{
-			BLAH_ASSERT(false, "Backbuffer doesn't have any attachments");
-			return empty_texture;
-		}
-
 		virtual int width() const override
 		{
 			return App::draw_width();

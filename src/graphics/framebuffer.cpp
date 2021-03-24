@@ -31,3 +31,23 @@ FrameBufferRef FrameBuffer::create(int width, int height, const AttachmentFormat
 
 	return GraphicsBackend::create_framebuffer(width, height, attachments.data(), attachments.size());
 }
+
+TextureRef& FrameBuffer::attachment(int index)
+{
+	return attachments()[index];
+}
+
+const TextureRef& FrameBuffer::attachment(int index) const
+{
+	return attachments()[index];
+}
+
+int FrameBuffer::width() const
+{
+	return attachments()[0]->width();
+}
+
+int FrameBuffer::height() const
+{
+	return attachments()[0]->height();
+}

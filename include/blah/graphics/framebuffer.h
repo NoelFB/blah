@@ -54,16 +54,16 @@ namespace Blah
 		virtual const Attachments& attachments() const = 0;
 
 		// Gets the Attachment at a given index from the FrameBuffer
-		virtual TextureRef& attachment(int index) = 0;
+		TextureRef& attachment(int index);
 
 		// Gets the Attachment at a given index from the FrameBuffer
-		virtual const TextureRef& attachment(int index) const = 0;
+		const TextureRef& attachment(int index) const;
 
 		// Gets the width of the FrameBuffer
-		virtual int width() const = 0;
+		virtual int width() const;
 
 		// Gets the height of the FrameBuffer
-		virtual int height() const = 0;
+		virtual int height() const;
 
 		// Clears the FrameBuffer
 		virtual void clear(Color color = Color::black, float depth = 1.0f, u8 stencil = 0, ClearMask mask = ClearMask::All) = 0;

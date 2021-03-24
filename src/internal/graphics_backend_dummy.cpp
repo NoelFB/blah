@@ -83,26 +83,6 @@ namespace Blah
 			return m_attachments;
 		}
 
-		virtual TextureRef& attachment(int index) override
-		{
-			return m_attachments[index];
-		}
-
-		virtual const TextureRef& attachment(int index) const override
-		{
-			return m_attachments[index];
-		}
-
-		virtual int width() const override
-		{
-			return m_attachments[0]->width();
-		}
-
-		virtual int height() const override
-		{
-			return m_attachments[0]->height();
-		}
-
 		virtual void clear(Color color) override
 		{
 

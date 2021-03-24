@@ -332,26 +332,6 @@ namespace Blah
 			return m_attachments;
 		}
 
-		virtual TextureRef& attachment(int index) override
-		{
-			return m_attachments[index];
-		}
-
-		virtual const TextureRef& attachment(int index) const override
-		{
-			return m_attachments[index];
-		}
-
-		virtual int width() const override
-		{
-			return m_attachments[0]->width();
-		}
-
-		virtual int height() const override
-		{
-			return m_attachments[0]->height();
-		}
-
 		virtual void clear(Color color, float depth, u8 stencil, ClearMask mask) override
 		{
 			float col[4] = { color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f };
