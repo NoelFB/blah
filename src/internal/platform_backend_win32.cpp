@@ -253,7 +253,11 @@ LRESULT CALLBACK blah_window_procedure(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 		return 0;
 
 	case WM_MOUSEMOVE:
-		InputBackend::on_mouse_move((u16)(lParam), lParam >> 16);
+		InputBackend::on_mouse_move((float)((u16)lParam), (float)(lParam >> 16));
+		return 0;
+
+	case WM_MOUSEWHEEL:
+		InputBackend::on_mouse_wheel(Point(0, GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA));
 		return 0;
 
 	case WM_KEYDOWN:
