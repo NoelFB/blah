@@ -18,11 +18,11 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <winuser.h>	// for SetProcessDPIAware
-#include <filesystem>	// for File Reading/Writing
-#include <shellapi.h>	// for file explore
-#include <shlobj.h>		// for known folder
-#include <chrono>		// for ticks method
+#include <winuser.h>    // for SetProcessDPIAware
+#include <filesystem>   // for File Reading/Writing
+#include <shellapi.h>   // for file explore
+#include <shlobj.h>     // for known folder
+#include <chrono>       // for ticks method
 
 using namespace Blah;
 namespace fs = std::filesystem;
@@ -260,16 +260,16 @@ LRESULT CALLBACK blah_window_procedure(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 
 	// Text Input
 	case WM_UNICHAR:
-        if (wParam == UNICODE_NOCHAR)
+		if (wParam == UNICODE_NOCHAR)
 			return 1;
-    case WM_CHAR:
-        {
+	case WM_CHAR:
+		{
 			String result;
 			result.append((u32)wParam);
 			if (result.length() > 0)
-                InputBackend::on_text_utf8(result.cstr());
+				InputBackend::on_text_utf8(result.cstr());
 			return 0;
-        }
+		}
 
 	// Keyboard Input
 	case WM_KEYDOWN:
