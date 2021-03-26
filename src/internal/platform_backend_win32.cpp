@@ -4,9 +4,6 @@
 // This backend implementation is unfinished! 
 // It's missing a few things, namely:
 // - Controller Support
-// - Mouse wheel
-// - Text input
-// - Probably other stuff?
 // (And error testing)
 
 #include "../internal/platform_backend.h"
@@ -228,6 +225,7 @@ LRESULT CALLBACK blah_window_procedure(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 		PostQuitMessage(0);
 		return 0;
 
+	// Mouse Input
 	case WM_LBUTTONDOWN:
 		InputBackend::on_mouse_down(MouseButton::Left);
 		return 0;
@@ -260,6 +258,20 @@ LRESULT CALLBACK blah_window_procedure(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 		InputBackend::on_mouse_wheel(Point(0, GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA));
 		return 0;
 
+	// Text Input
+	case WM_UNICHAR:
+        if (wParam == UNICODE_NOCHAR)
+			return 1;
+    case WM_CHAR:
+        {
+			String result;
+			result.append((u32)wParam);
+			if (result.length() > 0)
+                InputBackend::on_text_utf8(result.cstr());
+			return 0;
+        }
+
+	// Keyboard Input
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
 	{
@@ -516,10 +528,10 @@ i64 PlatformBackend::file_position(PlatformBackend::FileHandle handle)
 	return SetFilePointer(handle, 0, NULL, FILE_CURRENT);
 }
 
-i64 PlatformBackend::file_seek(PlatformBackend::FileHandle handle, i64 seekTo)
+i64 PlatformBackend::file_seek(PlatformBackend::FileHandle handle, i64 seek_to)
 {
 	// Todo: handle 64-bit values properly
-	return SetFilePointer(handle, seekTo, NULL, FILE_BEGIN);
+	return SetFilePointer(handle, seek_to, NULL, FILE_BEGIN);
 }
 
 i64 PlatformBackend::file_read(PlatformBackend::FileHandle handle, void* ptr, i64 length)
