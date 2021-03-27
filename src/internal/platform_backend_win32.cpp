@@ -69,7 +69,7 @@ bool PlatformBackend::init(const Config* config)
 	wc.lpszClassName = "BLAH WINDOW";
 	wc.hInstance = hInstance;
 	wc.lpfnWndProc = blah_window_procedure;
-	wc.hCursor = NULL;
+	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wc.hIcon = NULL;
 	wc.lpszMenuName = NULL;
 	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
@@ -523,31 +523,74 @@ i64 PlatformBackend::file_length(PlatformBackend::FileHandle handle)
 
 i64 PlatformBackend::file_position(PlatformBackend::FileHandle handle)
 {
-	// Todo: handle 64-bit values properly
-	// Todo: cache this value? not sure how performant it is
-	return SetFilePointer(handle, 0, NULL, FILE_CURRENT);
+	LARGE_INTEGER move;
+	LARGE_INTEGER result;
+
+	move.QuadPart = 0;
+	result.QuadPart = 0;
+
+	SetFilePointerEx(handle, move, &result, FILE_CURRENT);
+	
+	return result.QuadPart;
 }
 
 i64 PlatformBackend::file_seek(PlatformBackend::FileHandle handle, i64 seek_to)
 {
-	// Todo: handle 64-bit values properly
-	return SetFilePointer(handle, seek_to, NULL, FILE_BEGIN);
+	LARGE_INTEGER move;
+	LARGE_INTEGER result;
+
+	move.QuadPart = seek_to;
+	result.QuadPart = 0;
+
+	SetFilePointerEx(handle, move, &result, FILE_BEGIN);
+
+	return result.QuadPart;
 }
 
 i64 PlatformBackend::file_read(PlatformBackend::FileHandle handle, void* ptr, i64 length)
 {
-	DWORD read = 0;
-	if (ReadFile(handle, ptr, length, &read, NULL))
-		return read;
-	return 0;
+	static const DWORD read_step = 65536;
+
+	i64 read = 0;
+
+	while (read < length)
+	{
+		DWORD to_read = read_step;
+		if (to_read > length - read)
+			to_read = (DWORD)(length - read);
+
+		DWORD moved = 0;
+		if (ReadFile(handle, (unsigned char*)ptr + read, to_read, &moved, NULL))
+			read += moved;
+
+		if (moved < to_read)
+			break;
+	}
+
+	return read;
 }
 
 i64 PlatformBackend::file_write(PlatformBackend::FileHandle handle, const void* ptr, i64 length)
 {
-	DWORD written = 0;
-	if (WriteFile(handle, ptr, length, &written, NULL))
-		return written;
-	return 0;
+	static const DWORD write_step = 65536;
+
+	i64 written = 0;
+
+	while (written < length)
+	{
+		DWORD to_write = write_step;
+		if (to_write > length - written)
+			to_write = (DWORD)(length - written);
+
+		DWORD moved = 0;
+		if (WriteFile(handle, (unsigned char*)ptr + written, to_write, &moved, NULL))
+			written += moved;
+
+		if (moved < to_write)
+			break;
+	}
+
+	return written;
 }
 
 void PlatformBackend::file_close(PlatformBackend::FileHandle handle)
