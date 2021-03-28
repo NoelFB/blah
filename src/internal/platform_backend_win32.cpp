@@ -118,14 +118,14 @@ bool PlatformBackend::init(const Config* config)
 			PFD_SUPPORT_OPENGL |   // support OpenGL  
 			PFD_DOUBLEBUFFER,      // double buffered  
 			PFD_TYPE_RGBA,         // RGBA type  
-			32,                    // 24-bit color depth  
+			32,                    // 32-bit color depth  
 			0, 0, 0, 0, 0, 0,      // color bits ignored  
 			0,                     // no alpha buffer  
 			0,                     // shift bit ignored  
 			0,                     // no accumulation buffer  
 			0, 0, 0, 0,            // accum bits ignored  
-			24,                    // 32-bit z-buffer  
-			8,                     // no stencil buffer  
+			24,                    // 24-bit z-buffer  
+			8,                     // 8-bit stencil buffer  
 			0,                     // no auxiliary buffer  
 			PFD_MAIN_PLANE,        // main layer  
 			0,                     // reserved  
