@@ -32,7 +32,7 @@ typedef float            GLfloat;     /* single precision float */
 typedef float            GLclampf;    /* single precision float in [0,1] */
 typedef double           GLdouble;    /* double precision float */
 typedef double           GLclampd;    /* double precision float in [0,1] */
-typedef char			 GLchar;
+typedef char             GLchar;
 
 // OpenGL Constants
 #define GL_DONT_CARE 0x1100

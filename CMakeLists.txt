@@ -122,11 +122,17 @@ if (PLATFORM_SDL2)
 				add_subdirectory(${sdl2_SOURCE_DIR} ${sdl2_BINARY_DIR})
 			endif()
 
-		endif()
+			# statically link SDL2 since we're building it ourselves
+			set(LIBS ${LIBS} SDL2main SDL2-static)
+			target_include_directories(blah PUBLIC ${sdl2_SOURCE_DIRS}/include)
 
-		# Add Library and Include Dirs
-		set(LIBS ${LIBS} ${SDL2_LIBRARIES})
-		target_include_directories(blah PUBLIC ${SDL2_INCLUDE_DIRS})
+		else()
+
+			# Add Library and Include Dirs
+			set(LIBS ${LIBS} ${SDL2_LIBRARIES})
+			target_include_directories(blah PUBLIC ${SDL2_INCLUDE_DIRS})
+
+		endif()
 
 	endif()
 
