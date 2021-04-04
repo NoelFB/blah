@@ -2,6 +2,7 @@
 #include <blah/math/rect.h>
 #include <blah/math/point.h>
 #include <blah/math/vec2.h>
+#include <blah/math/calc.h>
 
 using namespace Blah;
 
@@ -87,6 +88,25 @@ bool RectI::overlaps(const RectI& other) const
 		&& other.x < x + w
 		&& y < other.y + other.h
 		&& other.y < y + h;
+}
+
+RectI RectI::overlap_rect(const Rect& against) const
+{
+	RectI result(0, 0, 0, 0);
+
+	if (x + w >= against.x && x < against.x + against.w)
+	{
+		result.x = Calc::max(x, against.x);
+		result.w = Calc::min(x + w, against.x + against.w) - result.x;
+	}
+
+	if (y + h >= against.y && y < against.y + against.h)
+	{
+		result.y = Calc::max(y, against.y);
+		result.h = Calc::min(y + h, against.y + against.h) - result.y;
+	}
+
+	return result;
 }
 
 bool RectI::contains(const Point& point) const

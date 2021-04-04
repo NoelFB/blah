@@ -31,6 +31,8 @@ namespace Blah
 		Point bottom_right() const;
 
 		bool overlaps(const RectI& other) const;
+		RectI overlap_rect(const Rect& against) const;
+
 		bool contains(const Point& pt) const;
 		bool contains(const Vec2& pt) const;
 
