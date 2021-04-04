@@ -236,6 +236,7 @@ namespace Blah
 		Vector<ColorMode> m_color_mode_stack;
 		Vector<int> m_layer_stack;
 		Vector<DrawBatch> m_batches;
+		int m_batch_insert;
 
 		void render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4x4& matrix);
 	};

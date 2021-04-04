@@ -182,14 +182,20 @@ namespace
 		MAKE_VERTEX(_v, m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash); \
 	}
 
+#define INSERT_BATCH() \
+do { \
+	m_batches.expand(); \
+	for (int i = m_batches.size() - 1; i > m_batch_insert; i --) \
+		m_batches[i] = std::move(m_batches[i - 1]); \
+	m_batches[m_batch_insert++] = m_batch; \
+	m_batch.offset += m_batch.elements; \
+	m_batch.elements = 0; \
+} while (0)
+
 // Compares a Batcher variable, and starts a new batch if it has changed
 #define SET_BATCH_VAR(variable) \
 	if (m_batch.elements > 0 && variable != m_batch.variable) \
-	{ \
-		m_batches.push_back(m_batch); \
-		m_batch.offset += m_batch.elements; \
-		m_batch.elements = 0; \
-	} \
+		INSERT_BATCH(); \
 	m_batch.variable = variable;
 
 ShaderRef Batch::m_default_shader;
@@ -286,14 +292,41 @@ MaterialRef Batch::peek_material() const
 void Batch::push_layer(int layer)
 {
 	m_layer_stack.push_back(m_batch.layer);
-	SET_BATCH_VAR(layer);
+
+	if (layer != m_batch.layer)
+	{
+		INSERT_BATCH();
+
+		// TODO:
+		// binary search
+		auto insert = 0;
+		while (insert < m_batches.size() && m_batches[insert].layer >= layer)
+			insert++;
+
+		m_batch.layer = layer;
+		m_batch_insert = insert;
+	}
 }
 
 int Batch::pop_layer()
 {
 	int was = m_batch.layer;
 	int layer = m_layer_stack.pop();
-	SET_BATCH_VAR(layer);
+
+	if (layer != was)
+	{
+		INSERT_BATCH();
+
+		// TODO:
+		// binary search
+		auto insert = 0;
+		while (insert < m_batches.size() && m_batches[insert].layer >= layer)
+			insert++;
+
+		m_batch.layer = layer;
+		m_batch_insert = insert;
+	}
+
 	return was;
 }
 
@@ -328,11 +361,7 @@ ColorMode Batch::peek_color_mode() const
 void Batch::set_texture(const TextureRef& texture)
 {
 	if (m_batch.elements > 0 && texture != m_batch.texture && m_batch.texture)
-	{
-		m_batches.push_back(m_batch);
-		m_batch.offset += m_batch.elements;
-		m_batch.elements = 0;
-	}
+		INSERT_BATCH();
 
 	if (m_batch.texture != texture)
 	{
@@ -344,11 +373,7 @@ void Batch::set_texture(const TextureRef& texture)
 void Batch::set_sampler(const TextureSampler& sampler)
 {
 	if (m_batch.elements > 0 && sampler != m_batch.sampler)
-	{
-		m_batches.push_back(m_batch);
-		m_batch.offset += m_batch.elements;
-		m_batch.elements = 0;
-	}
+		INSERT_BATCH();
 
 	m_batch.sampler = sampler;
 }
@@ -400,10 +425,19 @@ void Batch::render(const FrameBufferRef& target, const Mat4x4& matrix)
 	pass.depth = Compare::None;
 	pass.cull = Cull::None;
 
-	for (auto& b : m_batches)
-		render_single_batch(pass, b, matrix);
+	// render batches
+	for (int i = 0, n = m_batches.size(); i < n; i++)
+	{
+		// remaining elements in the current batch
+		if (m_batch_insert == i && m_batch.elements > 0)
+			render_single_batch(pass, m_batch, matrix);
 
-	if (m_batch.elements > 0)
+		// render the batch
+		render_single_batch(pass, m_batches[i], matrix);
+	}
+
+	// remaining elements in the current batch
+	if (m_batch_insert == m_batches.size() && m_batch.elements > 0)
 		render_single_batch(pass, m_batch, matrix);
 }
 
@@ -453,6 +487,8 @@ void Batch::clear()
 	m_color_mode_stack.clear();
 	m_layer_stack.clear();
 	m_batches.clear();
+
+	m_batch_insert = 0;
 }
 
 void Batch::dispose()
