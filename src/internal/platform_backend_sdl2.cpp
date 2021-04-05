@@ -647,11 +647,25 @@ void PlatformBackend::dir_explore(const char* path)
 
 bool PlatformBackend::file_open(const char* path, PlatformBackend::FileHandle* handle, FileMode mode)
 {
-	const char* sdlMode = "rb";
-	if (mode == FileMode::Write)
-		sdlMode = "wb";
+	const char* sdl_mode = "";
 
-	auto ptr = SDL_RWFromFile(path, sdlMode);
+	switch (mode)
+	{
+	case FileMode::OpenRead:
+		sdl_mode = "rb";
+		break;
+	case FileMode::OpenReadWrite:
+		sdl_mode = "r+b";
+		break;
+	case FileMode::CreateWrite:
+		sdl_mode = "wb";
+		break;
+	case FileMode::CreateReadWrite:
+		sdl_mode = "w+b";
+		break;
+	}
+
+	auto ptr = SDL_RWFromFile(path, sdl_mode);
 	*handle = (PlatformBackend::FileHandle)ptr;
 	return ptr != nullptr;
 }

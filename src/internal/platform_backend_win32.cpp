@@ -489,16 +489,24 @@ bool PlatformBackend::file_open(const char* path, PlatformBackend::FileHandle* h
 	int access = 0;
 	int creation = 0;
 
-	if (((int)mode & (int)FileMode::Read) == (int)FileMode::Read)
+	switch (mode)
 	{
-		access |= GENERIC_READ;
+	case FileMode::OpenRead:
+		access = GENERIC_READ;
 		creation = OPEN_EXISTING;
-	}
-
-	if (((int)mode & (int)FileMode::Write) == (int)FileMode::Write)
-	{
-		access |= GENERIC_WRITE;
-		creation = OPEN_ALWAYS;
+		break;
+	case FileMode::Open:
+		access = GENERIC_READ | GENERIC_WRITE;
+		creation = OPEN_EXISTING;
+		break;
+	case FileMode::CreateWrite:
+		access = GENERIC_WRITE;
+		creation = CREATE_ALWAYS;
+		break;
+	case FileMode::Create:
+		access = GENERIC_READ | GENERIC_WRITE;
+		creation = CREATE_ALWAYS;
+		break;
 	}
 
 	auto result = CreateFile(path, access, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, creation, FILE_ATTRIBUTE_NORMAL, NULL);

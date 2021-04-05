@@ -17,7 +17,7 @@ Aseprite::Aseprite()
 
 Aseprite::Aseprite(const FilePath& path)
 {
-	FileStream fs(path, FileMode::Read);
+	FileStream fs(path, FileMode::OpenRead);
 	parse(fs);
 }
 

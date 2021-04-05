@@ -8,7 +8,7 @@ namespace Blah
 	{
 	public:
 		FileStream();
-		FileStream(const FilePath& path, FileMode mode = FileMode::ReadWrite);
+		FileStream(const FilePath& path, FileMode mode);
 		FileStream(FileStream&& fs) noexcept;
 		FileStream& operator=(FileStream&& fs) noexcept;
 		~FileStream();

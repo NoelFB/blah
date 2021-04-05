@@ -8,7 +8,7 @@ using namespace Blah;
 FileStream::FileStream()
 {
 	m_handle = nullptr;
-	m_mode = FileMode::None;
+	m_mode = FileMode::OpenRead;
 }
 
 FileStream::FileStream(const FilePath& path, FileMode mode)
@@ -70,12 +70,12 @@ bool FileStream::is_open() const
 
 bool FileStream::is_readable() const
 {
-	return m_handle != nullptr && (m_mode == FileMode::ReadWrite || m_mode == FileMode::Read);
+	return m_handle != nullptr && (m_mode != FileMode::CreateWrite);
 }
 
 bool FileStream::is_writable() const
 {
-	return m_handle != nullptr && (m_mode == FileMode::ReadWrite || m_mode == FileMode::Write);
+	return m_handle != nullptr && (m_mode != FileMode::OpenRead);
 }
 
 i64 FileStream::read_into(void* ptr, i64 length)
@@ -108,5 +108,4 @@ void FileStream::close()
 	if (m_handle != nullptr)
 		PlatformBackend::file_close(m_handle);
 	m_handle = nullptr;
-	m_mode = FileMode::None;
 }

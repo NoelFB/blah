@@ -9,10 +9,17 @@ namespace Blah
 	
 	enum class FileMode
 	{
-		None       = 0,
-		Read       = 1 << 0,
-		Write      = 1 << 1,
-		ReadWrite  = Read | Write,
+		// Opens an existing file for reading.
+		OpenRead,
+
+		// Opens an existing file for reading and writing.
+		Open,
+
+		// Creates a new file or overwrites an existing file for writing.
+		CreateWrite,
+
+		// Creates a new file or overwrites an existing file for reading and writing.
+		Create,
 	};
 
 	namespace Directory
@@ -43,7 +50,7 @@ namespace Blah
 		bool remove(const FilePath& path);
 
 		// Opens the given file and returns a stream
-		FileStream open(const FilePath& path, FileMode mode = FileMode::ReadWrite);
+		FileStream open(const FilePath& path, FileMode mode);
 	}
 
 	namespace Path

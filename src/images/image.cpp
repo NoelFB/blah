@@ -64,7 +64,7 @@ Image::Image(const FilePath& file)
 	pixels = nullptr;
 	m_stbi_ownership = false;
 
-	FileStream fs(file, FileMode::Read);
+	FileStream fs(file, FileMode::OpenRead);
 	if (fs.is_readable())
 		from_stream(fs);
 }
@@ -205,7 +205,7 @@ void Image::set_pixels(const RectI& rect, Color* data)
 
 bool Image::save_png(const FilePath& file) const
 {
-	FileStream fs(file, FileMode::Write);
+	FileStream fs(file, FileMode::CreateWrite);
 	return save_png(fs);
 }
 
@@ -234,7 +234,7 @@ bool Image::save_png(Stream& stream) const
 
 bool Image::save_jpg(const FilePath& file, int quality) const
 {
-	FileStream fs(file, FileMode::Write);
+	FileStream fs(file, FileMode::CreateWrite);
 	return save_jpg(fs, quality);
 }
 

@@ -58,7 +58,7 @@ Font::Font(Stream& stream) : Font()
 
 Font::Font(const FilePath& path) : Font()
 {
-	FileStream fs(path, FileMode::Read);
+	FileStream fs(path, FileMode::OpenRead);
 	if (fs.is_readable())
 		load(fs);
 }
