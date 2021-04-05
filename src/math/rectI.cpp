@@ -92,7 +92,7 @@ bool RectI::overlaps(const RectI& other) const
 
 RectI RectI::overlap_rect(const Rect& against) const
 {
-	RectI result(0, 0, 0, 0);
+	RectI result = *this;
 
 	if (x + w >= against.x && x < against.x + against.w)
 	{
