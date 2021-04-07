@@ -654,13 +654,13 @@ bool PlatformBackend::file_open(const char* path, PlatformBackend::FileHandle* h
 	case FileMode::OpenRead:
 		sdl_mode = "rb";
 		break;
-	case FileMode::OpenReadWrite:
+	case FileMode::Open:
 		sdl_mode = "r+b";
 		break;
 	case FileMode::CreateWrite:
 		sdl_mode = "wb";
 		break;
-	case FileMode::CreateReadWrite:
+	case FileMode::Create:
 		sdl_mode = "w+b";
 		break;
 	}
