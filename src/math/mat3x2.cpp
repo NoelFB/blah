@@ -46,7 +46,7 @@ Mat3x2& Mat3x2::operator*=(const Mat3x2& rhs)
 
 bool Mat3x2::operator ==(const Mat3x2& rhs)
 {
-	return memcmp(this, &rhs, sizeof(Mat3x2));
+	return memcmp(this, &rhs, sizeof(Mat3x2)) == 0;
 }
 
 bool Mat3x2::operator !=(const Mat3x2& rhs)
