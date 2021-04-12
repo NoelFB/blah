@@ -43,12 +43,17 @@ Packer::~Packer()
 
 void Packer::add(u64 id, int width, int height, const Color* pixels)
 {
-	add_entry(id, width, height, pixels);
+	add_entry(id, width, height, pixels, RectI(0, 0, width, height));
 }
 
 void Packer::add(u64 id, const Image& image)
 {
-	add_entry(id, image.width, image.height, image.pixels);
+	add_entry(id, image.width, image.height, image.pixels, RectI(0, 0, image.width, image.height));
+}
+
+void Packer::add(u64 id, const Image& image, const RectI& source)
+{
+	add_entry(id, image.width, image.height, image.pixels, source);
 }
 
 void Packer::add(u64 id, const FilePath& path)
@@ -56,41 +61,41 @@ void Packer::add(u64 id, const FilePath& path)
 	add(id, Image(path.cstr()));
 }
 
-void Packer::add_entry(u64 id, int w, int h, const Color* pixels)
+void Packer::add_entry(u64 id, int w, int h, const Color* pixels, const RectI& source)
 {
 	m_dirty = true;
 
-	Entry entry(id, RectI(0, 0, w, h));
+	Entry entry(id, RectI(0, 0, source.w, source.h));
 
 	// trim
 	int top = 0, left = 0, right = 0, bottom = 0;
 
 	// TOP:
-	for (int y = 0; y < h; y++)
-		for (int x = 0, s = y * w; x < w; x++, s++)
+	for (int y = source.y; y < source.y + source.h; y++)
+		for (int x = source.x, s = y * w; x < source.x + source.w; x++, s++)
 			if (pixels[s].a > 0)
 			{
 				top = y;
 				goto JUMP_LEFT;
 			}
 	JUMP_LEFT:
-	for (int x = 0; x < w; x++)
-		for (int y = top, s = x + y * w; y < h; y++, s += w)
+	for (int x = source.x; x < source.x + source.w; x++)
+		for (int y = top, s = x + y * w; y < source.y + source.h; y++, s += w)
 			if (pixels[s].a > 0)
 			{
 				left = x;
 				goto JUMP_RIGHT;
 			}
 	JUMP_RIGHT:
-	for (int x = w - 1; x >= left; x--)
-		for (int y = top, s = x + y * w; y < h; y++, s += w)
+	for (int x = source.x + source.w - 1; x >= left; x--)
+		for (int y = top, s = x + y * w; y < source.y + source.h; y++, s += w)
 			if (pixels[s].a > 0)
 			{
 				right = x + 1;
 				goto JUMP_BOTTOM;
 			}
 	JUMP_BOTTOM:
-	for (int y = h - 1; y >= top; y--)
+	for (int y = source.y + source.h - 1; y >= top; y--)
 		for (int x = left, s = x + y * w; x < right; x++, s++)
 			if (pixels[s].a > 0)
 			{
@@ -105,8 +110,8 @@ void Packer::add_entry(u64 id, int w, int h, const Color* pixels)
 		entry.empty = false;
 
 		// store size
-		entry.frame.x = -left;
-		entry.frame.y = -top;
+		entry.frame.x = source.x - left;
+		entry.frame.y = source.y - top;
 		entry.packed.w = (right - left);
 		entry.packed.h = (bottom - top);
 

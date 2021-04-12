@@ -83,6 +83,9 @@ namespace Blah
 		void add(u64 id, const Image& bitmap);
 
 		// add a new entry
+		void add(u64 id, const Image& bitmap, const RectI& source);
+
+		// add a new entry
 		void add(u64 id, const FilePath& path);
 
 		// returns a vector of all the resulting entries
@@ -120,6 +123,6 @@ namespace Blah
 		Vector<Entry> m_entries;
 
 		// adds a new entry
-		void add_entry(u64 id, int w, int h, const Color* pixels);
+		void add_entry(u64 id, int w, int h, const Color* pixels, const RectI& source);
 	};
 }
