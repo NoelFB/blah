@@ -68,7 +68,7 @@ void Packer::add_entry(u64 id, int w, int h, const Color* pixels, const RectI& s
 	Entry entry(id, RectI(0, 0, source.w, source.h));
 
 	// trim
-	int top = 0, left = 0, right = 0, bottom = 0;
+	int top = source.y, left = source.x, right = source.x, bottom = source.y;
 
 	// TOP:
 	for (int y = source.y; y < source.y + source.h; y++)
@@ -105,7 +105,7 @@ void Packer::add_entry(u64 id, int w, int h, const Color* pixels, const RectI& s
 	JUMP_END:;
 
 	// pixels actually exist in this source
-	if (right >= left && bottom >= top)
+	if (right > left && bottom > top)
 	{
 		entry.empty = false;
 
@@ -114,6 +114,7 @@ void Packer::add_entry(u64 id, int w, int h, const Color* pixels, const RectI& s
 		entry.frame.y = source.y - top;
 		entry.packed.w = (right - left);
 		entry.packed.h = (bottom - top);
+
 
 		// create pixel data
 		entry.memory_index = m_buffer.position();
@@ -126,7 +127,7 @@ void Packer::add_entry(u64 id, int w, int h, const Color* pixels, const RectI& s
 		else
 		{
 			for (int i = 0; i < entry.packed.h; i++)
-				m_buffer.write((char*)(pixels + left + (top + i) * entry.frame.w), sizeof(Color) * entry.packed.w);
+				m_buffer.write((char*)(pixels + left + (top + i) * w), sizeof(Color) * entry.packed.w);
 		}
 	}
 
