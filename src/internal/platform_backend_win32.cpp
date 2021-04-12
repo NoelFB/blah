@@ -664,7 +664,6 @@ Key blah_scancode_to_key(WPARAM wParam, LPARAM lParam)
 	case VK_RETURN: key = Key::Enter; break;
 	case VK_SHIFT: key = Key::LeftShift; break;
 	case VK_CONTROL: key = Key::LeftControl; break;
-	case VK_MENU: key = Key::Menu; break;
 	case VK_PAUSE: key = Key::Pause; break;
 	case VK_CAPITAL: key = Key::Capslock; break;
 	case VK_ESCAPE: key = Key::Escape; break;
