@@ -98,7 +98,7 @@ namespace Blah
 		clear();
 
 		for (int i = 0; i < src.m_count; i++)
-			data()[i] = src.data()[i];
+			new (data() + i) T(std::move(src.data()[i]));
 		m_count = src.m_count;
 
 		return *this;
@@ -110,7 +110,7 @@ namespace Blah
 		clear();
 
 		for (int i = 0; i < src.m_count; i++)
-			data()[i] = std::move(src.data()[i]);
+			new (data() + i) T(std::move(src.data()[i]));
 		m_count = src.m_count;
 
 		return *this;
