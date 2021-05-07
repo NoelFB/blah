@@ -10,9 +10,9 @@
 #include <blah/core/time.h>
 
 #include <SDL.h>
-#include <SDL_syswm.h>
 
 #if _WIN32
+#include <SDL_syswm.h>
 // on Windows we're using the C++ <filesystem> API for now
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -25,6 +25,7 @@ namespace fs = std::filesystem;
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <cstring>
 #endif
 
 using namespace Blah;
