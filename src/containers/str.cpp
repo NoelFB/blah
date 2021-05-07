@@ -244,15 +244,19 @@ Str& Str::append_utf16(const u16* start, const u16* end, bool swap_endian)
 
 Str& Str::trim()
 {
-	const char* s = begin();
-	const char* e = end() - 1;
+	if (m_length > 0)
+	{
+		const char* s = begin();
+		const char* e = end() - 1;
 
-	while (isspace(*s) && s != e)
-		s++;
-	while (isspace(*e) && s != e)
-		e--;
+		while (isspace(*s) && s != e)
+			s++;
+		while (isspace(*e) && s != e)
+			e--;
 
-	set(s, e + 1);
+		set(s, e + 1);
+	}
+
 	return *this;
 }
 

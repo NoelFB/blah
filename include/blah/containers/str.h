@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <cstdio>
 #include <blah/containers/vector.h>
+#include <functional>
 
 namespace Blah
 {
@@ -36,12 +37,18 @@ namespace Blah
 
 		// append cstr
 		Str& operator+=(const char* rhs) { return append(rhs); }
+
+		// append char
+		Str& operator+=(const char& rhs) { return append(rhs); }
 		
 		// combine string
 		Str operator+(const Str& rhs) { Str str; str.append(*this).append(rhs); return str; }
 
 		// combine cstr
 		Str operator+(const char* rhs) { Str str; str.append(*this).append(rhs); return str; }
+
+		// combine char
+		Str operator+(const char& rhs) { Str str; str.append(*this).append(rhs); return str; }
 
 		// implicit cast to cstr
 		operator char* () { return cstr(); }
@@ -186,10 +193,10 @@ namespace Blah
 
 	private:
 		static char empty_buffer[1];
-		char*	m_buffer;
-		int		m_length;
-		int		m_capacity;
-		int		m_local_size;
+		char* m_buffer;
+		int m_length;
+		int m_capacity;
+		int m_local_size;
 	};
 
 	// combine string
@@ -209,8 +216,8 @@ namespace Blah
 		StrOf(const StrOf& rhs) : Str(T) { m_local_buffer[0] = '\0'; set(rhs); }
 
 		// assignment operators
-		StrOf& operator=(const char* rhs)	{ set(rhs); return *this; }
-		StrOf& operator=(const Str& rhs)	{ set(rhs); return *this; }
+		StrOf& operator=(const char* rhs)  { set(rhs); return *this; }
+		StrOf& operator=(const Str& rhs)   { set(rhs); return *this; }
 		StrOf& operator=(const StrOf& rhs) { set(rhs); return *this; }
 
 		// creates a string from the format
@@ -243,4 +250,41 @@ namespace Blah
 
 		return str;
 	}
+}
+
+namespace std
+{
+	template <>
+	struct hash<Blah::Str>
+	{
+		std::size_t operator()(const Blah::Str& key) const
+		{
+			std::size_t result = 2166136261U;
+
+			for (auto& it : key)
+			{
+				result ^= static_cast<size_t>(it);
+				result *= 16777619U;
+			}
+
+			return result;
+		}
+	};
+
+	template <int T> 
+	struct hash<Blah::StrOf<T>>
+	{
+		std::size_t operator()(const Blah::StrOf<T>& key) const
+		{
+			std::size_t result = 2166136261U;
+
+			for (auto& it : key)
+			{
+				result ^= static_cast<size_t>(it);
+				result *= 16777619U;
+			}
+
+			return result;
+		}
+	};
 }
