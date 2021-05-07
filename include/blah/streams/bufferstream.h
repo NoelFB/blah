@@ -19,6 +19,8 @@ namespace Blah
 		virtual bool is_readable() const override { return true; }
 		virtual bool is_writable() const override { return true; }
 		virtual void close() override;
+
+		void resize(i64 length);
 		void clear() { m_length = m_position = 0; }
 
 		char* data() { return m_buffer; }

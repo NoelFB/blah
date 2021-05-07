@@ -1,4 +1,4 @@
-#include <blah/streams/bufferstream.h>
+#include "blah/streams/bufferstream.h"
 #include <string.h>
 
 using namespace Blah;
@@ -64,17 +64,37 @@ i64 BufferStream::write_from(const void* ptr, i64 len)
 		return 0;
 
 	// resize
-	if (m_position + len >= m_capacity)
+	if (m_position + len > m_length)
+		resize(m_position + len);
+
+	// copy data
+	if (ptr != nullptr)
+		memcpy(m_buffer + m_position, ptr, (size_t)len);
+
+	// increment position
+	m_position += len;
+
+	// return the amount we wrote
+	return len;
+}
+
+void BufferStream::resize(i64 length)
+{
+	if (m_capacity > length)
+	{
+		m_length = length;
+	}
+	else
 	{
 		auto last_capacity = m_capacity;
 
 		if (m_capacity <= 0)
 			m_capacity = 16;
-		while (m_position + len >= m_capacity)
+		while (length >= m_capacity)
 			m_capacity *= 2;
 
 		char* new_buffer = new char[m_capacity];
-		
+
 		if (m_buffer != nullptr)
 		{
 			memcpy(new_buffer, m_buffer, last_capacity);
@@ -84,17 +104,7 @@ i64 BufferStream::write_from(const void* ptr, i64 len)
 		m_buffer = new_buffer;
 	}
 
-	// copy data
-	if (ptr != nullptr)
-		memcpy(m_buffer + m_position, ptr, (size_t)len);
-
-	// increment position
-	m_position += len;
-	if (m_position > m_length)
-		m_length = m_position;
-
-	// return the amount we wrote
-	return len;
+	m_length = length;
 }
 
 void BufferStream::close()
