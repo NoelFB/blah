@@ -42,11 +42,17 @@ namespace Blah
 		template<class T>
 		T clamp(T value, T min, T max) { return value < min ? min : (value > max ? max : value); }
 
-		template<class T, class U>
-		T min(T a, U b) { return  (T)(a < b ? a : b); }
+		template<class T>
+		T min(T a, T b) { return  (T)(a < b ? a : b); }
 
-		template<class T, class U>
-		T max(T a, U b) { return (T)(a > b ? a : b); }
+		template<class T, typename ... Args>
+		T min(const T& a, const T& b, const Args&... args) { return Calc::min(a, Calc::min(b, args...)); }
+
+		template<class T>
+		T max(T a, T b) { return (T)(a > b ? a : b); }
+
+		template<class T, typename ... Args>
+		T max(const T& a, const T& b, const Args&... args) { return Calc::max(a, Calc::max(b, args...)); }
 
 		float round(float x);
 

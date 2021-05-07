@@ -96,14 +96,14 @@ RectI RectI::overlap_rect(const Rect& against) const
 
 	if (x + w >= against.x && x < against.x + against.w)
 	{
-		result.x = Calc::max(x, against.x);
-		result.w = Calc::min(x + w, against.x + against.w) - result.x;
+		result.x = Calc::max(x, (int)against.x);
+		result.w = Calc::min(x + w, (int)(against.x + against.w)) - result.x;
 	}
 
 	if (y + h >= against.y && y < against.y + against.h)
 	{
-		result.y = Calc::max(y, against.y);
-		result.h = Calc::min(y + h, against.y + against.h) - result.y;
+		result.y = Calc::max(y, (int)against.y);
+		result.h = Calc::min(y + h, (int)(against.y + against.h)) - result.y;
 	}
 
 	return result;
