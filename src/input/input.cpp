@@ -5,7 +5,7 @@
 #include <blah/core/common.h>
 #include <blah/math/point.h>
 #include "../internal/input_backend.h"
-#include <string.h>
+#include <cstring>
 
 using namespace Blah;
 
@@ -148,7 +148,7 @@ void InputBackend::on_controller_connect(int index, const char* name, int is_gam
 		ControllerState* controller = &(g_next_state.controllers[index]);
 		*controller = g_empty_controller;
 		controller->name = name;
-		controller->is_connected = 1;
+		controller->is_connected = true;
 		controller->is_gamepad = is_gamepad;
 		controller->button_count = button_count;
 		controller->axis_count = axis_count;
@@ -171,8 +171,8 @@ void InputBackend::on_button_down(int index, int button)
 		g_next_state.controllers[index].is_connected &&
 		button < g_next_state.controllers[index].button_count)
 	{
-		g_next_state.controllers[index].down[button] = 1;
-		g_next_state.controllers[index].pressed[button] = 1;
+		g_next_state.controllers[index].down[button] = true;
+		g_next_state.controllers[index].pressed[button] = true;
 		g_next_state.controllers[index].button_timestamp[button] = Time::ticks;
 	}
 }
@@ -184,8 +184,8 @@ void InputBackend::on_button_up(int index, int button)
 		g_next_state.controllers[index].is_connected &&
 		button < g_next_state.controllers[index].button_count)
 	{
-		g_next_state.controllers[index].down[button] = 0;
-		g_next_state.controllers[index].released[button] = 1;
+		g_next_state.controllers[index].down[button] = false;
+		g_next_state.controllers[index].released[button] = true;
 	}
 }
 

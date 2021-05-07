@@ -96,6 +96,8 @@ Image::Image(const Image& src)
 
 Image& Image::operator=(const Image& src)
 {
+    dispose();
+
 	width = src.width;
 	height = src.height;
 	m_stbi_ownership = src.m_stbi_ownership;
@@ -269,7 +271,7 @@ bool Image::save_jpg(Stream& stream, int quality) const
 	return false;
 }
 
-void Image::get_pixels(Color* dest, const Point& dest_pos, const Point& dest_size, RectI source_rect)
+void Image::get_pixels(Color* dest, const Point& dest_pos, const Point& dest_size, RectI source_rect) const
 {
 	// can't be outside of the source image
 	if (source_rect.x < 0) source_rect.x = 0;

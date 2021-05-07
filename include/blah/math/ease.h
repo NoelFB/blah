@@ -19,7 +19,7 @@ namespace Blah
 		ElasticIn, ElasticOut, ElasticInOut,
 		BackIn, BackOut, BackInOut,
 		BounceIn, BounceOut, BounceInOut,
-		_Count
+		Count
 	};
 
 	namespace Ease
@@ -285,7 +285,7 @@ namespace Blah
 			case Easers::BounceIn: return &bounce_in;
 			case Easers::BounceOut: return &bounce_out;
 			case Easers::BounceInOut: return &bounce_in_out;
-			case Easers::_Count:
+			case Easers::Count:
 				break;
 			}
 
@@ -328,7 +328,7 @@ namespace Blah
 			case Easers::BounceIn: return "BounceIn";
 			case Easers::BounceOut: return "BounceOut";
 			case Easers::BounceInOut: return "BounceInOut";
-			case Easers::_Count:
+			case Easers::Count:
 				break;
 			}
 

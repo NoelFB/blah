@@ -1,7 +1,7 @@
 #include <blah/math/mat3x2.h>
 #include <blah/math/vec2.h>
-#include <string.h>
-#include <math.h>
+#include <cstring>
+#include <cmath>
 
 using namespace Blah;
 

@@ -140,11 +140,11 @@ namespace
 }
 
 #define MAKE_VERTEX(vert, mat, px, py, tx, ty, c, m, w, f) \
-	(vert)->pos.x = ((px) * mat.m11) + ((py) * mat.m21) + mat.m31; \
-	(vert)->pos.y = ((px) * mat.m12) + ((py) * mat.m22) + mat.m32; \
+	(vert)->pos.x = ((px) * (mat).m11) + ((py) * (mat).m21) + (mat).m31; \
+	(vert)->pos.y = ((px) * (mat).m12) + ((py) * (mat).m22) + (mat).m32; \
 	(vert)->tex.x = tx;  \
 	if (m_batch.flip_vertically) \
-		(vert)->tex.y = 1.0f - ty; \
+		(vert)->tex.y = 1.0f - (ty); \
 	else \
 		(vert)->tex.y = ty; \
 	(vert)->col = c; \
@@ -194,7 +194,7 @@ do { \
 
 // Compares a Batcher variable, and starts a new batch if it has changed
 #define SET_BATCH_VAR(variable) \
-	if (m_batch.elements > 0 && variable != m_batch.variable) \
+	if (m_batch.elements > 0 && (variable) != m_batch.variable) \
 		INSERT_BATCH(); \
 	m_batch.variable = variable;
 
@@ -757,7 +757,7 @@ void Batch::rect_rounded_line(const Rect& r, float rtl, int rtl_steps, float rtr
 	}
 }
 
-void Batch::semi_circle(Vec2 center, float start_radians, float end_radians, float radius, int steps, Color centerColor, Color edgeColor)
+void Batch::semi_circle(const Vec2& center, float start_radians, float end_radians, float radius, int steps, Color centerColor, Color edgeColor)
 {
 	Vec2 last = Vec2::from_angle(start_radians, radius);
 	float add = Calc::angle_diff(start_radians, end_radians);
@@ -770,12 +770,12 @@ void Batch::semi_circle(Vec2 center, float start_radians, float end_radians, flo
 	}
 }
 
-void Batch::semi_circle(Vec2 center, float start_radians, float end_radians, float radius, int steps, Color color)
+void Batch::semi_circle(const Vec2& center, float start_radians, float end_radians, float radius, int steps, Color color)
 {
 	semi_circle(center, start_radians, end_radians, radius, steps, color, color);
 }
 
-void Batch::semi_circle_line(Vec2 center, float start_radians, float end_radians, float radius, int steps, float t, Color color)
+void Batch::semi_circle_line(const Vec2& center, float start_radians, float end_radians, float radius, int steps, float t, Color color)
 {
 	if (t >= radius)
 	{
@@ -801,12 +801,12 @@ void Batch::semi_circle_line(Vec2 center, float start_radians, float end_radians
 	}
 }
 
-void Batch::circle(const Vec2 center, float radius, int steps, Color color)
+void Batch::circle(const Vec2& center, float radius, int steps, Color color)
 {
 	circle(center, radius, steps, color, color);
 }
 
-void Batch::circle(const Vec2 center, float radius, int steps, Color center_color, Color outer_color)
+void Batch::circle(const Vec2& center, float radius, int steps, Color center_color, Color outer_color)
 {
 	Vec2 last = Vec2(center.x + radius, center.y);
 
@@ -821,7 +821,7 @@ void Batch::circle(const Vec2 center, float radius, int steps, Color center_colo
 	}
 }
 
-void Batch::circle_line(const Vec2 center, float radius, float t, int steps, Color color)
+void Batch::circle_line(const Vec2& center, float radius, float t, int steps, Color color)
 {
 	if (t >= radius)
 	{

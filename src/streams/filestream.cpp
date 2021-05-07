@@ -1,7 +1,7 @@
 #include <blah/streams/filestream.h>
 #include <blah/core/common.h>
 #include "../internal/platform_backend.h"
-#include <string.h>
+#include <cstring>
 
 using namespace Blah;
 

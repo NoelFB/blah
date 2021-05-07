@@ -31,7 +31,7 @@ namespace Blah
 		static MaterialRef create(const ShaderRef& shader);
 
 		// Returns the Shader assigned to the Material.
-		const ShaderRef shader() const;
+		ShaderRef shader() const;
 
 		// Sets the texture
 		void set_texture(const char* name, const TextureRef& texture, int array_index = 0);

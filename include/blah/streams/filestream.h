@@ -13,17 +13,17 @@ namespace Blah
 		FileStream& operator=(FileStream&& fs) noexcept;
 		~FileStream();
 
-		virtual i64 length() const override;
-		virtual i64 position() const override;
-		virtual i64 seek(i64 seekTo) override;
-		virtual bool is_open() const override;
-		virtual bool is_readable() const override;
-		virtual bool is_writable() const override;
-		virtual void close() override;
+		i64 length() const override;
+		i64 position() const override;
+		i64 seek(i64 seekTo) override;
+		bool is_open() const override;
+		bool is_readable() const override;
+		bool is_writable() const override;
+		void close() override;
 
 	protected:
-		virtual i64 read_into(void* ptr, i64 length) override;
-		virtual i64 write_from(const void* ptr, i64 length) override;
+		i64 read_into(void* ptr, i64 length) override;
+		i64 write_from(const void* ptr, i64 length) override;
 
 	private:
 		FileMode m_mode;

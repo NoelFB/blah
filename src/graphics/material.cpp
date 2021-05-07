@@ -70,7 +70,7 @@ Material::Material(const ShaderRef& shader)
 	m_data.expand(float_size);
 }
 
-const ShaderRef Material::shader() const
+ShaderRef Material::shader() const
 {
 	return m_shader;
 }

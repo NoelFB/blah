@@ -178,7 +178,7 @@ Color Color::operator*(float multiply) const
 		(int)(a * multiply));
 }
 
-Color& Color::operator=(const int rgb)
+Color& Color::operator=(int rgb)
 {
 	r = (u8)((rgb & 0xFF0000) >> 16);
 	g = (u8)((rgb & 0x00FF00) >> 8);

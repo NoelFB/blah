@@ -11,9 +11,7 @@
 using namespace Blah;
 
 Aseprite::Aseprite()
-{
-
-}
+= default;
 
 Aseprite::Aseprite(const FilePath& path)
 {
@@ -77,9 +75,7 @@ Aseprite& Aseprite::operator=(Aseprite&& src) noexcept
 }
 
 Aseprite::~Aseprite()
-{
-
-}
+= default;
 
 void Aseprite::parse(Stream& stream)
 {

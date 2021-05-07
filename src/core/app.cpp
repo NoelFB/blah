@@ -266,29 +266,29 @@ namespace
 		Attachments empty_attachments;
 		TextureRef empty_texture;
 
-		virtual Attachments& attachments() override
+		Attachments& attachments() override
 		{
 			BLAH_ASSERT(false, "Backbuffer doesn't have any attachments");
 			return empty_attachments;
 		}
 
-		virtual const Attachments& attachments() const override
+		const Attachments& attachments() const override
 		{
 			BLAH_ASSERT(false, "Backbuffer doesn't have any attachments");
 			return empty_attachments;
 		}
 
-		virtual int width() const override
+		int width() const override
 		{
 			return App::draw_width();
 		}
 
-		virtual int height() const override
+		int height() const override
 		{
 			return App::draw_height();
 		}
 
-		virtual void clear(Color color, float depth, u8 stencil, ClearMask mask) override
+		void clear(Color color, float depth, u8 stencil, ClearMask mask) override
 		{
 			GraphicsBackend::clear_backbuffer(color, depth, stencil, mask);
 		}

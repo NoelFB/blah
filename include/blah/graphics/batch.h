@@ -156,13 +156,13 @@ namespace Blah
 		void rect_rounded_line(const Rect& rect, float radius, int steps, float t, Color color);
 		void rect_rounded_line(const Rect& rect, float rtl, int rtl_steps, float rtr, int rtr_steps, float rbr, int rbr_steps, float rbl, int rbl_steps, float t, Color color);
 
-		void semi_circle(Vec2 center, float start_radians, float end_radians, float radius, int steps, Color centerColor, Color edgeColor);
-		void semi_circle(Vec2 center, float start_radians, float end_radians, float radius, int steps, Color color);
-		void semi_circle_line(Vec2 center, float start_radians, float end_radians, float radius, int steps, float t, Color color);
+		void semi_circle(const Vec2& center, float start_radians, float end_radians, float radius, int steps, Color centerColor, Color edgeColor);
+		void semi_circle(const Vec2& center, float start_radians, float end_radians, float radius, int steps, Color color);
+		void semi_circle_line(const Vec2& center, float start_radians, float end_radians, float radius, int steps, float t, Color color);
 
-		void circle(const Vec2 center, float radius, int steps, Color color);
-		void circle(const Vec2 center, float radius, int steps, Color center_color, Color outer_color);
-		void circle_line(const Vec2 center, float raidus, float t, int steps, Color color);
+		void circle(const Vec2& center, float radius, int steps, Color color);
+		void circle(const Vec2& center, float radius, int steps, Color center_color, Color outer_color);
+		void circle_line(const Vec2& center, float radius, float t, int steps, Color color);
 
 		void quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& pos3, Color color);
 		void quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& pos3, Color col0, Color col1, Color col2, Color col3);

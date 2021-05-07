@@ -233,7 +233,7 @@ bool Font::get_image(const Font::Character& ch, Color* pixels) const
 	{
 		// we actually use the image buffer as our temporary buffer, and fill the pixels out backwards after
 		// kinda weird but it works & saves creating more memory
-		unsigned char* src = (unsigned char*)pixels;
+		auto* src = (unsigned char*)pixels;
 		stbtt_MakeGlyphBitmap((stbtt_fontinfo*)m_font, src, ch.width, ch.height, ch.width, ch.scale, ch.scale, ch.glyph);
 
 		int len = ch.width * ch.height;

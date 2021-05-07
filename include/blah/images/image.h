@@ -60,7 +60,7 @@ namespace Blah
 		bool save_jpg(Stream& stream, int quality) const;
 
 		// gets the pixels from the given source rectangle
-		void get_pixels(Color* dest, const Point& dest_pos, const Point& dest_size, RectI source_rect);
+		void get_pixels(Color* dest, const Point& dest_pos, const Point& dest_size, RectI source_rect) const;
 
 		// gets a sub image from this image
 		Image get_sub_image(const RectI& source_rect);

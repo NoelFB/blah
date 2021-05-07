@@ -1,5 +1,5 @@
 #include <blah/streams/memorystream.h>
-#include <string.h>
+#include <cstring>
 
 using namespace Blah;
 

@@ -6,9 +6,9 @@
 #include "../internal/graphics_backend.h"
 #include "../internal/platform_backend.h"
 #include <blah/core/common.h>
-#include <stdio.h>
-#include <string.h>
-#include <stddef.h>
+#include <cstdio>
+#include <cstring>
+#include <cstddef>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -193,22 +193,22 @@ namespace Blah
 			view = nullptr;
 		}
 
-		virtual int width() const override
+		int width() const override
 		{
 			return m_width;
 		}
 
-		virtual int height() const override
+		int height() const override
 		{
 			return m_height;
 		}
 
-		virtual TextureFormat format() const override
+		TextureFormat format() const override
 		{
 			return m_format;
 		}
 
-		virtual void set_data(unsigned char* data) override
+		void set_data(unsigned char* data) override
 		{
 			// bounds
 			D3D11_BOX box;
@@ -229,7 +229,7 @@ namespace Blah
 				0);
 		}
 
-		virtual void get_data(unsigned char* data) override
+		void get_data(unsigned char* data) override
 		{
 			HRESULT hr;
 
@@ -278,7 +278,7 @@ namespace Blah
 			state.context->Unmap(staging, 0);
 		}
 
-		virtual bool is_framebuffer() const override
+		bool is_framebuffer() const override
 		{
 			return m_is_framebuffer;
 		}
@@ -322,17 +322,17 @@ namespace Blah
 			color_views.clear();
 		}
 
-		virtual Attachments& attachments() override
+		Attachments& attachments() override
 		{
 			return m_attachments;
 		}
 
-		virtual const Attachments& attachments() const override
+		const Attachments& attachments() const override
 		{
 			return m_attachments;
 		}
 
-		virtual void clear(Color color, float depth, u8 stencil, ClearMask mask) override
+		void clear(Color color, float depth, u8 stencil, ClearMask mask) override
 		{
 			float col[4] = { color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f };
 
@@ -489,7 +489,7 @@ namespace Blah
 			valid = true;
 		}
 
-		~D3D11_Shader()
+		~D3D11_Shader() override
 		{
 			if (vertex)
 				vertex->Release();
@@ -511,12 +511,12 @@ namespace Blah
 			fragment_blob = nullptr;
 		}
 
-		virtual Vector<UniformInfo>& uniforms() override
+		Vector<UniformInfo>& uniforms() override
 		{
 			return uniform_list;
 		}
 
-		virtual const Vector<UniformInfo>& uniforms() const override
+		const Vector<UniformInfo>& uniforms() const override
 		{
 			return uniform_list;
 		}
@@ -550,7 +550,7 @@ namespace Blah
 				index_buffer->Release();
 		}
 
-		virtual void index_data(IndexFormat format, const void* indices, i64 count) override
+		void index_data(IndexFormat format, const void* indices, i64 count) override
 		{
 			m_index_count = count;
 
@@ -604,7 +604,7 @@ namespace Blah
 			}
 		}
 
-		virtual void vertex_data(const VertexFormat& format, const void* vertices, i64 count) override
+		void vertex_data(const VertexFormat& format, const void* vertices, i64 count) override
 		{
 			m_vertex_count = count;
 
@@ -652,22 +652,22 @@ namespace Blah
 			}
 		}
 
-		virtual void instance_data(const VertexFormat& format, const void* instances, i64 count) override
+		void instance_data(const VertexFormat& format, const void* instances, i64 count) override
 		{
 
 		}
 
-		virtual i64 index_count() const override
+		i64 index_count() const override
 		{
 			return m_index_count;
 		}
 
-		virtual i64 vertex_count() const override
+		i64 vertex_count() const override
 		{
 			return m_vertex_count;
 		}
 
-		virtual i64 instance_count() const override
+		i64 instance_count() const override
 		{
 			return 0;
 		}

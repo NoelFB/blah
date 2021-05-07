@@ -62,7 +62,7 @@ namespace Blah
 		Color operator*(float multiply) const;
 
 		// assignment from int
-		Color& operator= (const int rgb);
+		Color& operator= (int rgb);
 		
 		// comparisons
 		bool operator ==(const Color& rhs) const;
