@@ -125,6 +125,8 @@ Image::Image(Image&& src) noexcept
 
 Image& Image::operator=(Image&& src) noexcept
 {
+	dispose();
+
 	width = src.width;
 	height = src.height;
 	pixels = src.pixels;
