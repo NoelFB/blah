@@ -51,6 +51,30 @@ size_t FileStream::seek(size_t seek_to)
 	return 0;
 }
 
+size_t FileStream::read_data(void* ptr, size_t length)
+{
+	if (length <= 0)
+		return 0;
+
+	if (m_file)
+		return m_file->read((unsigned char*)ptr, length);
+
+	BLAH_ASSERT(false, "Unable to read from Stream");
+	return 0;
+}
+
+size_t FileStream::write_data(const void* ptr, size_t length)
+{
+	if (length <= 0)
+		return 0;
+
+	if (m_file)
+		return m_file->write((const unsigned char*)ptr, length);
+
+	BLAH_ASSERT(false, "Unable to write to Stream");
+	return 0;
+}
+
 bool FileStream::is_open() const
 {
 	return m_file.get();
@@ -64,30 +88,6 @@ bool FileStream::is_readable() const
 bool FileStream::is_writable() const
 {
 	return m_file.get() && (m_mode != FileMode::OpenRead);
-}
-
-size_t FileStream::read_into(void* ptr, size_t length)
-{
-	if (length <= 0)
-		return 0;
-
-	if (m_file)
-		return m_file->read((unsigned char*)ptr, length);
-
-	BLAH_ASSERT(false, "Unable to read from Stream");
-	return 0;
-}
-
-size_t FileStream::write_from(const void* ptr, size_t length)
-{
-	if (length <= 0)
-		return 0;
-
-	if (m_file)
-		return m_file->write((const unsigned char*)ptr, length);
-
-	BLAH_ASSERT(false, "Unable to write to Stream");
-	return 0;
 }
 
 void FileStream::close()

@@ -40,7 +40,7 @@ namespace Blah
 		size_t pipe(Stream& to, size_t length);
 
 		// reads the amount of bytes into the given buffer, and returns the amount read
-		size_t read(void* buffer, size_t length) { return read_into(buffer, length); }
+		size_t read(void* buffer, size_t length);
 
 		// reads a string. if length < 0, assumes null-terminated
 		String read_string(int length = -1);
@@ -92,10 +92,10 @@ namespace Blah
 		}
 
 	protected:
-		// reads from the stream into the given buffer, and returns the number of bytes read
-		virtual size_t read_into(void* buffer, size_t length) = 0;
+		// reads the amount of bytes into the given buffer, and returns the amount read
+		virtual size_t read_data(void* buffer, size_t length) = 0;
 
-		// writes from the stream from the given buffer, and returns the number of bytes written
-		virtual size_t write_from(const void* buffer, size_t length) = 0;
+		// writes the amount of bytes to the stream from the given buffer, and returns the amount written
+		virtual size_t write_data(const void* buffer, size_t length) = 0;
 	};
 }

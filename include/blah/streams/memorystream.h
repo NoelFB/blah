@@ -3,6 +3,8 @@
 
 namespace Blah
 {
+	// Memory Stream moves over an existing buffer.
+	// The Buffer must exist for the duration of the Memory Stream.
 	class MemoryStream : public Stream
 	{
 	public:
@@ -12,20 +14,20 @@ namespace Blah
 		MemoryStream& operator=(MemoryStream&& ms) noexcept;
 		~MemoryStream() override { m_data = nullptr; m_length = m_position = 0; }
 
-		size_t length() const override { return m_length; }
-		size_t position() const override { return m_position; }
-		size_t seek(size_t seekTo) override { return m_position = (seekTo < 0 ? 0 : (seekTo > m_length ? m_length : seekTo)); }
-		bool is_open() const override { return m_data != nullptr; }
-		bool is_readable() const override { return true; }
-		bool is_writable() const override { return true; }
-		void close() override { m_data = nullptr; m_length = m_position = 0; }
+		size_t length() const override;
+		size_t position() const override;
+		size_t seek(size_t seekTo) override;
+		bool is_open() const override;
+		bool is_readable() const override;
+		bool is_writable() const override;
+		void close() override;
 
-		char* data() { return m_data; }
-		const char* data() const { return m_data; }
+		char* data();
+		const char* data() const;
 
 	protected:
-		size_t read_into(void* ptr, size_t length) override;
-		size_t write_from(const void* ptr, size_t length) override;
+		size_t read_data(void* ptr, size_t length) override;
+		size_t write_data(const void* ptr, size_t length) override;
 
 	private:
 		char* m_data;

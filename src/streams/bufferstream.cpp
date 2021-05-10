@@ -28,12 +28,15 @@ BufferStream::BufferStream(BufferStream&& src) noexcept
 
 BufferStream& BufferStream::operator=(BufferStream&& src) noexcept
 {
+	close();
+
 	m_buffer = src.m_buffer;
 	m_length = src.m_length;
 	m_capacity = src.m_capacity;
 	m_position = src.m_position;
 	src.m_buffer = nullptr;
 	src.m_position = src.m_length = src.m_capacity = 0;
+
 	return *this;
 }
 
@@ -42,7 +45,22 @@ BufferStream::~BufferStream()
 	delete[] m_buffer;
 }
 
-size_t BufferStream::read_into(void* ptr, size_t len)
+size_t BufferStream::length() const
+{
+	return m_length;
+}
+
+size_t BufferStream::position() const
+{
+	return m_position;
+}
+
+size_t BufferStream::seek(size_t seekTo)
+{
+	return m_position = (seekTo < 0 ? 0 : (seekTo > m_length ? m_length : seekTo));
+}
+
+size_t BufferStream::read_data(void* ptr, size_t len)
 {
 	if (m_buffer == nullptr || ptr == nullptr)
 		return 0;
@@ -58,7 +76,7 @@ size_t BufferStream::read_into(void* ptr, size_t len)
 	return len;
 }
 
-size_t BufferStream::write_from(const void* ptr, size_t len)
+size_t BufferStream::write_data(const void* ptr, size_t len)
 {
 	if (len < 0)
 		return 0;
@@ -76,6 +94,21 @@ size_t BufferStream::write_from(const void* ptr, size_t len)
 
 	// return the amount we wrote
 	return len;
+}
+
+bool BufferStream::is_open() const
+{
+	return m_buffer != nullptr;
+}
+
+bool BufferStream::is_readable() const
+{
+	return true;
+}
+
+bool BufferStream::is_writable() const
+{
+	return true;
 }
 
 void BufferStream::resize(size_t length)
@@ -114,4 +147,19 @@ void BufferStream::close()
 	m_position = 0;
 	m_length = 0;
 	m_capacity = 0;
+}
+
+void BufferStream::clear()
+{
+	m_length = m_position = 0;
+}
+
+char* BufferStream::data()
+{
+	return m_buffer;
+}
+
+const char* BufferStream::data() const
+{
+	return m_buffer;
 }

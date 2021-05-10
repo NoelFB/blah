@@ -28,6 +28,11 @@ size_t Stream::pipe(Stream& stream, size_t length)
 	return result;
 }
 
+size_t Stream::read(void* buffer, size_t length)
+{
+	return read_data(buffer, length);
+}
+
 // reads a string. if length < 0, assumes null-terminated
 String Stream::read_string(int length)
 {
@@ -42,7 +47,7 @@ String Stream::read_string(int length)
 	else
 	{
 		result.set_length(length);
-		read_into(result.cstr(), length);
+		read(result.cstr(), length);
 	}
 
 	return result;
@@ -59,12 +64,12 @@ String Stream::read_line()
 	return result;
 }
 
-size_t Stream::write(const void* buffer, size_t length) 
-{ 
-	return write_from(buffer, length);
+size_t Stream::write(const void* buffer, size_t length)
+{
+	return write_data(buffer, length);
 }
 
 size_t Stream::write(const String& string)
 {
-	return write_from(string.begin(), string.length());
+	return write(string.begin(), string.length());
 }

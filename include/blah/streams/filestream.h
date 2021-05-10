@@ -21,8 +21,8 @@ namespace Blah
 		void close() override;
 
 	protected:
-		size_t read_into(void* ptr, size_t length) override;
-		size_t write_from(const void* ptr, size_t length) override;
+		size_t read_data(void* ptr, size_t length) override;
+		size_t write_data(const void* ptr, size_t length) override;
 
 	private:
 		FileMode m_mode;
