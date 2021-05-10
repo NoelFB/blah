@@ -1,6 +1,6 @@
 #pragma once
 #include <blah/streams/stream.h>
-#include <blah/core/filesystem.h>
+#include <blah/filesystem.h>
 
 namespace Blah
 {
@@ -11,22 +11,21 @@ namespace Blah
 		FileStream(const FilePath& path, FileMode mode);
 		FileStream(FileStream&& fs) noexcept;
 		FileStream& operator=(FileStream&& fs) noexcept;
-		~FileStream();
 
-		i64 length() const override;
-		i64 position() const override;
-		i64 seek(i64 seekTo) override;
+		size_t length() const override;
+		size_t position() const override;
+		size_t seek(size_t position) override;
 		bool is_open() const override;
 		bool is_readable() const override;
 		bool is_writable() const override;
 		void close() override;
 
 	protected:
-		i64 read_into(void* ptr, i64 length) override;
-		i64 write_from(const void* ptr, i64 length) override;
+		size_t read_into(void* ptr, size_t length) override;
+		size_t write_from(const void* ptr, size_t length) override;
 
 	private:
 		FileMode m_mode;
-		void*    m_handle;
+		FileRef m_file;
 	};
 }

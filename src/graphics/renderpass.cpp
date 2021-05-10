@@ -1,5 +1,5 @@
 #include <blah/graphics/renderpass.h>
-#include <blah/core/common.h>
+#include <blah/common.h>
 #include "../internal/graphics_backend.h"
 
 using namespace Blah;
@@ -66,11 +66,7 @@ void RenderPass::perform()
 	}
 
 	// get the total drawable size
-	Vec2 draw_size;
-	if (!pass.target)
-		draw_size = Vec2(App::draw_width(), App::draw_height());
-	else
-		draw_size = Vec2(pass.target->width(), pass.target->height());
+	auto draw_size = Vec2(pass.target->width(), pass.target->height());
 
 	// Validate Viewport
 	if (!pass.has_viewport)

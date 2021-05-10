@@ -1,7 +1,7 @@
 #include <blah/images/font.h>
 #include <blah/streams/filestream.h>
-#include <blah/math/calc.h>
-#include <blah/core/common.h>
+#include <blah/numerics/calc.h>
+#include <blah/common.h>
 
 using namespace Blah;
 
@@ -111,7 +111,7 @@ void Font::load(Stream& stream)
 
 	if (!stream.is_readable())
 	{
-		BLAH_ERROR("Unable to load a font as the Stream was not readable");
+		BLAH_ASSERT(false, "Unable to load a font as the Stream was not readable");
 		return;
 	}
 

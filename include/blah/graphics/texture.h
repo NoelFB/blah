@@ -1,6 +1,6 @@
 #pragma once
-#include <memory>
-#include <blah/core/filesystem.h>
+#include <blah/common.h>
+#include <blah/filesystem.h>
 
 namespace Blah
 {
@@ -28,7 +28,7 @@ namespace Blah
 	class Image;
 	class Stream;
 	class Texture;
-	typedef std::shared_ptr<Texture> TextureRef;
+	using TextureRef = Ref<Texture>;
 
 	// A 2D Texture held by the GPU to be used during rendering
 	class Texture

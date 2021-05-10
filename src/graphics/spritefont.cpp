@@ -1,7 +1,7 @@
 #include <blah/graphics/spritefont.h>
 #include <blah/images/font.h>
 #include <blah/images/packer.h>
-#include <blah/core/common.h>
+#include <blah/common.h>
 
 using namespace Blah;
 
@@ -123,7 +123,7 @@ float SpriteFont::width_of_line(const String& text, int start) const
 	float width = 0;
 
 	Codepoint last = 0;
-	for (int i = start; i < text.length(); i ++)
+	for (auto i = start; i < text.length(); i ++)
 	{
 		if (text[i] == '\n')
 			return width;
@@ -139,7 +139,9 @@ float SpriteFont::width_of_line(const String& text, int start) const
 			width += get_kerning(last, next);
 
 		// move to thext utf8 character
-		i += text.utf8_length(i) - 1;
+		auto len = text.utf8_length(i);
+		if (len > 0)
+			i += len - 1;
 
 		last = next;
 	}
@@ -153,7 +155,7 @@ float SpriteFont::height_of(const String& text) const
 		return 0;
 
 	float height = line_height();
-	for (int i = 0; i < text.length(); i ++)
+	for (auto i = 0; i < text.length(); i ++)
 	{
 		if (text[i] == '\n')
 			height += line_height();

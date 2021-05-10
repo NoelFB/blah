@@ -2,7 +2,7 @@
 
 #include "../internal/graphics_backend.h"
 #include "../internal/platform_backend.h"
-#include <blah/core/common.h>
+#include <blah/common.h>
 
 namespace Blah
 {
@@ -56,14 +56,14 @@ namespace Blah
 
 	};
 
-	class Dummy_FrameBuffer : public FrameBuffer
+	class Dummy_Target : public Target
 	{
 	private:
 		Attachments m_attachments;
 
 	public:
 
-		Dummy_FrameBuffer(int width, int height, const TextureFormat* attachments, int attachmentCount)
+		Dummy_Target(int width, int height, const TextureFormat* attachments, int attachmentCount)
 		{
 			for (int i = 0; i < attachmentCount; i++)
 			{
@@ -73,12 +73,12 @@ namespace Blah
 			}
 		}
 
-		virtual Attachments& attachments() override
+		virtual Attachments& textures() override
 		{
 			return m_attachments;
 		}
 
-		virtual const Attachments& attachments() const override
+		virtual const Attachments& textures() const override
 		{
 			return m_attachments;
 		}
@@ -186,9 +186,9 @@ namespace Blah
 		return TextureRef(new Dummy_Texture(width, height, format, false));
 	}
 
-	FrameBufferRef GraphicsBackend::create_framebuffer(int width, int height, const TextureFormat* attachments, int attachmentCount)
+	TargetRef GraphicsBackend::create_target(int width, int height, const TextureFormat* attachments, int attachmentCount)
 	{
-		return FrameBufferRef(new Dummy_FrameBuffer(width, height, attachments, attachmentCount));
+		return TargetRef(new Dummy_Target(width, height, attachments, attachmentCount));
 	}
 
 	ShaderRef GraphicsBackend::create_shader(const ShaderData* data)

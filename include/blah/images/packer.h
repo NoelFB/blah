@@ -1,12 +1,12 @@
 #pragma once
 #include <blah/images/image.h>
-#include <blah/math/color.h>
-#include <blah/math/rectI.h>
-#include <blah/math/point.h>
+#include <blah/numerics/color.h>
+#include <blah/numerics/rectI.h>
+#include <blah/numerics/point.h>
 #include <blah/containers/str.h>
 #include <blah/containers/vector.h>
 #include <blah/streams/bufferstream.h>
-#include <blah/core/filesystem.h>
+#include <blah/filesystem.h>
 
 namespace Blah
 {

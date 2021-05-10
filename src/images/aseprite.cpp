@@ -1,8 +1,8 @@
 #include <blah/images/aseprite.h>
 #include <blah/streams/filestream.h>
-#include <blah/core/filesystem.h>
-#include <blah/core/common.h>
-#include <blah/math/calc.h>
+#include <blah/filesystem.h>
+#include <blah/common.h>
+#include <blah/numerics/calc.h>
 
 #define STBI_NO_STDIO
 #define STBI_ONLY_ZLIB
@@ -81,7 +81,7 @@ void Aseprite::parse(Stream& stream)
 {
 	if (!stream.is_readable())
 	{
-		BLAH_ERROR("Stream is not readable");
+		BLAH_ASSERT(false, "Stream is not readable");
 		return;
 	}
 
@@ -96,7 +96,7 @@ void Aseprite::parse(Stream& stream)
 		auto magic = stream.read<u16>(Endian::Little);
 		if (magic != 0xA5E0)
 		{
-			BLAH_ERROR("File is not a valid Aseprite file");
+			BLAH_ASSERT(false, "File is not a valid Aseprite file");
 			return;
 		}
 
@@ -133,7 +133,7 @@ void Aseprite::parse(Stream& stream)
 			auto magic = stream.read<u16>(Endian::Little); // magic number
 			if (magic != 0xF1FA)
 			{
-				BLAH_ERROR("File is not a valid Aseprite file");
+				BLAH_ASSERT(false, "File is not a valid Aseprite file");
 				return;
 			}
 
@@ -247,7 +247,7 @@ void Aseprite::parse_cel(Stream& stream, int frameIndex, size_t maxPosition)
 
 			if (res < 0)
 			{
-				BLAH_ERROR("Unable to parse Aseprite file");
+				BLAH_ASSERT(false, "Unable to parse Aseprite file");
 				return;
 			}
 		}
@@ -460,6 +460,6 @@ void Aseprite::render_cel(Cel* cel, Frame* frame)
 	}
 	else
 	{
-		BLAH_ERROR("Aseprite blendmodes aren't implemented");
+		BLAH_ASSERT(false, "Aseprite blendmodes aren't implemented");
 	}
 }

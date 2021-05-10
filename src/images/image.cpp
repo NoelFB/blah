@@ -1,7 +1,7 @@
 #include <blah/images/image.h>
 #include <blah/streams/stream.h>
 #include <blah/streams/filestream.h>
-#include <blah/core/common.h>
+#include <blah/common.h>
 
 using namespace Blah;
 
@@ -148,7 +148,7 @@ void Image::from_stream(Stream& stream)
 
 	if (!stream.is_readable())
 	{
-		BLAH_ERROR("Unable to load image as the Stream was not readable");
+		BLAH_ASSERT(false, "Unable to load image as the Stream was not readable");
 		return;
 	}
 
@@ -162,7 +162,7 @@ void Image::from_stream(Stream& stream)
 
 	if (data == nullptr)
 	{
-		BLAH_ERROR("Unable to load image as the Stream's data was not a valid image");
+		BLAH_ASSERT(false, "Unable to load image as the Stream's data was not a valid image");
 		return;
 	}
 

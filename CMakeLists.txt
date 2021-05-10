@@ -6,27 +6,23 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(blah
+	src/app.cpp
+	src/filesystem.cpp
+	src/common.cpp
+	src/time.cpp
+	src/input.cpp
 
-	src/core/app.cpp
-	src/core/filesystem.cpp
-	src/core/common.cpp
-	src/core/time.cpp
-	
 	src/graphics/batch.cpp
 	src/graphics/blend.cpp
-	src/graphics/framebuffer.cpp
 	src/graphics/material.cpp
 	src/graphics/mesh.cpp
 	src/graphics/renderpass.cpp
 	src/graphics/shader.cpp
 	src/graphics/spritefont.cpp
 	src/graphics/subtexture.cpp
+	src/graphics/target.cpp
 	src/graphics/texture.cpp
 
-	src/input/input.cpp
-	src/input/binding.cpp
-	src/input/binding_registry.cpp
-	
 	src/containers/str.cpp
 
 	src/images/aseprite.cpp
@@ -34,18 +30,17 @@ add_library(blah
 	src/images/image.cpp
 	src/images/packer.cpp
 
-	src/math/calc.cpp
-	src/math/circle.cpp
-	src/math/color.cpp
-	src/math/line.cpp
-	src/math/mat3x2.cpp
-	src/math/mat4x4.cpp
-	src/math/point.cpp
-	src/math/quad.cpp
-	src/math/rect.cpp
-	src/math/rectI.cpp
-	src/math/stopwatch.cpp
-	src/math/vec2.cpp
+	src/numerics/calc.cpp
+	src/numerics/circle.cpp
+	src/numerics/color.cpp
+	src/numerics/line.cpp
+	src/numerics/mat3x2.cpp
+	src/numerics/mat4x4.cpp
+	src/numerics/point.cpp
+	src/numerics/quad.cpp
+	src/numerics/rect.cpp
+	src/numerics/rectI.cpp
+	src/numerics/vec2.cpp
 
 	src/streams/bufferstream.cpp
 	src/streams/filestream.cpp

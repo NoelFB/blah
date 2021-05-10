@@ -7,14 +7,14 @@ namespace Blah
 	{
 	public:
 		MemoryStream();
-		MemoryStream(char* data, i64 length);
+		MemoryStream(char* data, size_t length);
 		MemoryStream(MemoryStream&& ms) noexcept;
 		MemoryStream& operator=(MemoryStream&& ms) noexcept;
 		~MemoryStream() override { m_data = nullptr; m_length = m_position = 0; }
 
-		i64 length() const override { return m_length; }
-		i64 position() const override { return m_position; }
-		i64 seek(i64 seekTo) override { return m_position = (seekTo < 0 ? 0 : (seekTo > m_length ? m_length : seekTo)); }
+		size_t length() const override { return m_length; }
+		size_t position() const override { return m_position; }
+		size_t seek(size_t seekTo) override { return m_position = (seekTo < 0 ? 0 : (seekTo > m_length ? m_length : seekTo)); }
 		bool is_open() const override { return m_data != nullptr; }
 		bool is_readable() const override { return true; }
 		bool is_writable() const override { return true; }
@@ -24,12 +24,12 @@ namespace Blah
 		const char* data() const { return m_data; }
 
 	protected:
-		i64 read_into(void* ptr, i64 length) override;
-		i64 write_from(const void* ptr, i64 length) override;
+		size_t read_into(void* ptr, size_t length) override;
+		size_t write_from(const void* ptr, size_t length) override;
 
 	private:
 		char* m_data;
-		i64 m_length;
-		i64 m_position;
+		size_t m_length;
+		size_t m_position;
 	};
 }

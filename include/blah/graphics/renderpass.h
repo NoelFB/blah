@@ -1,9 +1,9 @@
 #pragma once
-#include <blah/core/common.h>
-#include <blah/math/rect.h>
+#include <blah/common.h>
+#include <blah/numerics/rect.h>
 #include <blah/containers/str.h>
 #include <blah/graphics/texture.h>
-#include <blah/graphics/framebuffer.h>
+#include <blah/graphics/target.h>
 #include <blah/graphics/mesh.h>
 #include <blah/graphics/shader.h>
 #include <blah/graphics/material.h>
@@ -42,7 +42,7 @@ namespace Blah
 	struct RenderPass
 	{
 		// Framebuffer to draw to
-		FrameBufferRef target;
+		TargetRef target;
 
 		// Mesh to draw with
 		MeshRef mesh;

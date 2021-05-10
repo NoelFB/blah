@@ -1,5 +1,5 @@
 #include <blah/graphics/material.h>
-#include <blah/core/common.h>
+#include <blah/common.h>
 #include <cstring>
 
 using namespace Blah;
@@ -19,7 +19,7 @@ namespace
 		case UniformType::Mat3x2: components = 6; break;
 		case UniformType::Mat4x4: components = 16; break;
 		default:
-			BLAH_ERROR("Unespected Uniform Type");
+			BLAH_ASSERT(false, "Unespected Uniform Type");
 			break;
 		}
 

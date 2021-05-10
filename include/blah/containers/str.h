@@ -1,5 +1,5 @@
 #pragma once
-#include <blah/core/common.h>
+#include <blah/common.h>
 #include <stdarg.h>
 #include <cstdio>
 #include <blah/containers/vector.h>
@@ -10,6 +10,7 @@ namespace Blah
 	template<int T>
 	class StrOf;
 	using String = StrOf<64>;
+	using FilePath = StrOf<260>;
 
 	// A simple String implementation
 	class Str

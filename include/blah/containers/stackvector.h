@@ -1,5 +1,5 @@
 #pragma once
-#include <blah/core/common.h>
+#include <blah/common.h>
 #include <new>
 #include <initializer_list>
 
@@ -16,7 +16,7 @@ namespace Blah
 		int m_count;
 
 	public:
-		static inline constexpr size_t MaxCapacity = Capacity;
+		static constexpr size_t capacity = Capacity;
 
 		StackVector();
 		StackVector(const std::initializer_list<T>& init);
@@ -30,7 +30,6 @@ namespace Blah
 		void clear();
 
 		int size() const;
-		constexpr int capacity() { return Capacity; }
 
 		T* expand(int amount = 1);
 		void push_back(const T& item);

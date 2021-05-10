@@ -1,7 +1,7 @@
 #include <blah/graphics/texture.h>
 #include <blah/images/image.h>
 #include <blah/streams/stream.h>
-#include <blah/core/common.h>
+#include <blah/common.h>
 #include "../internal/graphics_backend.h"
 
 using namespace Blah;

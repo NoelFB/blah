@@ -1,6 +1,6 @@
 #pragma once
-#include <blah/core/common.h>
-#include <blah/core/filesystem.h>
+#include <blah/common.h>
+#include <blah/filesystem.h>
 #include <blah/containers/vector.h>
 
 namespace Blah
@@ -66,6 +66,9 @@ namespace Blah
 		// Returns the absolute path to the user directory where save data and settings should be stored
 		const char* user_path();
 
+		// Opens a file and sets the handle, or returns an empty handle if it fails
+		FileRef file_open(const char* path, FileMode mode);
+
 		// Returns true if a file with the given path exists
 		bool file_exists(const char* path);
 
@@ -86,27 +89,6 @@ namespace Blah
 
 		// opens a directory in the OS file explorer / finder
 		void dir_explore(const char* path);
-
-		// Opens a file and sets the handle. returns true if the file was successfully opened
-		bool file_open(const char* path, FileHandle* handle, FileMode mode);
-
-		// Returns the length of the file
-		i64 file_length(FileHandle file);
-
-		// Returns the Position of the file
-		i64 file_position(FileHandle file);
-
-		// Seeks the Position of the file and returns the new position from the start of the file
-		i64 file_seek(FileHandle file, i64 seekTo);
-
-		// Reads a specific number of elements of a given size from the file into ptr
-		i64 file_read(FileHandle file, void* ptr, i64 size);
-
-		// Writes a specific number of elements of the given size from ptr to the file
-		i64 file_write(FileHandle file, const void* ptr, i64 size);
-
-		// Closes a file
-		void file_close(FileHandle file);
 
 		// OpenGL Methods
 		void* gl_get_func(const char* name);

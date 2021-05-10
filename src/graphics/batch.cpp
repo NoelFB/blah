@@ -1,11 +1,11 @@
 #include <blah/graphics/batch.h>
 #include <blah/graphics/texture.h>
-#include <blah/graphics/framebuffer.h>
+#include <blah/graphics/target.h>
 #include <blah/graphics/mesh.h>
 #include <blah/graphics/shader.h>
 #include <blah/graphics/material.h>
-#include <blah/math/calc.h>
-#include <blah/core/app.h>
+#include <blah/numerics/calc.h>
+#include <blah/app.h>
 #include <cmath>
 
 using namespace Blah;
@@ -185,7 +185,7 @@ namespace
 #define INSERT_BATCH() \
 do { \
 	m_batches.expand(); \
-	for (int i = m_batches.size() - 1; i > m_batch_insert; i --) \
+	for (auto i = m_batches.size() - 1; i > m_batch_insert; i --) \
 		m_batches[i] = std::move(m_batches[i - 1]); \
 	m_batches[m_batch_insert++] = m_batch; \
 	m_batch.offset += m_batch.elements; \
@@ -378,7 +378,7 @@ void Batch::set_sampler(const TextureSampler& sampler)
 	m_batch.sampler = sampler;
 }
 
-void Batch::render(const FrameBufferRef& target)
+void Batch::render(const TargetRef& target)
 {
 	Point size;
 	if (!target)
@@ -389,7 +389,7 @@ void Batch::render(const FrameBufferRef& target)
 	render(target, Mat4x4::create_ortho_offcenter(0, (float)size.x, (float)size.y, 0, 0.01f, 1000.0f));
 }
 
-void Batch::render(const FrameBufferRef& target, const Mat4x4& matrix)
+void Batch::render(const TargetRef& target, const Mat4x4& matrix)
 {
 	// nothing to draw
 	if ((m_batches.size() <= 0 && m_batch.elements <= 0) || m_indices.size() <= 0)

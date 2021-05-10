@@ -5,7 +5,7 @@
 
 #include "../internal/graphics_backend.h"
 #include "../internal/platform_backend.h"
-#include <blah/core/common.h>
+#include <blah/common.h>
 #include <cstdio>
 #include <cstring>
 #include <cstddef>
@@ -252,7 +252,7 @@ namespace Blah
 				hr = state.device->CreateTexture2D(&desc, NULL, &staging);
 				if (!SUCCEEDED(hr))
 				{
-					BLAH_ERROR("Failed to create staging texture to get data");
+					BLAH_ASSERT(false, "Failed to create staging texture to get data");
 					return;
 				}
 			}
@@ -270,7 +270,7 @@ namespace Blah
 
 			if (!SUCCEEDED(hr))
 			{
-				BLAH_ERROR("Failed to get texture data");
+				BLAH_ASSERT(false, "Failed to get texture data");
 				return;
 			}
 
@@ -285,16 +285,16 @@ namespace Blah
 
 	};
 
-	class D3D11_FrameBuffer : public FrameBuffer
+	class D3D11_Target : public Target
 	{
 	private:
 		Attachments m_attachments;
 
 	public:
-		StackVector<ID3D11RenderTargetView*, Attachments::MaxCapacity - 1> color_views;
+		StackVector<ID3D11RenderTargetView*, Attachments::capacity - 1> color_views;
 		ID3D11DepthStencilView* depth_view = nullptr;
 
-		D3D11_FrameBuffer(int width, int height, const TextureFormat* attachments, int attachment_count)
+		D3D11_Target(int width, int height, const TextureFormat* attachments, int attachment_count)
 		{
 			for (int i = 0; i < attachment_count; i++)
 			{
@@ -315,19 +315,19 @@ namespace Blah
 			}
 		}
 
-		~D3D11_FrameBuffer()
+		~D3D11_Target()
 		{
 			for (auto& it : color_views)
 				it->Release();
 			color_views.clear();
 		}
 
-		Attachments& attachments() override
+		Attachments& textures() override
 		{
 			return m_attachments;
 		}
 
-		const Attachments& attachments() const override
+		const Attachments& textures() const override
 		{
 			return m_attachments;
 		}
@@ -841,9 +841,9 @@ namespace Blah
 		return TextureRef();
 	}
 
-	FrameBufferRef GraphicsBackend::create_framebuffer(int width, int height, const TextureFormat* attachments, int attachment_count)
+	TargetRef GraphicsBackend::create_target(int width, int height, const TextureFormat* attachments, int attachment_count)
 	{
-		return FrameBufferRef(new D3D11_FrameBuffer(width, height, attachments, attachment_count));
+		return TargetRef(new D3D11_Target(width, height, attachments, attachment_count));
 	}
 
 	ShaderRef GraphicsBackend::create_shader(const ShaderData* data)
@@ -876,7 +876,7 @@ namespace Blah
 			}
 			else
 			{
-				auto target = (D3D11_FrameBuffer*)(pass.target.get());
+				auto target = (D3D11_Target*)(pass.target.get());
 				ctx->OMSetRenderTargets(target->color_views.size(), target->color_views.begin(), target->depth_view);
 			}
 

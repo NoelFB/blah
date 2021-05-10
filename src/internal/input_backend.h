@@ -1,5 +1,5 @@
 #pragma once
-#include <blah/input/input.h>
+#include <blah/input.h>
 
 namespace Blah
 {

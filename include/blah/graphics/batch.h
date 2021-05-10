@@ -1,17 +1,17 @@
 #pragma once
 #include <blah/containers/str.h>
-#include <blah/math/vec2.h>
-#include <blah/math/rect.h>
-#include <blah/math/mat3x2.h>
-#include <blah/math/mat4x4.h>
-#include <blah/math/color.h>
+#include <blah/numerics/vec2.h>
+#include <blah/numerics/rect.h>
+#include <blah/numerics/mat3x2.h>
+#include <blah/numerics/mat4x4.h>
+#include <blah/numerics/color.h>
 #include <blah/graphics/subtexture.h>
 #include <blah/graphics/spritefont.h>
 #include <blah/containers/vector.h>
 #include <blah/graphics/blend.h>
 #include <blah/graphics/sampler.h>
 #include <blah/graphics/renderpass.h>
-#include <blah/core/app.h>
+#include <blah/app.h>
 
 namespace Blah
 {
@@ -125,10 +125,10 @@ namespace Blah
 		void set_sampler(const TextureSampler& sampler);
 
 		// Draws the batch to the given target
-		void render(const FrameBufferRef& target = App::backbuffer);
+		void render(const TargetRef& target = App::backbuffer);
 
 		// Draws the batch to the given target, with the provided matrix
-		void render(const FrameBufferRef& target, const Mat4x4& matrix);
+		void render(const TargetRef& target, const Mat4x4& matrix);
 
 		// Clears the batch
 		void clear();

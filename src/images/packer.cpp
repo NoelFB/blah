@@ -1,5 +1,5 @@
 #include <blah/images/packer.h>
-#include <blah/core/common.h>
+#include <blah/common.h>
 #include <algorithm>
 #include <cstring>
 
@@ -169,7 +169,7 @@ void Packer::pack()
 		// make sure the largest isn't too large
 		if (sources[0]->packed.w + padding * 2 > max_size || sources[0]->packed.h + padding * 2 > max_size)
 		{
-			BLAH_ERROR("Source image is larger than max atlas size");
+			BLAH_ASSERT(false, "Source image is larger than max atlas size");
 			return;
 		}
 

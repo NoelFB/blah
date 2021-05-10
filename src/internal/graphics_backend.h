@@ -1,12 +1,12 @@
 #pragma once
-#include <blah/core/app.h>
+#include <blah/app.h>
 #include <blah/graphics/renderpass.h>
 #include <blah/graphics/texture.h>
-#include <blah/graphics/framebuffer.h>
+#include <blah/graphics/target.h>
 #include <blah/graphics/shader.h>
 #include <blah/graphics/mesh.h>
 #include <blah/graphics/material.h>
-#include <blah/math/color.h>
+#include <blah/numerics/color.h>
 
 namespace Blah
 {
@@ -45,9 +45,9 @@ namespace Blah
 		// if the Texture is invalid, this should return an empty reference.
 		TextureRef create_texture(int width, int height, TextureFormat format);
 
-		// Creates a new FrameBuffer.
-		// if the FrameBuffer is invalid, this should return an empty reference.
-		FrameBufferRef create_framebuffer(int width, int height, const TextureFormat* attachments, int attachment_count);
+		// Creates a new Target.
+		// if the Target is invalid, this should return an empty reference.
+		TargetRef create_target(int width, int height, const TextureFormat* attachments, int attachment_count);
 
 		// Creates a new Shader.
 		// if the Shader is invalid, this should return an empty reference.

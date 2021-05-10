@@ -1,14 +1,14 @@
 #pragma once
+#include <blah/common.h>
 #include <blah/graphics/texture.h>
 #include <blah/graphics/shader.h>
 #include <blah/graphics/sampler.h>
 #include <blah/containers/vector.h>
-#include <memory>
 
 namespace Blah
 {
 	class Material;
-	typedef std::shared_ptr<Material> MaterialRef;
+	using MaterialRef = Ref<Material>;
 
 	// Materials hold values that can be assigned to a shader during rendering
 	class Material final

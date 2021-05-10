@@ -1,6 +1,5 @@
 #pragma once
-#include <blah/core/common.h>
-#include <type_traits>
+#include <blah/common.h>
 #include <initializer_list>
 #include <new>
 
@@ -104,7 +103,7 @@ namespace Blah
 	{
 		m_buffer = nullptr;
 		m_count = m_capacity = 0;
-		reserve(list.size());
+		reserve((int)list.size());
 		for (auto& it : list)
 			push_back(std::move(it));
 	}

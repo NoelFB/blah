@@ -1,8 +1,8 @@
 #pragma once
-#include <blah/math/color.h>
-#include <blah/math/rectI.h>
-#include <blah/math/point.h>
-#include <blah/core/filesystem.h>
+#include <blah/numerics/color.h>
+#include <blah/numerics/rectI.h>
+#include <blah/numerics/point.h>
+#include <blah/filesystem.h>
 
 namespace Blah
 {

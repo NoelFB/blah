@@ -2,7 +2,7 @@
 #include <blah/streams/stream.h>
 #include <blah/images/image.h>
 #include <blah/containers/str.h>
-#include <blah/core/filesystem.h>
+#include <blah/filesystem.h>
 
 namespace Blah
 {

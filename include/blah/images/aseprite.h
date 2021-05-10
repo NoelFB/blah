@@ -1,9 +1,9 @@
 #pragma once
-#include <blah/math/color.h>
+#include <blah/numerics/color.h>
 #include <blah/images/image.h>
 #include <blah/containers/str.h>
 #include <blah/streams/stream.h>
-#include <blah/core/filesystem.h>
+#include <blah/filesystem.h>
 
 namespace Blah
 {

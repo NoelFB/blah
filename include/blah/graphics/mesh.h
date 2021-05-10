@@ -1,6 +1,5 @@
 #pragma once
-#include <blah/core/common.h>
-#include <memory>
+#include <blah/common.h>
 #include <blah/containers/stackvector.h>
 
 namespace Blah
@@ -59,7 +58,7 @@ namespace Blah
 	};
 
 	class Mesh;
-	typedef std::shared_ptr<Mesh> MeshRef;
+	using MeshRef = Ref<Mesh>;
 
 	// A Mesh is a set of Indices and Vertices which are used for drawing
 	class Mesh

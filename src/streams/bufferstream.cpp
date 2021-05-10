@@ -42,7 +42,7 @@ BufferStream::~BufferStream()
 	delete[] m_buffer;
 }
 
-i64 BufferStream::read_into(void* ptr, i64 len)
+size_t BufferStream::read_into(void* ptr, size_t len)
 {
 	if (m_buffer == nullptr || ptr == nullptr)
 		return 0;
@@ -58,7 +58,7 @@ i64 BufferStream::read_into(void* ptr, i64 len)
 	return len;
 }
 
-i64 BufferStream::write_from(const void* ptr, i64 len)
+size_t BufferStream::write_from(const void* ptr, size_t len)
 {
 	if (len < 0)
 		return 0;
@@ -78,7 +78,7 @@ i64 BufferStream::write_from(const void* ptr, i64 len)
 	return len;
 }
 
-void BufferStream::resize(i64 length)
+void BufferStream::resize(size_t length)
 {
 	if (m_capacity > length)
 	{
