@@ -2,7 +2,7 @@
 
 #include "../internal/graphics_backend.h"
 #include "../internal/platform_backend.h"
-#include <blah/core/common.h>
+#include <blah/common.h>
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
@@ -668,17 +668,17 @@ namespace Blah
 
 	};
 
-	class OpenGL_FrameBuffer : public FrameBuffer
+	class OpenGL_Target : public Target
 	{
 	private:
 		GLuint m_id;
 		int m_width;
 		int m_height;
-		StackVector<TextureRef, Attachments::MaxCapacity> m_attachments;
+		StackVector<TextureRef, Attachments::capacity> m_attachments;
 
 	public:
 
-		OpenGL_FrameBuffer(int width, int height, const TextureFormat* attachments, int attachmentCount)
+		OpenGL_Target(int width, int height, const TextureFormat* attachments, int attachmentCount)
 		{
 			gl.GenFramebuffers(1, &m_id);
 			m_width = width;
@@ -705,7 +705,7 @@ namespace Blah
 			}
 		}
 
-		~OpenGL_FrameBuffer()
+		~OpenGL_Target()
 		{
 			if (m_id > 0)
 			{
@@ -719,12 +719,12 @@ namespace Blah
 			return m_id;
 		}
 
-		virtual Attachments& attachments() override
+		virtual Attachments& textures() override
 		{
 			return m_attachments;
 		}
 
-		virtual const Attachments& attachments() const override
+		virtual const Attachments& textures() const override
 		{
 			return m_attachments;
 		}
@@ -1176,17 +1176,17 @@ namespace Blah
 		return TextureRef(resource);
 	}
 
-	FrameBufferRef GraphicsBackend::create_framebuffer(int width, int height, const TextureFormat* attachments, int attachmentCount)
+	TargetRef GraphicsBackend::create_target(int width, int height, const TextureFormat* attachments, int attachmentCount)
 	{
-		auto resource = new OpenGL_FrameBuffer(width, height, attachments, attachmentCount);
+		auto resource = new OpenGL_Target(width, height, attachments, attachmentCount);
 
 		if (resource->gl_id() <= 0)
 		{
 			delete resource;
-			return FrameBufferRef();
+			return TargetRef();
 		}
 
-		return FrameBufferRef(resource);
+		return TargetRef(resource);
 	}
 
 	ShaderRef GraphicsBackend::create_shader(const ShaderData* data)
@@ -1227,7 +1227,7 @@ namespace Blah
 		}
 		else if (pass.target)
 		{
-			auto framebuffer = (OpenGL_FrameBuffer*)pass.target.get();
+			auto framebuffer = (OpenGL_Target*)pass.target.get();
 			gl.BindFramebuffer(GL_FRAMEBUFFER, framebuffer->gl_id());
 			size.x = pass.target->width();
 			size.y = pass.target->height();
