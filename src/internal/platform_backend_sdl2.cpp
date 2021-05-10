@@ -115,7 +115,7 @@ namespace Blah
 		}
 	};
 
-	bool PlatformBackend::init(const Config* config)
+	bool PlatformBackend::init(const Config& config)
 	{
 		// Required to call this for Windows
 		// I'm not sure why SDL2 doesn't do this on Windows automatically?
@@ -172,7 +172,7 @@ namespace Blah
 		}
 
 		// create the window
-		window = SDL_CreateWindow(config->name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, config->width, config->height, flags);
+		window = SDL_CreateWindow(config.name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, config.width, config.height, flags);
 		if (window == nullptr)
 		{
 			Log::error("Failed to create a Window");
@@ -195,8 +195,8 @@ namespace Blah
 				{
 					SDL_DisplayMode mode;
 					SDL_GetDesktopDisplayMode(display, &mode);
-					SDL_SetWindowPosition(window, (int)(mode.w - config->width * dpi) / 2, (int)(mode.h - config->height * dpi) / 2);
-					SDL_SetWindowSize(window, (int)(config->width * dpi), (int)(config->height * dpi));
+					SDL_SetWindowPosition(window, (int)(mode.w - config.width * dpi) / 2, (int)(mode.h - config.height * dpi) / 2);
+					SDL_SetWindowSize(window, (int)(config.width * dpi), (int)(config.height * dpi));
 				}
 			}
 		}
@@ -264,9 +264,9 @@ namespace Blah
 		{
 			if (event.type == SDL_QUIT)
 			{
-				auto config = App::config();
-				if (config->on_exit_request != nullptr)
-					config->on_exit_request();
+				auto& config = App::config();
+				if (config.on_exit_request != nullptr)
+					config.on_exit_request();
 			}
 			// Mouse
 			else if (event.type == SDL_MOUSEBUTTONDOWN)
@@ -554,8 +554,8 @@ namespace Blah
 	{
 		if (userPath == nullptr)
 		{
-			const Config* config = App::config();
-			userPath = SDL_GetPrefPath(nullptr, config->name);
+			auto& config = App::config();
+			userPath = SDL_GetPrefPath(nullptr, config.name);
 		}
 
 		return userPath;

@@ -157,7 +157,7 @@ namespace Blah
 		}
 	};
 
-	bool PlatformBackend::init(const Config* config)
+	bool PlatformBackend::init(const Config& config)
 	{
 		// Required to call this for Windows
 		SetProcessDPIAware();
@@ -182,7 +182,7 @@ namespace Blah
 		RegisterClass(&wc);
 
 		// Create the Window Instance
-		g_hwnd = CreateWindow("BLAH WINDOW", config->name, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, 640, 480, NULL, NULL, hInstance, NULL);
+		g_hwnd = CreateWindow("BLAH WINDOW", config.name, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, 640, 480, NULL, NULL, hInstance, NULL);
 
 		// Failed to create the Window
 		if (g_hwnd == NULL)
@@ -271,7 +271,7 @@ namespace Blah
 				FilePath result;
 				result.append_utf16((u16*)path, (u16*)end);
 
-				g_user_directory = Path::join(Path::normalize(result), config->name) + "/";
+				g_user_directory = Path::join(Path::normalize(result), config.name) + "/";
 			}
 			CoTaskMemFree(path);
 		}
@@ -288,8 +288,8 @@ namespace Blah
 		// Setup Window Size
 		{
 			auto scale = get_content_scale();
-			int sw = (int)(App::config()->width * scale);
-			int sh = (int)(App::config()->height * scale);
+			int sw = (int)(App::config().width * scale);
+			int sh = (int)(App::config().height * scale);
 			set_size(sw, sh);
 		}
 
@@ -317,9 +317,9 @@ namespace Blah
 		{
 		case WM_CLOSE:
 		{
-			auto config = App::config();
-			if (config->on_exit_request != nullptr)
-				config->on_exit_request();
+			auto& config = App::config();
+			if (config.on_exit_request != nullptr)
+				config.on_exit_request();
 			return 0;
 		}
 

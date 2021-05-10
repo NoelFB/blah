@@ -13,9 +13,9 @@ void Log::info(const char* format, ...)
 	vsnprintf(msg, sizeof(char) * BLAH_MESSAGE, format, ap);
 	va_end(ap);
 
-	if (App::is_running() && App::config()->on_log)
+	if (App::config().on_log)
 	{
-		App::config()->on_log(msg, Category::Info);
+		App::config().on_log(msg, Category::Info);
 	}
 	else
 	{
@@ -31,9 +31,9 @@ void Log::warn(const char* format, ...)
 	vsnprintf(msg, sizeof(char) * BLAH_MESSAGE, format, ap);
 	va_end(ap);
 
-	if (App::is_running() && App::config()->on_log)
+	if (App::config().on_log)
 	{
-		App::config()->on_log(msg, Category::Warning);
+		App::config().on_log(msg, Category::Warning);
 	}
 	else
 	{
@@ -49,9 +49,9 @@ void Log::error(const char* format, ...)
 	vsnprintf(msg, sizeof(char) * BLAH_MESSAGE, format, ap);
 	va_end(ap);
 
-	if (App::is_running() && App::config()->on_log)
+	if (App::config().on_log)
 	{
-		App::config()->on_log(msg, Category::Error);
+		App::config().on_log(msg, Category::Error);
 	}
 	else
 	{

@@ -13,7 +13,7 @@ namespace Blah
 		typedef void* FileHandle;
 
 		// Initialize the System
-		bool init(const Config* config);
+		bool init(const Config& config);
 
 		// Called after the on_startup callback, but before the update loop begins
 		void ready();

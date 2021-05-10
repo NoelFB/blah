@@ -127,7 +127,7 @@ bool App::run(const Config* c)
 	app_is_exiting = false;
 
 	// initialize the system
-	if (!PlatformBackend::init(&app_config))
+	if (!PlatformBackend::init(app_config))
 	{
 		Log::error("Failed to initialize Platform module");
 		return false;
@@ -183,20 +183,15 @@ bool App::run(const Config* c)
 	return true;
 }
 
-bool App::is_running()
-{
-	return app_is_running;
-}
-
 void App::exit()
 {
 	if (!app_is_exiting && app_is_running)
 		app_is_exiting = true;
 }
 
-const Config* App::config()
+const Config& App::config()
 {
-	return &app_config;
+	return app_config;
 }
 
 const char* App::path()

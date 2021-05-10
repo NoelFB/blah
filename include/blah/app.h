@@ -98,16 +98,13 @@ namespace Blah
 		// Runs the application
 		bool run(const Config* config);
 
-		// Returns whether the application is running
-		bool is_running();
-
 		// Exits the application.
 		// This only signals for the application to close, it will not stop
 		// until the current update and render calls are finished.
 		void exit();
 
 		// Gets the config data used to run the application
-		const Config* config();
+		const Config& config();
 
 		// Gets the working path
 		const char* path();
