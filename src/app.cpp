@@ -204,18 +204,48 @@ const char* App::user_path()
 	return PlatformBackend::user_path();
 }
 
+const char* App::get_title()
+{
+	return PlatformBackend::get_title();
+}
+
+void App::set_title(const char* title)
+{
+	PlatformBackend::set_title(title);
+}
+
+Point App::get_position()
+{
+	Point result;
+	PlatformBackend::get_position(&result.x, &result.y);
+	return result;
+}
+
+void App::set_position(Point point)
+{
+	PlatformBackend::set_position(point.x, point.y);
+}
+
+Point App::get_size()
+{
+	Point result;
+	PlatformBackend::get_size(&result.x, &result.y);
+	return result;
+}
+
+void App::set_size(Point point)
+{
+	PlatformBackend::set_size(point.x, point.y);
+}
+
 int App::width()
 {
-	int w, h;
-	PlatformBackend::get_size(&w, &h);
-	return w;
+	return get_size().x;
 }
 
 int App::height()
 {
-	int w, h;
-	PlatformBackend::get_size(&w, &h);
-	return h;
+	return get_size().y;
 }
 
 int App::draw_width()

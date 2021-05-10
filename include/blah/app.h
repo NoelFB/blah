@@ -1,5 +1,6 @@
 #pragma once
 #include <blah/common.h>
+#include <blah/numerics/point.h>
 
 namespace Blah
 {
@@ -111,6 +112,24 @@ namespace Blah
 
 		// Gets the user path
 		const char* user_path();
+
+		// Gets the Window Title
+		const char* get_title();
+
+		// Sets the Window Title
+		void set_title(const char* title);
+
+		// Gets the Window Position
+		Point get_position();
+
+		// Sets the Window Position
+		void set_position(Point point);
+
+		// Gets the Window Size
+		Point get_size();
+
+		// Sets the Window Size
+		void set_size(Point point);
 
 		// Gets the width of the window
 		int width();
