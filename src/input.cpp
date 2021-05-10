@@ -11,15 +11,16 @@ using namespace Blah;
 
 namespace
 {
-	InputState g_last_state;
-	InputState g_curr_state;
 	InputState g_next_state;
 	InputState g_empty_state;
 	ControllerState g_empty_controller;
-	Vector<WeakRef<InputBinding>> g_bindings;
+	Vector<WeakRef<ButtonBinding>> g_buttons;
 	Vector<WeakRef<AxisBinding>> g_axes;
 	Vector<WeakRef<StickBinding>> g_sticks;
 }
+
+InputState Blah::Input::state;
+InputState Blah::Input::last_state;
 
 void InputBackend::init()
 {
@@ -27,10 +28,10 @@ void InputBackend::init()
 	for (int i = 0; i < Blah::Input::max_controllers; i++)
 		g_empty_state.controllers[i].name = g_empty_controller.name;
 
-	g_last_state = g_empty_state;
-	g_curr_state = g_empty_state;
+	Input::last_state = g_empty_state;
+	Input::state = g_empty_state;
 	g_next_state = g_empty_state;
-	g_bindings.dispose();
+	g_buttons.dispose();
 	g_axes.dispose();
 	g_sticks.dispose();
 }
@@ -38,8 +39,8 @@ void InputBackend::init()
 void InputBackend::frame()
 {
 	// cycle states
-	g_last_state = g_curr_state;
-	g_curr_state = g_next_state;
+	Input::last_state = Input::state;
+	Input::state = g_next_state;
 
 	// copy state, clear pressed / released values
 	{
@@ -75,14 +76,14 @@ void InputBackend::frame()
 
 	// update bindings
 
-	for (int i = 0; i < g_bindings.size(); i++)
+	for (int i = 0; i < g_buttons.size(); i++)
 	{
-		if (g_bindings[i].use_count() <= 0)
+		if (g_buttons[i].use_count() <= 0)
 		{
-			g_bindings.erase(i);
+			g_buttons.erase(i);
 			i--;
 		}
-		else if (auto binding = g_bindings[i].lock())
+		else if (auto binding = g_buttons[i].lock())
 		{
 			binding->update();
 		}
@@ -245,184 +246,84 @@ void InputBackend::on_axis_move(int index, int axis, float value)
 	}
 }
 
-const InputState* Input::state()
+bool KeyboardState::ctrl()
 {
-	return &g_curr_state;
+	return down[Key::LeftControl] || down[Key::RightControl];
 }
 
-const InputState* Input::last_state()
+bool KeyboardState::shift()
 {
-	return &g_last_state;
+	return down[Key::LeftShift] || down[Key::RightShift];
+}
+
+bool KeyboardState::alt()
+{
+	return down[Key::LeftAlt] || down[Key::RightAlt];
 }
 
 Vec2 Input::mouse()
 {
-	return g_curr_state.mouse.position;
+	return state.mouse.position;
 }
-
 
 Vec2 Input::mouse_draw()
 {
-	return Vec2(g_curr_state.mouse.draw_position);
+	return state.mouse.draw_position;
 }
 
 Vec2 Input::mouse_screen()
 {
-	return Vec2(g_curr_state.mouse.screen_position);
+	return state.mouse.screen_position;
 }
 
 bool Input::pressed(MouseButton button)
 {
-	int i = (int)button;
-	return i >= 0 && i < Blah::Input::max_mouse_buttons&& g_curr_state.mouse.pressed[i];
+	return state.mouse.pressed[button];
 }
 
 bool Input::down(MouseButton button)
 {
-	int i = (int)button;
-	return i >= 0 && i < Blah::Input::max_mouse_buttons&& g_curr_state.mouse.down[i];
+	return state.mouse.down[button];
 }
 
 bool Input::released(MouseButton button)
 {
-	int i = (int)button;
-	return i >= 0 && i < Blah::Input::max_mouse_buttons&& g_curr_state.mouse.released[i];
+	return state.mouse.released[button];
 }
 
 Point Input::mouse_wheel()
 {
-	return g_curr_state.mouse.wheel;
+	return state.mouse.wheel;
 }
 
 bool Input::pressed(Key key)
 {
-	int i = (int)key;
-	return i > 0 && i < Blah::Input::max_keyboard_keys&& g_curr_state.keyboard.pressed[i];
+	return state.keyboard.pressed[key];
 }
 
 bool Input::down(Key key)
 {
-	int i = (int)key;
-	return i > 0 && i < Blah::Input::max_keyboard_keys&& g_curr_state.keyboard.down[i];
+	return state.keyboard.down[key];
 }
 
 bool Input::released(Key key)
 {
-	int i = (int)key;
-	return i > 0 && i < Blah::Input::max_keyboard_keys&& g_curr_state.keyboard.released[i];
+	return state.keyboard.released[key];
 }
 
 bool Input::ctrl()
 {
-	return down(Key::LeftControl) || down(Key::RightControl);
+	return state.keyboard.ctrl();
 }
 
 bool Input::shift()
 {
-	return down(Key::LeftShift) || down(Key::RightShift);
+	return state.keyboard.shift();
 }
 
 bool Input::alt()
 {
-	return down(Key::LeftAlt) || down(Key::RightAlt);
-}
-
-const char* Input::text()
-{
-	return g_curr_state.keyboard.text;
-}
-
-const ControllerState* Input::controller(int controllerIndex)
-{
-	if (controllerIndex >= Blah::Input::max_controllers)
-	{
-		Log::warn("Trying to access a out-of-range controller at %i", controllerIndex);
-		return &g_empty_controller;
-	}
-	else if (!g_curr_state.controllers[controllerIndex].is_connected)
-	{
-		return &g_empty_controller;
-	}
-	else
-	{
-		return &g_curr_state.controllers[controllerIndex];
-	}
-}
-
-bool Input::pressed(int controllerIndex, Button button)
-{
-	int i = (int)button;
-	if (controllerIndex < Blah::Input::max_controllers && i >= 0 && i < Blah::Input::max_controller_buttons)
-		return g_curr_state.controllers[controllerIndex].pressed[i];
-	return false;
-}
-
-bool Input::down(int controllerIndex, Button button)
-{
-	int i = (int)button;
-	if (controllerIndex < Blah::Input::max_controllers && i >= 0 && i < Blah::Input::max_controller_buttons)
-		return g_curr_state.controllers[controllerIndex].down[i];
-	return false;
-}
-
-bool Input::released(int controllerIndex, Button button)
-{
-	int i = (int)button;
-	if (controllerIndex < Blah::Input::max_controllers && i >= 0 && i < Blah::Input::max_controller_buttons)
-		return g_curr_state.controllers[controllerIndex].released[i];
-	return false;
-}
-
-float Input::axis_check(int controllerIndex, Axis axis)
-{
-	int i = (int)axis;
-	if (controllerIndex < Blah::Input::max_controllers && i >= 0 && i < Blah::Input::max_controller_axis)
-		return g_curr_state.controllers[controllerIndex].axis[i];
-	return 0;
-}
-
-int Input::axis_check(int fallback, Key negative, Key positive)
-{
-	if (Input::pressed(positive))
-		return 1;
-	else if (Input::pressed(negative))
-		return -1;
-	else
-	{
-		bool pos = Input::down(positive);
-		bool neg = Input::down(negative);
-
-		if (pos && neg)
-			return fallback;
-		else if (pos)
-			return 1;
-		else if (neg)
-			return -1;
-		else
-			return 0;
-	}
-}
-
-int Input::axis_check(int fallback, int controllerIndex, Button negative, Button positive)
-{
-	if (Input::pressed(controllerIndex, positive))
-		return 1;
-	else if (Input::pressed(controllerIndex, negative))
-		return -1;
-	else
-	{
-		bool pos = Input::down(controllerIndex, positive);
-		bool neg = Input::down(controllerIndex, negative);
-
-		if (pos && neg)
-			return fallback;
-		else if (pos)
-			return 1;
-		else if (neg)
-			return -1;
-		else
-			return 0;
-	}
+	return state.keyboard.alt();
 }
 
 const char* Input::name_of(Key key)
@@ -449,10 +350,10 @@ const char* Input::name_of(Button button)
 	return "Unknown";
 }
 
-InputBindingRef Input::register_binding(const InputBinding& binding)
+ButtonBindingRef Input::register_binding(const ButtonBinding& binding)
 {
-	auto result = std::make_shared<InputBinding>(binding);
-	g_bindings.push_back(WeakRef<InputBinding>(result));
+	auto result = std::make_shared<ButtonBinding>(binding);
+	g_buttons.push_back(WeakRef<ButtonBinding>(result));
 	return result;
 }
 
@@ -471,19 +372,19 @@ StickBindingRef Input::register_binding(const StickBinding& binding)
 }
 
 
-InputBinding::TriggerBind::TriggerBind(Axis axis)
+ButtonBinding::TriggerBind::TriggerBind(Axis axis)
 	: axis(axis)
 {
 
 }
 
-InputBinding::TriggerBind::TriggerBind(int controller, Axis axis, float threshold, bool positive)
+ButtonBinding::TriggerBind::TriggerBind(int controller, Axis axis, float threshold, bool positive)
 	: controller(controller), axis(axis), threshold(threshold), positive(positive)
 {
 
 }
 
-bool InputBinding::TriggerBind::is_down(float axis_value) const
+bool ButtonBinding::TriggerBind::is_down(float axis_value) const
 {
 	if ((axis_value > 0 && positive) || (axis_value < 0 && !positive))
 	{
@@ -494,13 +395,13 @@ bool InputBinding::TriggerBind::is_down(float axis_value) const
 	return false;
 }
 
-InputBinding::ButtonBind::ButtonBind(Button button)
+ButtonBinding::ButtonBind::ButtonBind(Button button)
 	: button(button) {}
 
-InputBinding::ButtonBind::ButtonBind(int controller, Button button)
+ButtonBinding::ButtonBind::ButtonBind(int controller, Button button)
 	: controller(controller), button(button) {}
 
-bool InputBinding::pressed() const
+bool ButtonBinding::pressed() const
 {
 	if (m_press_consumed)
 		return false;
@@ -511,7 +412,7 @@ bool InputBinding::pressed() const
 	return m_pressed;
 }
 
-bool InputBinding::released() const
+bool ButtonBinding::released() const
 {
 	if (m_release_consumed)
 		return false;
@@ -522,27 +423,27 @@ bool InputBinding::released() const
 	return m_released;
 }
 
-bool InputBinding::down() const
+bool ButtonBinding::down() const
 {
 	return m_down;
 }
 
-float InputBinding::value() const
+float ButtonBinding::value() const
 {
 	return m_value;
 }
 
-int InputBinding::sign() const
+int ButtonBinding::sign() const
 {
 	return (int)Calc::sign(m_value);
 }
 
-double InputBinding::timestamp() const
+double ButtonBinding::timestamp() const
 {
 	return m_last_timestamp;
 }
 
-void InputBinding::update()
+void ButtonBinding::update()
 {
 	m_press_consumed = false;
 	m_release_consumed = false;
@@ -572,55 +473,55 @@ void InputBinding::update()
 	m_value = get_value();
 }
 
-void InputBinding::consume_press()
+void ButtonBinding::consume_press()
 {
 	m_press_consumed = true;
 	m_last_press_time = -1;
 }
 
-void InputBinding::consume_release()
+void ButtonBinding::consume_release()
 {
 	m_release_consumed = true;
 	m_last_release_time = -1;
 }
 
-InputBinding& InputBinding::add(Key key)
+ButtonBinding& ButtonBinding::add(Key key)
 {
 	keys.push_back(key);
 	return *this;
 }
 
-InputBinding& InputBinding::add(ButtonBind button)
+ButtonBinding& ButtonBinding::add(ButtonBind button)
 {
 	buttons.push_back(button);
 	return *this;
 }
 
-InputBinding& InputBinding::add(TriggerBind trigger)
+ButtonBinding& ButtonBinding::add(TriggerBind trigger)
 {
 	triggers.push_back(trigger);
 	return *this;
 }
 
-InputBinding& InputBinding::add(MouseButton button)
+ButtonBinding& ButtonBinding::add(MouseButton button)
 {
 	mouse.push_back(button);
 	return *this;
 }
 
-InputBinding& InputBinding::add_left_trigger(int controller, float threshold)
+ButtonBinding& ButtonBinding::add_left_trigger(int controller, float threshold)
 {
 	triggers.push_back(TriggerBind(controller, Axis::LeftTrigger, threshold, true));
 	return *this;
 }
 
-InputBinding& InputBinding::add_right_trigger(int controller, float threshold)
+ButtonBinding& ButtonBinding::add_right_trigger(int controller, float threshold)
 {
 	triggers.push_back(TriggerBind(controller, Axis::RightTrigger, threshold, true));
 	return *this;
 }
 
-InputBinding& InputBinding::set_controller(int index)
+ButtonBinding& ButtonBinding::set_controller(int index)
 {
 	for (auto& it : buttons)
 		it.controller = index;
@@ -630,7 +531,7 @@ InputBinding& InputBinding::set_controller(int index)
 	return *this;
 }
 
-void InputBinding::clear()
+void ButtonBinding::clear()
 {
 	keys.clear();
 	buttons.clear();
@@ -638,18 +539,18 @@ void InputBinding::clear()
 	mouse.clear();
 }
 
-bool InputBinding::get_pressed() const
+bool ButtonBinding::get_pressed() const
 {
 	for (auto& it : keys)
-		if (Input::pressed(it))
+		if (Input::state.keyboard.pressed[it])
 			return true;
 
 	for (auto& it : mouse)
-		if (Input::pressed(it))
+		if (Input::state.mouse.pressed[it])
 			return true;
 
 	for (auto& it : buttons)
-		if (Input::pressed(it.controller, it.button))
+		if (Input::state.controllers[it.controller].pressed[it.button])
 			return true;
 
 	for (auto& it : triggers)
@@ -660,26 +561,26 @@ bool InputBinding::get_pressed() const
 		if ((int)it.axis < 0 || (int)it.axis >= Input::max_controller_axis)
 			continue;
 
-		if (it.is_down(Input::state()->controllers[it.controller].axis[(int)it.axis]) &&
-			!it.is_down(Input::last_state()->controllers[it.controller].axis[(int)it.axis]))
+		if (it.is_down(Input::state.controllers[it.controller].axis[(int)it.axis]) &&
+			!it.is_down(Input::last_state.controllers[it.controller].axis[(int)it.axis]))
 			return true;
 	}
 
 	return false;
 }
 
-bool InputBinding::get_released() const
+bool ButtonBinding::get_released() const
 {
 	for (auto& it : keys)
-		if (Input::released(it))
+		if (Input::state.keyboard.released[it])
 			return true;
 
 	for (auto& it : mouse)
-		if (Input::released(it))
+		if (Input::state.mouse.released[it])
 			return true;
 
 	for (auto& it : buttons)
-		if (Input::released(it.controller, it.button))
+		if (Input::state.controllers[it.controller].released[it.button])
 			return true;
 
 	for (auto& it : triggers)
@@ -690,26 +591,26 @@ bool InputBinding::get_released() const
 		if ((int)it.axis < 0 || (int)it.axis >= Input::max_controller_axis)
 			continue;
 
-		if (!it.is_down(Input::state()->controllers[it.controller].axis[(int)it.axis]) &&
-			it.is_down(Input::last_state()->controllers[it.controller].axis[(int)it.axis]))
+		if (!it.is_down(Input::state.controllers[it.controller].axis[(int)it.axis]) &&
+			it.is_down(Input::last_state.controllers[it.controller].axis[(int)it.axis]))
 			return true;
 	}
 
 	return false;
 }
 
-bool InputBinding::get_down() const
+bool ButtonBinding::get_down() const
 {
 	for (auto& it : keys)
-		if (Input::down(it))
+		if (Input::state.keyboard.down[it])
 			return true;
 
 	for (auto& it : mouse)
-		if (Input::down(it))
+		if (Input::state.mouse.down[it])
 			return true;
 
 	for (auto& it : buttons)
-		if (Input::down(it.controller, it.button))
+		if (Input::state.controllers[it.controller].down[it.button])
 			return true;
 
 	for (auto& it : triggers)
@@ -720,25 +621,25 @@ bool InputBinding::get_down() const
 		if ((int)it.axis < 0 || (int)it.axis >= Input::max_controller_axis)
 			continue;
 
-		if (it.is_down(Input::state()->controllers[it.controller].axis[(int)it.axis]))
+		if (it.is_down(Input::state.controllers[it.controller].axis[(int)it.axis]))
 			return true;
 	}
 
 	return false;
 }
 
-float InputBinding::get_value() const
+float ButtonBinding::get_value() const
 {
 	for (auto& it : keys)
-		if (Input::down(it))
+		if (Input::state.keyboard.down[it])
 			return 1.0f;
 
 	for (auto& it : mouse)
-		if (Input::down(it))
+		if (Input::state.mouse.down[it])
 			return 1.0f;
 
 	for (auto& it : buttons)
-		if (Input::down(it.controller, it.button))
+		if (Input::state.controllers[it.controller].down[it.button])
 			return 1.0f;
 
 	float highest = 0;
@@ -751,7 +652,7 @@ float InputBinding::get_value() const
 		if ((int)it.axis < 0 || (int)it.axis >= Input::max_controller_axis)
 			continue;
 
-		float raw_value = Input::state()->controllers[it.controller].axis[(int)it.axis];
+		float raw_value = Input::state.controllers[it.controller].axis[(int)it.axis];
 
 		if (it.is_down(raw_value))
 		{
@@ -828,29 +729,29 @@ void AxisBinding::consume_release()
 
 AxisBinding& AxisBinding::add_left_stick_x(int controller, float threshold)
 {
-	negative.add(InputBinding::TriggerBind(controller, Axis::LeftX, threshold, false));
-	positive.add(InputBinding::TriggerBind(controller, Axis::LeftX, threshold, true));
+	negative.add(ButtonBinding::TriggerBind(controller, Axis::LeftX, threshold, false));
+	positive.add(ButtonBinding::TriggerBind(controller, Axis::LeftX, threshold, true));
 	return *this;
 }
 
 AxisBinding& AxisBinding::add_left_stick_y(int controller, float threshold)
 {
-	negative.add(InputBinding::TriggerBind(controller, Axis::LeftY, threshold, false));
-	positive.add(InputBinding::TriggerBind(controller, Axis::LeftY, threshold, true));
+	negative.add(ButtonBinding::TriggerBind(controller, Axis::LeftY, threshold, false));
+	positive.add(ButtonBinding::TriggerBind(controller, Axis::LeftY, threshold, true));
 	return *this;
 }
 
 AxisBinding& AxisBinding::add_right_stick_x(int controller, float threshold)
 {
-	negative.add(InputBinding::TriggerBind(controller, Axis::RightX, threshold, false));
-	positive.add(InputBinding::TriggerBind(controller, Axis::RightX, threshold, true));
+	negative.add(ButtonBinding::TriggerBind(controller, Axis::RightX, threshold, false));
+	positive.add(ButtonBinding::TriggerBind(controller, Axis::RightX, threshold, true));
 	return *this;
 }
 
 AxisBinding& AxisBinding::add_right_stick_y(int controller, float threshold)
 {
-	negative.add(InputBinding::TriggerBind(controller, Axis::RightY, threshold, false));
-	positive.add(InputBinding::TriggerBind(controller, Axis::RightY, threshold, true));
+	negative.add(ButtonBinding::TriggerBind(controller, Axis::RightY, threshold, false));
+	positive.add(ButtonBinding::TriggerBind(controller, Axis::RightY, threshold, true));
 	return *this;
 }
 
@@ -901,10 +802,10 @@ void StickBinding::consume_release()
 
 StickBinding& StickBinding::add_dpad(int controller)
 {
-	x.negative.add(InputBinding::ButtonBind(controller, Button::Left));
-	x.positive.add(InputBinding::ButtonBind(controller, Button::Right));
-	y.negative.add(InputBinding::ButtonBind(controller, Button::Up));
-	y.positive.add(InputBinding::ButtonBind(controller, Button::Down));
+	x.negative.add(ButtonBinding::ButtonBind(controller, Button::Left));
+	x.positive.add(ButtonBinding::ButtonBind(controller, Button::Right));
+	y.negative.add(ButtonBinding::ButtonBind(controller, Button::Up));
+	y.positive.add(ButtonBinding::ButtonBind(controller, Button::Down));
 	return *this;
 }
 

@@ -295,4 +295,4 @@ namespace
 
 }
 
-extern const TargetRef App::backbuffer = TargetRef(new BackBuffer());
+const TargetRef App::backbuffer = TargetRef(new BackBuffer());

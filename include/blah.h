@@ -28,7 +28,6 @@
 #include "blah/images/image.h"
 #include "blah/images/packer.h"
 
-
 #include "blah/numerics/calc.h"
 #include "blah/numerics/circle.h"
 #include "blah/numerics/color.h"

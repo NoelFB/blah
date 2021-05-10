@@ -275,22 +275,55 @@ namespace Blah
 
 	struct KeyboardState
 	{
+		// whether a key was pressed this frame
 		bool pressed[Input::max_keyboard_keys];
+
+		// whether a key is currently held
 		bool down[Input::max_keyboard_keys];
+
+		// whether a key was released this frame
 		bool released[Input::max_keyboard_keys];
+		
+		// the timestamp for the key being pressed
 		u64 timestamp[Input::max_keyboard_keys];
+
+		// current text input this frame
 		String text;
+
+		// Checks if the Left or Right Ctrl Key is down
+		bool ctrl();
+
+		// Checks if the Left or Right Shift Key is down
+		bool shift();
+
+		// Checks if the Left or Right Alt Key is down
+		bool alt();
 	};
 
 	struct MouseState
 	{
+		// whether a button was pressed this frame
 		bool pressed[Input::max_mouse_buttons];
+
+		// whether a button was held this frame
 		bool down[Input::max_mouse_buttons];
+
+		// whether a button was released this frame
 		bool released[Input::max_mouse_buttons];
+
+		// the timestamp for the button being pressed
 		u64 timestamp[Input::max_mouse_buttons];
+
+		// mouse position in screen coordinates
 		Vec2 screen_position;
+		
+		// mouse position in pixel coordinates
 		Vec2 draw_position;
+		
+		// mouse position on the window
 		Vec2 position;
+		
+		// mouse wheel value this frame
 		Point wheel;
 	};
 
@@ -306,48 +339,63 @@ namespace Blah
 
 		// The current Mouse state
 		MouseState mouse;
-
 	};
 
 	// Keyboard Keys
-	enum class Key
+	struct Keys
 	{
-	#define DEFINE_KEY(name, value) name = value,
-	BLAH_KEY_DEFINITIONS
-	#undef DEFINE_KEY
+		enum Enumeration
+		{
+			#define DEFINE_KEY(name, value) name = value,
+			BLAH_KEY_DEFINITIONS
+			#undef DEFINE_KEY
+		};
 	};
+	using Key = Keys::Enumeration;
 
 	// Game Controller Buttons
-	enum class Button
+	struct Buttons
 	{
-	#define DEFINE_BTN(name, value) name = value,
-	BLAH_BUTTON_DEFINITIONS
-	#undef DEFINE_BTN
+		enum Enumeration
+		{
+			#define DEFINE_BTN(name, value) name = value,
+			BLAH_BUTTON_DEFINITIONS
+			#undef DEFINE_BTN
+		};
 	};
+	using Button = Buttons::Enumeration;
 
-	// Game Controller Axes
-	enum class Axis
+	// Game Controller Axis
+	struct Axes
 	{
-		None = -1,
-		LeftX = 0,
-		LeftY = 1,
-		RightX = 2,
-		RightY = 3,
-		LeftTrigger = 4,
-		RightTrigger = 5
+		enum Enumeration
+		{
+			None = -1,
+			LeftX = 0,
+			LeftY = 1,
+			RightX = 2,
+			RightY = 3,
+			LeftTrigger = 4,
+			RightTrigger = 5,
+		};
 	};
+	using Axis = Axes::Enumeration;
 
 	// Mouse Buttons
-	enum class MouseButton
+	struct MouseButtons
 	{
-		None = -1,
-		Left = 0,
-		Middle = 1,
-		Right = 2,
+		enum Enumeration
+		{
+			None = -1,
+			Left = 0,
+			Middle = 1,
+			Right = 2,
+		};
 	};
+	using MouseButton = MouseButtons::Enumeration;
 
-	class InputBinding;
-	using InputBindingRef = Ref<InputBinding>;
+	class ButtonBinding;
+	using ButtonBindingRef = Ref<ButtonBinding>;
 
 	class AxisBinding;
 	using AxisBindingRef = Ref<AxisBinding>;
@@ -359,7 +407,7 @@ namespace Blah
 	// You must call Binding::update() every frame to poll the input state.
 	// Alternatively, bindings can be registered to Input which will
 	// automatically update them.
-	class InputBinding
+	class ButtonBinding
 	{
 	public:
 
@@ -418,16 +466,16 @@ namespace Blah
 		// List of bound Mouse buttons
 		StackVector<MouseButton, 16> mouse;
 
-		InputBinding() = default;
+		ButtonBinding() = default;
 
-		InputBinding(float press_buffer)
+		ButtonBinding(float press_buffer)
 			: press_buffer(press_buffer)
 		{
 
 		}
 
 		template<typename ... Args>
-		InputBinding(float press_buffer, const Args&... args)
+		ButtonBinding(float press_buffer, const Args&... args)
 			: press_buffer(press_buffer)
 		{
 			add(args...);
@@ -461,20 +509,20 @@ namespace Blah
 		void consume_release();
 
 		// adds a key to the binding
-		InputBinding& add(Key key);
+		ButtonBinding& add(Key key);
 
 		// adds a button to the binding
-		InputBinding& add(ButtonBind button);
+		ButtonBinding& add(ButtonBind button);
 
 		// adds an trigger to the binding
-		InputBinding& add(TriggerBind trigger);
+		ButtonBinding& add(TriggerBind trigger);
 
 		// adds a mouse button to the binding
-		InputBinding& add(MouseButton mouse);
+		ButtonBinding& add(MouseButton mouse);
 
 		// adds an input to the binding
 		template<typename T, typename T2, typename ... Args>
-		InputBinding& add(T first, T2 second, const Args&... args)
+		ButtonBinding& add(T first, T2 second, const Args&... args)
 		{
 			add(first);
 			add(second, args...);
@@ -482,13 +530,13 @@ namespace Blah
 		}
 
 		// adds the left trigger to the binding
-		InputBinding& add_left_trigger(int controller, float threshold);
+		ButtonBinding& add_left_trigger(int controller, float threshold);
 
 		// adds the right trigger to the binding
-		InputBinding& add_right_trigger(int controller, float threshold);
+		ButtonBinding& add_right_trigger(int controller, float threshold);
 
 		// assigns all the bindings to the specific controller
-		InputBinding& set_controller(int index);
+		ButtonBinding& set_controller(int index);
 
 		// removes all bindings
 		void clear();
@@ -526,17 +574,17 @@ namespace Blah
 		};
 
 		// Negative Value Binding
-		InputBinding negative;
+		ButtonBinding negative;
 
 		// Positive Value Binding
-		InputBinding positive;
+		ButtonBinding positive;
 
 		// How to handle overlaps (ex. Left and Right are both held)
 		Overlap overlap = Overlap::Newer;
 
 		AxisBinding() = default;
 
-		AxisBinding(const InputBinding& negative, const InputBinding& positive, Overlap overlap = Overlap::Newer)
+		AxisBinding(const ButtonBinding& negative, const ButtonBinding& positive, Overlap overlap = Overlap::Newer)
 			: negative(negative)
 			, positive(positive)
 			, overlap(overlap)
@@ -648,13 +696,11 @@ namespace Blah
 
 	namespace Input
 	{
-		// Returns the Input State of the current frame.
-		// This pointer is only valid for the current frame and should not be stored.
-		const InputState* state();
+		// Input State for the current frame
+		extern InputState state;
 
-		// Returns the Input State of the previous frame.
-		// This pointer is only valid for the current frame and should not be stored.
-		const InputState* last_state();
+		// Input State for the previous frame
+		extern InputState last_state;
 
 		// Gets the Mouse Position
 		Vec2 mouse();
@@ -667,10 +713,10 @@ namespace Blah
 
 		// Checks if the given Mouse Button is pressed
 		bool pressed(MouseButton button);
-		
+
 		// Checks if the given Mouse Button is down
 		bool down(MouseButton button);
-		
+
 		// Checks if the given Mouse Button is released
 		bool released(MouseButton button);
 
@@ -695,42 +741,14 @@ namespace Blah
 		// Checks if the Left or Right Alt Key is down
 		bool alt();
 
-		// Get the current Text Input
-		const char* text();
-
-		// Gets the controller info for the current controller index.
-		// If the controller is not connected or the index it out of range, this will set an unconnected controller.
-		const ControllerState* controller(int controller_index);
-
-		// Checks if the button on the controller was pressed this frame.
-		// If the controller is not connected, or the index is out of range, this will return false.
-		bool pressed(int controller_index, Button button);
-
-		// Checks if the button on the controller was held this frame.
-		// If the controller is not connected, or the index is out of range, this will return false.
-		bool down(int controller_index, Button button);
-
-		// Checks if the button on the controller was released this frame.
-		// If the controller is not connected, or the index is out of range, this will return false.
-		bool released(int controller_index, Button button);
-		
-		// returns the value of the given axis
-		float axis_check(int controller_index, Axis axis);
-
-		// checks the given virtual axis, described by 2 keys. `fallback` is returned if both keys are held
-		int axis_check(int fallback, Key negative, Key positive);
-
-		// checks the given virtual axis, described by 2 buttons. `fallback` is returned if both buttons are held
-		int axis_check(int fallback, int controller_index, Button negative, Button positive);
-
-		// returns a string name of the given key
+		// returns a string name of the key
 		const char* name_of(Key key);
 
-		// returns a string name of the given button
+		// returns a string name of the button
 		const char* name_of(Button button);
 
 		// registers a new binding
-		InputBindingRef register_binding(const InputBinding& binding);
+		ButtonBindingRef register_binding(const ButtonBinding& binding);
 
 		// registers a new axis binding
 		AxisBindingRef register_binding(const AxisBinding& binding);
