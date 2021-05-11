@@ -5,53 +5,9 @@
 
 using namespace Blah;
 
-Mat3x2::Mat3x2()
-	: m11(0), m12(0), m21(0), m22(0), m31(0), m32(0) {}
-
-Mat3x2::Mat3x2(float m11, float m12, float m21, float m22, float m31, float m32)
-	: m11(m11), m12(m12), m21(m21), m22(m22), m31(m31), m32(m32) {}
-
-Mat3x2 Mat3x2::invert() const
-{
-	auto det = (m11 * m22) - (m21 * m12);
-	auto invDet = 1.0f / det;
-
-	return Mat3x2
-	{
-		m22 * invDet,
-		-m12 * invDet,
-		-m21 * invDet,
-		m11 * invDet,
-		(m21 * m32 - m31 * m22) * invDet,
-		(m31 * m12 - m11 * m32) * invDet
-	};
-}
-
 float Mat3x2::scaling_factor() const
 {
-	return (float)sqrt((double)m11 * m11 + (double)m12 * m12);
-}
-
-const Mat3x2 Mat3x2::identity = Mat3x2(1, 0, 0, 1, 0, 0);
-
-Mat3x2 Mat3x2::operator *(const Mat3x2& rhs) const { return multiply(*this, rhs); }
-Mat3x2 Mat3x2::operator +(const Mat3x2& rhs) const { return add(*this, rhs); }
-Mat3x2 Mat3x2::operator -(const Mat3x2& rhs) const { return subtract(*this, rhs); }
-
-Mat3x2& Mat3x2::operator*=(const Mat3x2& rhs)
-{
-	*this = multiply(*this, rhs);
-	return *this;
-}
-
-bool Mat3x2::operator ==(const Mat3x2& rhs)
-{
-	return memcmp(this, &rhs, sizeof(Mat3x2)) == 0;
-}
-
-bool Mat3x2::operator !=(const Mat3x2& rhs)
-{
-	return !(*this == rhs);
+	return Calc::sqrt(m11 * m11 + m12 * m12);
 }
 
 Mat3x2 Mat3x2::create_translation(const Vec2& Vec2)
@@ -152,36 +108,4 @@ Mat3x2 Mat3x2::create_transform(const Vec2& position, const Vec2& origin, const 
 		matrix = matrix * create_translation(position);
 	
 	return matrix;
-}
-
-Mat3x2 Mat3x2::add(const Mat3x2& a, const Mat3x2& b)
-{
-	return Mat3x2(
-		a.m11 + b.m11,
-		a.m12 + b.m12,
-		a.m21 + b.m21,
-		a.m22 + b.m22,
-		a.m31 + b.m31,
-		a.m32 + b.m32);
-}
-
-Mat3x2 Mat3x2::subtract(const Mat3x2& a, const Mat3x2& b)
-{
-	return Mat3x2(
-		a.m11 - b.m11,
-		a.m12 - b.m12,
-		a.m21 - b.m21,
-		a.m22 - b.m22,
-		a.m31 - b.m31,
-		a.m32 - b.m32);
-}
-
-Mat3x2 Mat3x2::multiply(const Mat3x2& a, const Mat3x2& b)
-{
-	return Mat3x2(a.m11 * b.m11 + a.m12 * b.m21,
-		a.m11 * b.m12 + a.m12 * b.m22,
-		a.m21 * b.m11 + a.m22 * b.m21,
-		a.m21 * b.m12 + a.m22 * b.m22,
-		a.m31 * b.m11 + a.m32 * b.m21 + b.m31,
-		a.m31 * b.m12 + a.m32 * b.m22 + b.m32);
 }

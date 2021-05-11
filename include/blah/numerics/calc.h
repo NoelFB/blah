@@ -1,9 +1,10 @@
 #pragma once
 #include <blah/common.h>
-#include <blah/numerics/vec2.h>
 
 namespace Blah
 {
+	struct Vec2;
+
 	namespace Calc
 	{
 		constexpr float PI = 3.141592653f;

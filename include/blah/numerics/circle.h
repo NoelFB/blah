@@ -8,15 +8,19 @@ namespace Blah
 		Vec2 center;
 		float radius;
 
-		Circle()
+		constexpr Circle()
 			: center(), radius(0) {}
 
-		Circle(Vec2 center, float radius)
+		constexpr Circle(Vec2 center, float radius)
 			: center(center), radius(radius) {}
 
-		Circle(float x, float y, float radius)
+		constexpr Circle(float x, float y, float radius)
 			: center(x, y), radius(radius) {}
 
-		void project(const Vec2& axis, float* min, float* max) const;
+		constexpr void project(const Vec2& axis, float* min, float* max) const
+		{
+			*min = Vec2::dot(center - axis * radius, axis);
+			*max = Vec2::dot(center + axis * radius, axis);
+		}
 	};
 }

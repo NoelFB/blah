@@ -5,17 +5,6 @@
 
 using namespace Blah;
 
-Line::Line(float x0, float y0, float x1, float y1)
-{
-	a.x = x0;
-	a.y = y0;
-	b.x = x1;
-	b.y = y1;
-}
-
-Line::Line(const Vec2& start, const Vec2& end)
-	: a(start), b(end) {}
-
 Rect Line::bounds() const
 {
 	Vec2 pos = Vec2(Calc::min(a.x, b.x), Calc::min(a.y, b.y));
@@ -142,16 +131,3 @@ bool Line::intersects(const Line& line, Vec2* intersection_point) const
 	intersection_point->y = i.y;
 	return true;
 }
-
-void Line::project(const Vec2& axis, float* min, float* max) const
-{
-	float dot = a.x * axis.x + a.y * axis.y;
-	*min = dot;
-	*max = dot;
-	dot = b.x * axis.x + b.y * axis.y;
-	*min = Calc::min(dot, *min);
-	*max = Calc::max(dot, *max);
-}
-
-Line Line::operator +(const Vec2& rhs) const { return Line(a + rhs, b + rhs); }
-Line Line::operator -(const Vec2& rhs) const { return Line(a - rhs, b - rhs); }

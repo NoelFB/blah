@@ -1,4 +1,5 @@
 #include <blah/numerics/calc.h>
+#include <blah/numerics/vec2.h>
 #include <cmath>
 #include <cstdlib>
 
