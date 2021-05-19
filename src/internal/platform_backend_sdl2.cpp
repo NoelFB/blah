@@ -165,11 +165,6 @@ namespace Blah
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
 	#endif
 		}
-		// enable DirectX
-		else if (App::renderer() == Renderer::D3D11)
-		{
-
-		}
 
 		// create the window
 		window = SDL_CreateWindow(config.name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, config.width, config.height, flags);
@@ -246,16 +241,18 @@ namespace Blah
 	// Macro defined by X11 conflicts with MouseButton enum
 	#undef None
 
-	void PlatformBackend::frame()
+	void PlatformBackend::update(InputState& state)
 	{
 		// update the mouse every frame
 		{
-			int winX, winY, x, y;
-			SDL_GetWindowPosition(window, &winX, &winY);
+			int win_x, win_y, x, y;
+
+			SDL_GetWindowPosition(window, &win_x, &win_y);
 			SDL_GetGlobalMouseState(&x, &y);
 
-			InputBackend::on_mouse_move((float)(x - winX), (float)(y - winY));
-			InputBackend::on_mouse_screen_move((float)x, (float)y);
+			state.mouse.on_move(
+				Vec2((float)(x - win_x), (float)(y - win_y)),
+				Vec2((float)x, (float)y));
 		}
 
 		// poll normal events
@@ -278,7 +275,8 @@ namespace Blah
 					btn = MouseButton::Right;
 				else if (event.button.button == SDL_BUTTON_MIDDLE)
 					btn = MouseButton::Middle;
-				InputBackend::on_mouse_down(btn);
+
+				state.mouse.on_press(btn);
 			}
 			else if (event.type == SDL_MOUSEBUTTONUP)
 			{
@@ -289,26 +287,27 @@ namespace Blah
 					btn = MouseButton::Right;
 				else if (event.button.button == SDL_BUTTON_MIDDLE)
 					btn = MouseButton::Middle;
-				InputBackend::on_mouse_up(btn);
+
+				state.mouse.on_release(btn);
 			}
 			else if (event.type == SDL_MOUSEWHEEL)
 			{
-				InputBackend::on_mouse_wheel(Point(event.wheel.x, event.wheel.y));
+				state.mouse.wheel = Point(event.wheel.x, event.wheel.y);
 			}
 			// Keyboard
 			else if (event.type == SDL_KEYDOWN)
 			{
 				if (event.key.repeat == 0)
-					InputBackend::on_key_down((Key)event.key.keysym.scancode);
+					state.keyboard.on_press((Key)event.key.keysym.scancode);
 			}
 			else if (event.type == SDL_KEYUP)
 			{
 				if (event.key.repeat == 0)
-					InputBackend::on_key_up((Key)event.key.keysym.scancode);
+					state.keyboard.on_release((Key)event.key.keysym.scancode);
 			}
 			else if (event.type == SDL_TEXTINPUT)
 			{
-				InputBackend::on_text_utf8(event.text.text);
+				state.keyboard.text += event.text.text;
 			}
 			// Joystick Controller
 			else if (event.type == SDL_JOYDEVICEADDED)
@@ -325,7 +324,7 @@ namespace Blah
 					auto product = SDL_JoystickGetProduct(ptr);
 					auto version = SDL_JoystickGetProductVersion(ptr);
 
-					InputBackend::on_controller_connect(index, name, 0, button_count, axis_count, vendor, product, version);
+					state.controllers[index].on_connect(name, 0, button_count, axis_count, vendor, product, version);
 				}
 			}
 			else if (event.type == SDL_JOYDEVICEREMOVED)
@@ -335,7 +334,7 @@ namespace Blah
 				{
 					if (SDL_IsGameController(index) == SDL_FALSE)
 					{
-						InputBackend::on_controller_disconnect(index);
+						state.controllers[index].on_disconnect();
 						SDL_JoystickClose(joysticks[index]);
 					}
 				}
@@ -346,7 +345,7 @@ namespace Blah
 				if (index >= 0)
 				{
 					if (SDL_IsGameController(index) == SDL_FALSE)
-						InputBackend::on_button_down(index, event.jbutton.button);
+						state.controllers[index].on_press((Button)event.jbutton.button);
 				}
 			}
 			else if (event.type == SDL_JOYBUTTONUP)
@@ -355,7 +354,7 @@ namespace Blah
 				if (index >= 0)
 				{
 					if (SDL_IsGameController(index) == SDL_FALSE)
-						InputBackend::on_button_up(index, event.jbutton.button);
+						state.controllers[index].on_release((Button)event.jbutton.button);
 				}
 			}
 			else if (event.type == SDL_JOYAXISMOTION)
@@ -370,7 +369,7 @@ namespace Blah
 							value = event.jaxis.value / 32767.0f;
 						else
 							value = event.jaxis.value / 32768.0f;
-						InputBackend::on_axis_move(index, event.jaxis.axis, value);
+						state.controllers[index].on_axis((Axis)event.jaxis.axis, value);
 					}
 				}
 			}
@@ -386,7 +385,7 @@ namespace Blah
 					auto product = SDL_GameControllerGetProduct(ptr);
 					auto version = SDL_GameControllerGetProductVersion(ptr);
 
-					InputBackend::on_controller_connect(index, name, 1, 15, 6, vendor, product, version);
+					state.controllers[index].on_connect(name, 1, 15, 6, vendor, product, version);
 				}
 			}
 			else if (event.type == SDL_CONTROLLERDEVICEREMOVED)
@@ -394,7 +393,7 @@ namespace Blah
 				auto index = find_gamepad_index(event.cdevice.which);
 				if (index >= 0)
 				{
-					InputBackend::on_controller_disconnect(index);
+					state.controllers[index].on_disconnect();
 					SDL_GameControllerClose(gamepads[index]);
 				}
 			}
@@ -403,11 +402,11 @@ namespace Blah
 				auto index = find_gamepad_index(event.cdevice.which);
 				if (index >= 0)
 				{
-					int button = (int)Button::None;
+					Button button = Button::None;
 					if (event.cbutton.button >= 0 && event.cbutton.button < 15)
-						button = event.cbutton.button; // NOTE: These map directly to Engine Buttons enum!
+						button = (Button)event.cbutton.button; // NOTE: These map directly to Engine Buttons enum!
 
-					InputBackend::on_button_down(index, button);
+					state.controllers[index].on_press(button);
 				}
 			}
 			else if (event.type == SDL_CONTROLLERBUTTONUP)
@@ -415,11 +414,11 @@ namespace Blah
 				auto index = find_gamepad_index(event.cdevice.which);
 				if (index >= 0)
 				{
-					int button = (int)Button::None;
+					Button button = Button::None;
 					if (event.cbutton.button >= 0 && event.cbutton.button < 15)
-						button = event.cbutton.button; // NOTE: These map directly to Engine Buttons enum!
+						button = (Button)event.cbutton.button; // NOTE: These map directly to Engine Buttons enum!
 
-					InputBackend::on_button_up(index, button);
+					state.controllers[index].on_release(button);
 				}
 			}
 			else if (event.type == SDL_CONTROLLERAXISMOTION)
@@ -427,9 +426,9 @@ namespace Blah
 				auto index = find_gamepad_index(event.cdevice.which);
 				if (index >= 0)
 				{
-					int axis = (int)Axis::None;
+					Axis axis = Axis::None;
 					if (event.caxis.axis >= 0 && event.caxis.axis < 6)
-						axis = event.caxis.axis; // NOTE: These map directly to Engine Axis enum!
+						axis = (Axis)event.caxis.axis; // NOTE: These map directly to Engine Axis enum!
 
 					float value;
 					if (event.caxis.value >= 0)
@@ -437,7 +436,7 @@ namespace Blah
 					else
 						value = event.caxis.value / 32768.0f;
 
-					InputBackend::on_axis_move(index, axis, value);
+					state.controllers[index].on_axis(axis, value);
 				}
 			}
 		}

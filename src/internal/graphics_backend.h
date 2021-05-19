@@ -27,7 +27,7 @@ namespace Blah
 		Renderer renderer();
 
 		// Called once per frame
-		void frame();
+		void update();
 
 		// Called before rendering begins
 		void before_render();

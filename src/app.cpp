@@ -40,9 +40,6 @@ namespace
 
 	void app_iterate()
 	{
-		// poll system events
-		PlatformBackend::frame();
-
 		// update at a fixed timerate
 		// TODO: allow a non-fixed step update?
 		{
@@ -91,8 +88,10 @@ namespace
 				Time::previous_seconds = Time::seconds;
 				Time::seconds += Time::delta;
 
-				InputBackend::frame();
-				GraphicsBackend::frame();
+				InputBackend::update_state();
+				PlatformBackend::update(Input::state);
+				InputBackend::update_bindings();
+				GraphicsBackend::update();
 
 				if (app_config.on_update != nullptr)
 					app_config.on_update();

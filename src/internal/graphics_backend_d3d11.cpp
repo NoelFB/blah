@@ -792,7 +792,7 @@ namespace Blah
 		return state.features;
 	}
 
-	void GraphicsBackend::frame()
+	void GraphicsBackend::update()
 	{
 	}
 

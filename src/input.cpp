@@ -11,7 +11,6 @@ using namespace Blah;
 
 namespace
 {
-	InputState g_next_state;
 	InputState g_empty_state;
 	ControllerState g_empty_controller;
 	Vector<WeakRef<ButtonBinding>> g_buttons;
@@ -25,57 +24,54 @@ InputState Blah::Input::last_state;
 void InputBackend::init()
 {
 	g_empty_controller.name = "Disconnected";
-	for (int i = 0; i < Blah::Input::max_controllers; i++)
+	for (int i = 0; i < Input::max_controllers; i++)
 		g_empty_state.controllers[i].name = g_empty_controller.name;
 
 	Input::last_state = g_empty_state;
 	Input::state = g_empty_state;
-	g_next_state = g_empty_state;
 	g_buttons.dispose();
 	g_axes.dispose();
 	g_sticks.dispose();
 }
 
-void InputBackend::frame()
+void InputBackend::update_state()
 {
 	// cycle states
 	Input::last_state = Input::state;
-	Input::state = g_next_state;
 
-	// copy state, clear pressed / released values
+	// update other state for next frame
+	for (int i = 0; i < Input::max_keyboard_keys; i++)
 	{
-		for (int i = 0; i < Blah::Input::max_keyboard_keys; i++)
-		{
-			g_next_state.keyboard.pressed[i] = false;
-			g_next_state.keyboard.released[i] = false;
-		}
-
-		for (int i = 0; i < Blah::Input::max_mouse_buttons; i++)
-		{
-			g_next_state.mouse.pressed[i] = false;
-			g_next_state.mouse.released[i] = false;
-		}
-
-		g_next_state.mouse.wheel = Point::zero;
-		g_next_state.keyboard.text.clear();
-
-		for (int i = 0; i < Blah::Input::max_controllers; i++)
-		{
-			ControllerState* controller = &(g_next_state.controllers[i]);
-
-			if (!controller->is_connected)
-				controller->name = nullptr;
-
-			for (int j = 0; j < Blah::Input::max_controller_buttons; j++)
-			{
-				controller->pressed[j] = false;
-				controller->released[j] = false;
-			}
-		}
+		Input::state.keyboard.pressed[i] = false;
+		Input::state.keyboard.released[i] = false;
 	}
 
-	// update bindings
+	for (int i = 0; i < Input::max_mouse_buttons; i++)
+	{
+		Input::state.mouse.pressed[i] = false;
+		Input::state.mouse.released[i] = false;
+	}
 
+	Input::state.mouse.wheel = Point::zero;
+	Input::state.keyboard.text.clear();
+
+	for (int i = 0; i < Input::max_controllers; i++)
+	{
+		ControllerState& controller = Input::state.controllers[i];
+
+		if (!controller.is_connected)
+			controller.name.clear();
+
+		for (int j = 0; j < Input::max_controller_buttons; j++)
+		{
+			controller.pressed[j] = false;
+			controller.released[j] = false;
+		}
+	}
+}
+
+void InputBackend::update_bindings()
+{
 	for (int i = 0; i < g_buttons.size(); i++)
 	{
 		if (g_buttons[i].use_count() <= 0)
@@ -116,133 +112,99 @@ void InputBackend::frame()
 	}
 }
 
-void InputBackend::on_mouse_move(float x, float y)
+void MouseState::on_move(const Vec2& pos, const Vec2& screen_pos)
 {
-	g_next_state.mouse.position.x = x;
-	g_next_state.mouse.position.y = y;
+	position = pos;
+	screen_position = screen_pos;
 
 	Point size = Point(App::width(), App::height());
 	Point draw = Point(App::draw_width(), App::draw_height());
 
-	g_next_state.mouse.draw_position.x = (x / (float)size.x) * draw.x;
-	g_next_state.mouse.draw_position.y = (y / (float)size.y) * draw.y;
+	draw_position.x = (position.x / (float)size.x) * draw.x;
+	draw_position.y = (position.y / (float)size.y) * draw.y;
 }
 
-void InputBackend::on_mouse_screen_move(float x, float y)
+void MouseState::on_press(MouseButton button)
 {
-	g_next_state.mouse.screen_position.x = x;
-	g_next_state.mouse.screen_position.y = y;
-}
-
-void InputBackend::on_mouse_down(MouseButton button)
-{
-	int i = (int)button;
-	if (i >= 0 && i < Blah::Input::max_mouse_buttons)
+	if (button >= 0 && button < Input::max_mouse_buttons)
 	{
-		g_next_state.mouse.down[i] = true;
-		g_next_state.mouse.pressed[i] = true;
-		g_next_state.mouse.timestamp[i] = Time::ticks;
+		down[button] = true;
+		pressed[button] = true;
+		timestamp[button] = Time::ticks;
 	}
 }
 
-void InputBackend::on_mouse_up(MouseButton button)
+void MouseState::on_release(MouseButton button)
 {
-	int i = (int)button;
-	if (i >= 0 && i < Blah::Input::max_mouse_buttons)
+	if (button >= 0 && button < Input::max_mouse_buttons)
 	{
-		g_next_state.mouse.down[i] = false;
-		g_next_state.mouse.released[i] = true;
+		down[button] = false;
+		released[button] = true;
 	}
 }
 
-void InputBackend::on_key_down(Key key)
+void KeyboardState::on_press(Key key)
 {
-	int i = (int)key;
-	if (i >= 0 && i < Blah::Input::max_keyboard_keys)
+	if (key >= 0 && key < Input::max_keyboard_keys)
 	{
-		g_next_state.keyboard.down[i] = true;
-		g_next_state.keyboard.pressed[i] = true;
-		g_next_state.keyboard.timestamp[i] = Time::ticks;
+		down[key] = true;
+		pressed[key] = true;
+		timestamp[key] = Time::ticks;
 	}
 }
 
-void InputBackend::on_mouse_wheel(Point wheel)
+void KeyboardState::on_release(Key key)
 {
-	g_next_state.mouse.wheel = wheel;
-}
-
-void InputBackend::on_key_up(Key key)
-{
-	int i = (int)key;
-	if (i >= 0 && i < Blah::Input::max_keyboard_keys)
+	if (key >= 0 && key < Input::max_keyboard_keys)
 	{
-		g_next_state.keyboard.down[i] = false;
-		g_next_state.keyboard.released[i] = true;
+		down[key] = false;
+		released[key] = true;
 	}
 }
 
-void InputBackend::on_text_utf8(const char* text)
+void ControllerState::on_connect(const String& name, bool is_gamepad, int button_count, int axis_count, u16 vendor, u16 product, u16 version)
 {
-	g_next_state.keyboard.text += text;
+	*this = g_empty_controller;
+	this->name = name;
+	this->is_connected = true;
+	this->is_gamepad = is_gamepad;
+	this->button_count = button_count;
+	this->axis_count = axis_count;
+	this->vendor = vendor;
+	this->product = product;
+	this->version = version;
 }
 
-void InputBackend::on_controller_connect(int index, const char* name, int is_gamepad, int button_count, int axis_count, u16 vendor, u16 product, u16 version)
+void ControllerState::on_disconnect()
 {
-	if (index < Blah::Input::max_controllers)
+	*this = g_empty_controller;
+}
+
+void ControllerState::on_press(Button button)
+{
+	if (button >= 0 && button < Input::max_controller_buttons && button < button_count)
 	{
-		ControllerState* controller = &(g_next_state.controllers[index]);
-		*controller = g_empty_controller;
-		controller->name = name;
-		controller->is_connected = true;
-		controller->is_gamepad = is_gamepad;
-		controller->button_count = button_count;
-		controller->axis_count = axis_count;
-		controller->vendor = vendor;
-		controller->product = product;
-		controller->version = version;
+		down[button] = true;
+		pressed[button] = true;
+		button_timestamp[button] = Time::ticks;
 	}
 }
 
-void InputBackend::on_controller_disconnect(int index)
+void ControllerState::on_release(Button button)
 {
-	if (index < Blah::Input::max_controllers)
-		g_next_state.controllers[index] = g_empty_controller;
-}
-
-void InputBackend::on_button_down(int index, int button)
-{
-	if (index < Blah::Input::max_controllers &&
-		button < Blah::Input::max_controller_buttons &&
-		g_next_state.controllers[index].is_connected &&
-		button < g_next_state.controllers[index].button_count)
+	if (button >= 0 && button < Input::max_controller_buttons && button < button_count)
 	{
-		g_next_state.controllers[index].down[button] = true;
-		g_next_state.controllers[index].pressed[button] = true;
-		g_next_state.controllers[index].button_timestamp[button] = Time::ticks;
+		down[button] = false;
+		released[button] = true;
 	}
 }
 
-void InputBackend::on_button_up(int index, int button)
+void ControllerState::on_axis(Axis index, float value)
 {
-	if (index < Blah::Input::max_controllers &&
-		button < Blah::Input::max_controller_buttons &&
-		g_next_state.controllers[index].is_connected &&
-		button < g_next_state.controllers[index].button_count)
+	if (index >= 0 && index < Input::max_controller_axis && index < axis_count)
 	{
-		g_next_state.controllers[index].down[button] = false;
-		g_next_state.controllers[index].released[button] = true;
-	}
-}
-
-void InputBackend::on_axis_move(int index, int axis, float value)
-{
-	if (index < Blah::Input::max_controllers &&
-		axis < Blah::Input::max_controller_axis &&
-		g_next_state.controllers[index].is_connected &&
-		axis < g_next_state.controllers[index].axis_count)
-	{
-		g_next_state.controllers[index].axis[axis] = value;
-		g_next_state.controllers[index].axis_timestamp[axis] = Time::ticks;
+		axis[index] = value;
+		axis_timestamp[index] = Time::ticks;
 	}
 }
 

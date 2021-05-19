@@ -50,6 +50,9 @@ namespace Blah
 	RECT g_windowed_position;
 	bool g_fullscreen = false;
 
+	// current input state
+	InputState* g_input_state = nullptr;
+
 	// Converts Windows scancode to Blah key
 	Key scancode_to_key(WPARAM wParam, LPARAM lParam);
 
@@ -329,35 +332,35 @@ namespace Blah
 
 			// Mouse Input
 		case WM_LBUTTONDOWN:
-			InputBackend::on_mouse_down(MouseButton::Left);
+			g_input_state->mouse.on_press(MouseButton::Left);
 			return 0;
 
 		case WM_LBUTTONUP:
-			InputBackend::on_mouse_up(MouseButton::Left);
+			g_input_state->mouse.on_release(MouseButton::Left);
 			return 0;
 
 		case WM_RBUTTONDOWN:
-			InputBackend::on_mouse_down(MouseButton::Right);
+			g_input_state->mouse.on_press(MouseButton::Right);
 			return 0;
 
 		case WM_RBUTTONUP:
-			InputBackend::on_mouse_up(MouseButton::Right);
+			g_input_state->mouse.on_release(MouseButton::Right);
 			return 0;
 
 		case WM_MBUTTONDOWN:
-			InputBackend::on_mouse_down(MouseButton::Middle);
+			g_input_state->mouse.on_press(MouseButton::Middle);
 			return 0;
 
 		case WM_MBUTTONUP:
-			InputBackend::on_mouse_up(MouseButton::Middle);
+			g_input_state->mouse.on_release(MouseButton::Middle);
 			return 0;
 
 		case WM_MOUSEMOVE:
-			InputBackend::on_mouse_move((float)((u16)lParam), (float)(lParam >> 16));
+			g_input_state->mouse.on_move(Vec2((float)((u16)lParam), (float)(lParam >> 16)), Vec2::zero);
 			return 0;
 
 		case WM_MOUSEWHEEL:
-			InputBackend::on_mouse_wheel(Point(0, GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA));
+			g_input_state->mouse.wheel = Point(0, GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA);
 			return 0;
 
 			// Text Input
@@ -369,7 +372,7 @@ namespace Blah
 			String result;
 			result.append((u32)wParam);
 			if (result.length() > 0)
-				InputBackend::on_text_utf8(result.cstr());
+				g_input_state->keyboard.text += result.cstr();
 			return 0;
 		}
 
@@ -382,7 +385,7 @@ namespace Blah
 			{
 				auto key = scancode_to_key(wParam, lParam);
 				if (key != Key::Unknown)
-					InputBackend::on_key_down(key);
+					g_input_state->keyboard.on_press(key);
 			}
 			return 0;
 		}
@@ -392,7 +395,7 @@ namespace Blah
 		{
 			auto key = scancode_to_key(wParam, lParam);
 			if (key != Key::Unknown)
-				InputBackend::on_key_up(key);
+				g_input_state->keyboard.on_release(key);
 			return 0;
 		}
 		}
@@ -400,8 +403,10 @@ namespace Blah
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
 
-	void PlatformBackend::frame()
+	void PlatformBackend::update(InputState& state)
 	{
+		g_input_state = &state;
+
 		// Catch & Dispatch Window Messages
 		MSG msg;
 		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -850,4 +855,4 @@ namespace Blah
 	}
 }
 
-#endif // BLAH_PLATFORM_WINDOWS
+#endif // BLAH_PLATFORM_WIN32

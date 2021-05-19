@@ -1,6 +1,7 @@
 #pragma once
 #include <blah/common.h>
 #include <blah/filesystem.h>
+#include <blah/input.h>
 #include <blah/containers/vector.h>
 
 namespace Blah
@@ -25,7 +26,7 @@ namespace Blah
 		u64 ticks();
 
 		// Called every frame
-		void frame();
+		void update(InputState& state);
 
 		// Sleeps the current thread
 		void sleep(int milliseconds);

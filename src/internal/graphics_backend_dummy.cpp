@@ -177,7 +177,7 @@ namespace Blah
 		return features;
 	}
 
-	void GraphicsBackend::frame() {}
+	void GraphicsBackend::update() {}
 	void GraphicsBackend::before_render() {}
 	void GraphicsBackend::after_render() {}
 

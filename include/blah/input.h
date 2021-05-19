@@ -228,119 +228,6 @@ namespace Blah
 		constexpr int max_keyboard_keys = 512;
 	}
 
-	struct ControllerState
-	{
-		// The name of the gamepad, or NULL if not connected
-		const char* name;
-
-		// Whether this gamepad is connected
-		bool is_connected;
-
-		// Whether this gamepad is a standard Game Controller
-		bool is_gamepad;
-
-		// The total button count for this controller
-		int button_count;
-
-		// The total axis count for this controller
-		int axis_count;
-
-		// An array holding the pressed state of each button
-		bool pressed[Input::max_controller_buttons];
-
-		// An array holding the down state of each button
-		bool down[Input::max_controller_buttons];
-
-		// An array holding the released state of each button
-		bool released[Input::max_controller_buttons];
-
-		// An array holding the value state of each axis
-		float axis[Input::max_controller_axis];
-
-		// Timestamp, in milliseconds, since each button was last pressed
-		u64 button_timestamp[Input::max_controller_buttons];
-
-		// Timestamp, in milliseconds, since each axis last had a value set
-		u64 axis_timestamp[Input::max_controller_axis];
-
-		// The USB Vendor ID
-		u16 vendor;
-
-		// The USB Product ID
-		u16 product;
-
-		// the Product Version
-		u16 version;
-	};
-
-	struct KeyboardState
-	{
-		// whether a key was pressed this frame
-		bool pressed[Input::max_keyboard_keys];
-
-		// whether a key is currently held
-		bool down[Input::max_keyboard_keys];
-
-		// whether a key was released this frame
-		bool released[Input::max_keyboard_keys];
-		
-		// the timestamp for the key being pressed
-		u64 timestamp[Input::max_keyboard_keys];
-
-		// current text input this frame
-		String text;
-
-		// Checks if the Left or Right Ctrl Key is down
-		bool ctrl();
-
-		// Checks if the Left or Right Shift Key is down
-		bool shift();
-
-		// Checks if the Left or Right Alt Key is down
-		bool alt();
-	};
-
-	struct MouseState
-	{
-		// whether a button was pressed this frame
-		bool pressed[Input::max_mouse_buttons];
-
-		// whether a button was held this frame
-		bool down[Input::max_mouse_buttons];
-
-		// whether a button was released this frame
-		bool released[Input::max_mouse_buttons];
-
-		// the timestamp for the button being pressed
-		u64 timestamp[Input::max_mouse_buttons];
-
-		// mouse position in screen coordinates
-		Vec2 screen_position;
-		
-		// mouse position in pixel coordinates
-		Vec2 draw_position;
-		
-		// mouse position on the window
-		Vec2 position;
-		
-		// mouse wheel value this frame
-		Point wheel;
-	};
-
-	// An Input State, which stores the state for gamepads, keyboard, and mouse
-	struct InputState
-	{
-		// All the Gamepads. Note that not all gamepads are necessarily connected,
-		// and each one must be checked before use.
-		ControllerState controllers[Input::max_controllers];
-
-		// The current Keyboard state
-		KeyboardState keyboard;
-
-		// The current Mouse state
-		MouseState mouse;
-	};
-
 	// Keyboard Keys
 	struct Keys
 	{
@@ -393,6 +280,152 @@ namespace Blah
 		};
 	};
 	using MouseButton = MouseButtons::Enumeration;
+
+	// Controller State
+	struct ControllerState
+	{
+		// The name of the gamepad, or NULL if not connected
+		String name;
+
+		// Whether this gamepad is connected
+		bool is_connected;
+
+		// Whether this gamepad is a standard Game Controller
+		bool is_gamepad;
+
+		// The total button count for this controller
+		int button_count;
+
+		// The total axis count for this controller
+		int axis_count;
+
+		// An array holding the pressed state of each button
+		bool pressed[Input::max_controller_buttons];
+
+		// An array holding the down state of each button
+		bool down[Input::max_controller_buttons];
+
+		// An array holding the released state of each button
+		bool released[Input::max_controller_buttons];
+
+		// An array holding the value state of each axis
+		float axis[Input::max_controller_axis];
+
+		// Timestamp, in milliseconds, since each button was last pressed
+		u64 button_timestamp[Input::max_controller_buttons];
+
+		// Timestamp, in milliseconds, since each axis last had a value set
+		u64 axis_timestamp[Input::max_controller_axis];
+
+		// The USB Vendor ID
+		u16 vendor;
+
+		// The USB Product ID
+		u16 product;
+
+		// the Product Version
+		u16 version;
+
+		// marks the controller as connected
+		void on_connect(const String& name, bool is_gamepad, int button_count, int axis_count, u16 vendor, u16 product, u16 version);
+
+		// marks the controller as disconnected
+		void on_disconnect();
+
+		// invokes a button press
+		void on_press(Button button);
+
+		// invokes a button release
+		void on_release(Button button);
+
+		// invokes an axis movement
+		void on_axis(Axis axis, float value);
+	};
+
+	// Keyboard State
+	struct KeyboardState
+	{
+		// whether a key was pressed this frame
+		bool pressed[Input::max_keyboard_keys];
+
+		// whether a key is currently held
+		bool down[Input::max_keyboard_keys];
+
+		// whether a key was released this frame
+		bool released[Input::max_keyboard_keys];
+		
+		// the timestamp for the key being pressed
+		u64 timestamp[Input::max_keyboard_keys];
+
+		// current text input this frame
+		String text;
+
+		// Checks if the Left or Right Ctrl Key is down
+		bool ctrl();
+
+		// Checks if the Left or Right Shift Key is down
+		bool shift();
+
+		// Checks if the Left or Right Alt Key is down
+		bool alt();
+
+		// invokes a key press
+		void on_press(Key key);
+
+		// invokes a key release
+		void on_release(Key key);
+	};
+
+	// Mouse State
+	struct MouseState
+	{
+		// whether a button was pressed this frame
+		bool pressed[Input::max_mouse_buttons];
+
+		// whether a button was held this frame
+		bool down[Input::max_mouse_buttons];
+
+		// whether a button was released this frame
+		bool released[Input::max_mouse_buttons];
+
+		// the timestamp for the button being pressed
+		u64 timestamp[Input::max_mouse_buttons];
+
+		// mouse position in screen coordinates
+		Vec2 screen_position;
+		
+		// mouse position in pixel coordinates
+		Vec2 draw_position;
+		
+		// mouse position on the window
+		Vec2 position;
+		
+		// mouse wheel value this frame
+		Point wheel;
+
+		// invokes a key press
+		void on_press(MouseButton button);
+
+		// invokes a mouse movement
+		void on_move(const Vec2& position, const Vec2& screen_position);
+
+		// invokes a key release
+		void on_release(MouseButton button);
+	};
+
+	// An Input State, which stores the state for gamepads, keyboard, and mouse
+	struct InputState
+	{
+		// All the Gamepads. Note that not all gamepads are necessarily connected,
+		// and each one must be checked before use.
+		ControllerState controllers[Input::max_controllers];
+
+		// The current Keyboard state
+		KeyboardState keyboard;
+
+		// The current Mouse state
+		MouseState mouse;
+	};
 
 	class ButtonBinding;
 	using ButtonBindingRef = Ref<ButtonBinding>;
