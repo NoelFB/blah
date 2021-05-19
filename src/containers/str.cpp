@@ -262,8 +262,11 @@ Str& Str::trim()
 
 bool Str::starts_with(const char* str, bool ignoreCase) const
 {
+	if (str == nullptr)
+		return m_length == 0;
+
 	int len = (int)strlen(str);
-	if (len > m_length || len <= 0)
+	if (len > m_length)
 		return false;
 
 	const char* a = data();
@@ -320,6 +323,9 @@ bool Str::contains(const char* str, bool ignoreCase) const
 
 bool Str::ends_with(const char* str, bool ignoreCase) const
 {
+	if (str == nullptr)
+		return m_length == 0;
+
 	int len = (int)strlen(str);
 	if (len > m_length || len <= 0)
 		return false;
