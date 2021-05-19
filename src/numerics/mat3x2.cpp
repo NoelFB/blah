@@ -1,7 +1,6 @@
 #include <blah/numerics/mat3x2.h>
 #include <blah/numerics/vec2.h>
 #include <blah/numerics/calc.h>
-#include <cstring>
 
 using namespace Blah;
 
@@ -10,37 +9,22 @@ float Mat3x2::scaling_factor() const
 	return Calc::sqrt(m11 * m11 + m12 * m12);
 }
 
-Mat3x2 Mat3x2::create_translation(const Vec2& Vec2)
+Mat3x2 Mat3x2::create_translation(const Vec2& position)
 {
-	return create_translation(Vec2.x, Vec2.y);
+	return create_translation(position.x, position.y);
 }
 
-Mat3x2 Mat3x2::create_translation(float x, float y)
+Mat3x2 Mat3x2::create_scale(const Vec2& scale)
 {
-	return Mat3x2(1, 0, 0, 1, x, y);
+	return create_scale(scale.x, scale.y);
 }
 
-Mat3x2 Mat3x2::create_scale(float scale)
-{
-	return create_scale(scale, scale);
-}
-
-Mat3x2 Mat3x2::create_scale(Vec2 Vec2)
-{
-	return create_scale(Vec2.x, Vec2.y);
-}
-
-Mat3x2 Mat3x2::create_scale(float x, float y)
-{
-	return Mat3x2(x, 0, 0, y, 0, 0);
-}
-
-Mat3x2 Mat3x2::create_scale(float scale, Vec2 centerPoint)
+Mat3x2 Mat3x2::create_scale(float scale, const Vec2& center_point)
 {
 	Mat3x2 result;
 
-	float tx = centerPoint.x * (1 - scale);
-	float ty = centerPoint.y * (1 - scale);
+	float tx = center_point.x * (1 - scale);
+	float ty = center_point.y * (1 - scale);
 
 	result.m11 = scale;
 	result.m12 = 0.0f;
@@ -52,12 +36,12 @@ Mat3x2 Mat3x2::create_scale(float scale, Vec2 centerPoint)
 	return result;
 }
 
-Mat3x2 Mat3x2::create_scale(Vec2 scale, Vec2 centerPoint)
+Mat3x2 Mat3x2::create_scale(const Vec2& scale, const Vec2& center_point)
 {
 	Mat3x2 result;
 
-	float tx = centerPoint.x * (1 - scale.x);
-	float ty = centerPoint.y * (1 - scale.y);
+	float tx = center_point.x * (1 - scale.x);
+	float ty = center_point.y * (1 - scale.y);
 
 	result.m11 = scale.x;
 	result.m12 = 0.0f;
@@ -69,17 +53,17 @@ Mat3x2 Mat3x2::create_scale(Vec2 scale, Vec2 centerPoint)
 	return result;
 }
 
-Mat3x2 Mat3x2::create_scale(float scaleX, float scaleY, Vec2 centerPoint)
+Mat3x2 Mat3x2::create_scale(float scale_x, float scale_y, const Vec2& center_point)
 {
 	Mat3x2 result;
 
-	float tx = centerPoint.x * (1 - scaleX);
-	float ty = centerPoint.y * (1 - scaleY);
+	float tx = center_point.x * (1 - scale_x);
+	float ty = center_point.y * (1 - scale_y);
 
-	result.m11 = scaleX;
+	result.m11 = scale_x;
 	result.m12 = 0.0f;
 	result.m21 = 0.0f;
-	result.m22 = scaleY;
+	result.m22 = scale_y;
 	result.m31 = tx;
 	result.m32 = ty;
 

@@ -40,14 +40,29 @@ namespace Blah
 		float scaling_factor() const;
 
 	 	static Mat3x2 create_translation(const Vec2& position);
-		static Mat3x2 create_translation(float x, float y);
-		static Mat3x2 create_scale(float scale);
-		static Mat3x2 create_scale(Vec2 scale);
-		static Mat3x2 create_scale(float x, float y);
-		static Mat3x2 create_scale(float scale, Vec2 centerPoint);
-		static Mat3x2 create_scale(Vec2 scale, Vec2 centerPoint);
-		static Mat3x2 create_scale(float scaleX, float scaleY, Vec2 centerPoint);
+
+		static constexpr Mat3x2 create_translation(float x, float y)
+		{
+			return Mat3x2(1, 0, 0, 1, x, y);
+		}
+
+		static constexpr Mat3x2 create_scale(float scale)
+		{
+			return Mat3x2(scale, 0, 0, scale, 0, 0);
+		}
+
+		static Mat3x2 create_scale(float x, float y)
+		{
+			return Mat3x2(x, 0, 0, y, 0, 0);
+		}
+
+		static Mat3x2 create_scale(const Vec2& scale);
+		static Mat3x2 create_scale(float scale, const Vec2& center_point);
+		static Mat3x2 create_scale(const Vec2& scale, const Vec2& center_point);
+		static Mat3x2 create_scale(float scale_x, float scale_y, const Vec2& center_point);
+
 		static Mat3x2 create_rotation(float radians);
+
 		static Mat3x2 create_transform(const Vec2& position, const Vec2& origin, const Vec2& scale, float rotation);
 
 		static constexpr Mat3x2 add(const Mat3x2& a, const Mat3x2& b)
