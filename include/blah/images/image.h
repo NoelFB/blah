@@ -34,8 +34,8 @@ namespace Blah
 		Image& operator=(Image&& src) noexcept;
 		~Image();
 
-		// disposes the existing image and recreates it from a stream
-		void from_stream(Stream& stream);
+		// creates the image from a stream, and returns true if successful
+		bool from_stream(Stream& stream);
 
 		// disposes the image and resets its values to defaults
 		void dispose();

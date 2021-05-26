@@ -73,15 +73,15 @@ namespace Blah
 			while (len < 8 && *(hex_string + len) != '\0')
 				len++;
 
-			if (len >= 8)
-				a = (BLAH_HEX_VALUE(hex_string[6]) << 4) + BLAH_HEX_VALUE(hex_string[7]);
-
 			if (len >= 6)
 			{
 				r = (BLAH_HEX_VALUE(hex_string[0]) << 4) + BLAH_HEX_VALUE(hex_string[1]);
 				g = (BLAH_HEX_VALUE(hex_string[2]) << 4) + BLAH_HEX_VALUE(hex_string[3]);
 				b = (BLAH_HEX_VALUE(hex_string[4]) << 4) + BLAH_HEX_VALUE(hex_string[5]);
 			}
+
+			if (len >= 8)
+				a = (BLAH_HEX_VALUE(hex_string[6]) << 4) + BLAH_HEX_VALUE(hex_string[7]);
 		}
 
 		// Premultiplies the Color
@@ -99,10 +99,16 @@ namespace Blah
 		String to_hex_rgb() const;
 
 		// Converts the Color to a Vec3 (RGB)
-		Vec3 to_vec3() const;
+		constexpr Vec3 to_vec3() const
+		{
+			return Vec3(r / 255.0f, g / 255.0f, b / 255.0f);
+		}
 
 		// Converts the Color to a Vec4 (RGBA)
-		Vec4 to_vec4() const;
+		constexpr Vec4 to_vec4() const
+		{
+			return Vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+		}
 
 		// Convers the Color to a u32
 		constexpr u32 to_rgba() const
