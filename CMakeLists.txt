@@ -43,11 +43,11 @@ add_library(blah
 	src/streams/memorystream.cpp
 	src/streams/stream.cpp
 
-	src/internal/graphics_backend_gl.cpp
-	src/internal/graphics_backend_d3d11.cpp
-	src/internal/graphics_backend_dummy.cpp
-	src/internal/platform_backend_sdl2.cpp
-	src/internal/platform_backend_win32.cpp
+	src/internal/graphics_gl.cpp
+	src/internal/graphics_d3d11.cpp
+	src/internal/graphics_dummy.cpp
+	src/internal/platform_sdl2.cpp
+	src/internal/platform_win32.cpp
 )
 
 target_include_directories(blah

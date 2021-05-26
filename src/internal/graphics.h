@@ -12,7 +12,7 @@ namespace Blah
 {
 	// Graphics backend API used for rendering.
 	// All rendering ends up going through here.
-	namespace GraphicsBackend
+	namespace Graphics
 	{
 		// Initializes the graphics backend
 		bool init();

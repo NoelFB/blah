@@ -4,7 +4,7 @@
 #include <blah/common.h>
 #include <blah/numerics/point.h>
 #include <blah/numerics/calc.h>
-#include "internal/input_backend.h"
+#include "internal/input.h"
 #include <cstring>
 
 using namespace Blah;
@@ -21,7 +21,7 @@ namespace
 InputState Blah::Input::state;
 InputState Blah::Input::last_state;
 
-void InputBackend::init()
+void Input::init()
 {
 	g_empty_controller.name = "Disconnected";
 	for (int i = 0; i < Input::max_controllers; i++)
@@ -34,7 +34,7 @@ void InputBackend::init()
 	g_sticks.dispose();
 }
 
-void InputBackend::update_state()
+void Input::update_state()
 {
 	// cycle states
 	Input::last_state = Input::state;
@@ -70,7 +70,7 @@ void InputBackend::update_state()
 	}
 }
 
-void InputBackend::update_bindings()
+void Input::update_bindings()
 {
 	for (int i = 0; i < g_buttons.size(); i++)
 	{

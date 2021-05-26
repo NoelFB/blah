@@ -15,18 +15,18 @@ using namespace Blah;
 
 namespace
 {
-	int Blah_STBI_Read(void* user, char* data, int size)
+	int blah_stbi_read(void* user, char* data, int size)
 	{
 		i64 read = ((Stream*)user)->read(data, size);
 		return (int)read;
 	}
 
-	void Blah_STBI_Skip(void* user, int n)
+	void blah_stbi_skip(void* user, int n)
 	{
 		((Stream*)user)->seek(((Stream*)user)->position() + n);
 	}
 
-	int Blah_STBI_Eof(void* user)
+	int blaH_stbi_eof(void* user)
 	{
 		i64 position = ((Stream*)user)->position();
 		i64 length = ((Stream*)user)->length();
@@ -37,7 +37,7 @@ namespace
 		return 0;
 	}
 
-	void Blah_STBI_Write(void* context, void* data, int size)
+	void blah_stbi_write(void* context, void* data, int size)
 	{
 		((Stream*)context)->write((char*)data, size);
 	}
@@ -142,34 +142,30 @@ Image::~Image()
 	dispose();
 }
 
-void Image::from_stream(Stream& stream)
+bool Image::from_stream(Stream& stream)
 {
 	dispose();
 
 	if (!stream.is_readable())
-	{
-		BLAH_ASSERT(false, "Unable to load image as the Stream was not readable");
-		return;
-	}
+		return false;
 
 	stbi_io_callbacks callbacks;
-	callbacks.eof = Blah_STBI_Eof;
-	callbacks.read = Blah_STBI_Read;
-	callbacks.skip = Blah_STBI_Skip;
+	callbacks.eof = blaH_stbi_eof;
+	callbacks.read = blah_stbi_read;
+	callbacks.skip = blah_stbi_skip;
 
 	int x, y, comps;
 	u8* data = stbi_load_from_callbacks(&callbacks, &stream, &x, &y, &comps, 4);
 
 	if (data == nullptr)
-	{
-		BLAH_ASSERT(false, "Unable to load image as the Stream's data was not a valid image");
-		return;
-	}
+		return false;
 
 	m_stbi_ownership = true;
 	pixels = (Color*)data;
 	width = x;
 	height = y;
+
+	return true;
 }
 
 void Image::dispose()
@@ -223,14 +219,8 @@ bool Image::save_png(Stream& stream) const
 		stbi_write_force_png_filter = 0;
 		stbi_write_png_compression_level = 0;
 
-		if (stbi_write_png_to_func(Blah_STBI_Write, &stream, width, height, 4, pixels, width * 4) != 0)
+		if (stbi_write_png_to_func(blah_stbi_write, &stream, width, height, 4, pixels, width * 4) != 0)
 			return true;
-		else
-			Log::error("stbi_write_png_to_func failed");
-	}
-	else
-	{
-		Log::error("Cannot save Image, the Stream is not writable");
 	}
 
 	return false;
@@ -260,14 +250,8 @@ bool Image::save_jpg(Stream& stream, int quality) const
 
 	if (stream.is_writable())
 	{
-		if (stbi_write_jpg_to_func(Blah_STBI_Write, &stream, width, height, 4, pixels, quality) != 0)
+		if (stbi_write_jpg_to_func(blah_stbi_write, &stream, width, height, 4, pixels, quality) != 0)
 			return true;
-		else
-			Log::error("stbi_write_jpg_to_func failed");
-	}
-	else
-	{
-		Log::error("Cannot save Image, the Stream is not writable");
 	}
 
 	return false;

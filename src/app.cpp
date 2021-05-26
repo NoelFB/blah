@@ -3,9 +3,9 @@
 #include <blah/time.h>
 #include <blah/numerics/point.h>
 #include <blah/graphics/target.h>
-#include "internal/platform_backend.h"
-#include "internal/graphics_backend.h"
-#include "internal/input_backend.h"
+#include "internal/platform.h"
+#include "internal/graphics.h"
+#include "internal/input.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -44,7 +44,7 @@ namespace
 		// TODO: allow a non-fixed step update?
 		{
 			u64 time_target = (u64)((1.0 / app_config.target_framerate) * Time::ticks_per_second);
-			u64 time_curr = PlatformBackend::ticks();
+			u64 time_curr = Platform::ticks();
 			u64 time_diff = time_curr - time_last;
 			time_last = time_curr;
 			time_accumulator += time_diff;
@@ -53,9 +53,9 @@ namespace
 			while (time_accumulator < time_target)
 			{
 				int milliseconds = (int)(time_target - time_accumulator) / (Time::ticks_per_second / 1000);
-				PlatformBackend::sleep(milliseconds);
+				Platform::sleep(milliseconds);
 
-				time_curr = PlatformBackend::ticks();
+				time_curr = Platform::ticks();
 				time_diff = time_curr - time_last;
 				time_last = time_curr;
 				time_accumulator += time_diff;
@@ -88,10 +88,10 @@ namespace
 				Time::previous_seconds = Time::seconds;
 				Time::seconds += Time::delta;
 
-				InputBackend::update_state();
-				PlatformBackend::update(Input::state);
-				InputBackend::update_bindings();
-				GraphicsBackend::update();
+				Input::update_state();
+				Platform::update(Input::state);
+				Input::update_bindings();
+				Graphics::update();
 
 				if (app_config.on_update != nullptr)
 					app_config.on_update();
@@ -100,13 +100,13 @@ namespace
 
 		// render
 		{
-			GraphicsBackend::before_render();
+			Graphics::before_render();
 
 			if (app_config.on_render != nullptr)
 				app_config.on_render();
 
-			GraphicsBackend::after_render();
-			PlatformBackend::present();
+			Graphics::after_render();
+			Platform::present();
 		}
 	}
 
@@ -126,31 +126,31 @@ bool App::run(const Config* c)
 	app_is_exiting = false;
 
 	// initialize the system
-	if (!PlatformBackend::init(app_config))
+	if (!Platform::init(app_config))
 	{
 		Log::error("Failed to initialize Platform module");
 		return false;
 	}
 
 	// initialize graphics
-	if (!GraphicsBackend::init())
+	if (!Graphics::init())
 	{
 		Log::error("Failed to initialize Graphics module");
 		return false;
 	}
 
 	// input
-	InputBackend::init();
+	Input::init();
 
 	// startup
 	if (app_config.on_startup != nullptr)
 		app_config.on_startup();
 
-	time_last = PlatformBackend::ticks();
+	time_last = Platform::ticks();
 	time_accumulator = 0;
 
 	// display window
-	PlatformBackend::ready();
+	Platform::ready();
 
 	// Begin main loop
 	// Emscripten requires the main loop be separated into its own call
@@ -166,8 +166,8 @@ bool App::run(const Config* c)
 	if (app_config.on_shutdown != nullptr)
 		app_config.on_shutdown();
 
-	GraphicsBackend::shutdown();
-	PlatformBackend::shutdown();
+	Graphics::shutdown();
+	Platform::shutdown();
 
 	// clear static state
 	app_is_running = false;
@@ -195,46 +195,46 @@ const Config& App::config()
 
 const char* App::path()
 {
-	return PlatformBackend::app_path();
+	return Platform::app_path();
 }
 
 const char* App::user_path()
 {
-	return PlatformBackend::user_path();
+	return Platform::user_path();
 }
 
 const char* App::get_title()
 {
-	return PlatformBackend::get_title();
+	return Platform::get_title();
 }
 
 void App::set_title(const char* title)
 {
-	PlatformBackend::set_title(title);
+	Platform::set_title(title);
 }
 
 Point App::get_position()
 {
 	Point result;
-	PlatformBackend::get_position(&result.x, &result.y);
+	Platform::get_position(&result.x, &result.y);
 	return result;
 }
 
 void App::set_position(Point point)
 {
-	PlatformBackend::set_position(point.x, point.y);
+	Platform::set_position(point.x, point.y);
 }
 
 Point App::get_size()
 {
 	Point result;
-	PlatformBackend::get_size(&result.x, &result.y);
+	Platform::get_size(&result.x, &result.y);
 	return result;
 }
 
 void App::set_size(Point point)
 {
-	PlatformBackend::set_size(point.x, point.y);
+	Platform::set_size(point.x, point.y);
 }
 
 int App::width()
@@ -250,35 +250,35 @@ int App::height()
 int App::draw_width()
 {
 	int w, h;
-	PlatformBackend::get_draw_size(&w, &h);
+	Platform::get_draw_size(&w, &h);
 	return w;
 }
 
 int App::draw_height()
 {
 	int w, h;
-	PlatformBackend::get_draw_size(&w, &h);
+	Platform::get_draw_size(&w, &h);
 	return h;
 }
 
 float App::content_scale()
 {
-	return PlatformBackend::get_content_scale();
+	return Platform::get_content_scale();
 }
 
 void App::fullscreen(bool enabled)
 {
-	PlatformBackend::set_fullscreen(enabled);
+	Platform::set_fullscreen(enabled);
 }
 
 Renderer App::renderer()
 {
-	return GraphicsBackend::renderer();
+	return Graphics::renderer();
 }
 
 const RendererFeatures& Blah::App::renderer_features()
 {
-	return GraphicsBackend::features();
+	return Graphics::features();
 }
 
 namespace
@@ -313,7 +313,7 @@ namespace
 
 		void clear(Color color, float depth, u8 stencil, ClearMask mask) override
 		{
-			GraphicsBackend::clear_backbuffer(color, depth, stencil, mask);
+			Graphics::clear_backbuffer(color, depth, stencil, mask);
 		}
 	};
 

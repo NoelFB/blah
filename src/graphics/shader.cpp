@@ -1,6 +1,6 @@
 #include <blah/graphics/shader.h>
 #include <blah/app.h>
-#include "../internal/graphics_backend.h"
+#include "../internal/graphics.h"
 
 using namespace Blah;
 
@@ -10,7 +10,7 @@ ShaderRef Shader::create(const ShaderData& data)
 	BLAH_ASSERT(data.fragment.length() > 0, "Must provide a Fragment Shader");
 	BLAH_ASSERT(data.hlsl_attributes.size() > 0 || App::renderer() != Renderer::D3D11, "D3D11 Shaders must have hlsl_attributes assigned");
 
-	auto shader = GraphicsBackend::create_shader(&data);
+	auto shader = Graphics::create_shader(&data);
 	
 	// validate the shader
 	if (shader)

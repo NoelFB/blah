@@ -1,6 +1,6 @@
 #include <blah/graphics/renderpass.h>
 #include <blah/common.h>
-#include "../internal/graphics_backend.h"
+#include "../internal/graphics.h"
 
 using namespace Blah;
 
@@ -86,5 +86,5 @@ void RenderPass::perform()
 		pass.scissor = pass.scissor.overlap_rect(Rect(0, 0, draw_size.x, draw_size.y));
 
 	// perform render
-	GraphicsBackend::render(pass);
+	Graphics::render(pass);
 }

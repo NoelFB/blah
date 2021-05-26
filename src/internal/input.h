@@ -3,7 +3,7 @@
 
 namespace Blah
 {
-	namespace InputBackend
+	namespace Input
 	{
 		// Initializes the Input State
 		void init();

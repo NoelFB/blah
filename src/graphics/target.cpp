@@ -1,5 +1,5 @@
 #include <blah/graphics/target.h>
-#include "../internal/graphics_backend.h"
+#include "../internal/graphics.h"
 
 using namespace Blah;
 
@@ -29,7 +29,7 @@ TargetRef Target::create(int width, int height, const AttachmentFormats& texture
 	BLAH_ASSERT(depth_count <= 1, "Target can only have 1 Depth/Stencil Texture");
 	BLAH_ASSERT(color_count <= Attachments::capacity - 1, "Exceeded maximum Color texture count");
 
-	return GraphicsBackend::create_target(width, height, textures.data(), textures.size());
+	return Graphics::create_target(width, height, textures.data(), textures.size());
 }
 
 TextureRef& Target::texture(int index)

@@ -1,7 +1,7 @@
 #ifdef BLAH_GRAPHICS_OPENGL
 
-#include "../internal/graphics_backend.h"
-#include "../internal/platform_backend.h"
+#include "graphics.h"
+#include "platform.h"
 #include <blah/common.h>
 #include <stdio.h>
 #include <string.h>
@@ -1091,21 +1091,21 @@ namespace Blah
 		}
 	};
 
-	bool GraphicsBackend::init()
+	bool Graphics::init()
 	{
 		gl = State();
 
 		// create gl context
-		gl.context = PlatformBackend::gl_context_create();
+		gl.context = Platform::gl_context_create();
 		if (gl.context == nullptr)
 		{
 			Log::error("Failed to create OpenGL Context");
 			return false;
 		}
-		PlatformBackend::gl_context_make_current(gl.context);
+		Platform::gl_context_make_current(gl.context);
 
 		// bind opengl functions
-		#define GL_FUNC(name, ...) gl.name = (State::name ## Func)(PlatformBackend::gl_get_func("gl" #name));
+		#define GL_FUNC(name, ...) gl.name = (State::name ## Func)(Platform::gl_get_func("gl" #name));
 		GL_FUNCTIONS
 		#undef GL_FUNC
 
@@ -1143,27 +1143,27 @@ namespace Blah
 		return true;
 	}
 
-	Renderer GraphicsBackend::renderer()
+	Renderer Graphics::renderer()
 	{
 		return Renderer::OpenGL;
 	}
 
-	void GraphicsBackend::shutdown()
+	void Graphics::shutdown()
 	{
-		PlatformBackend::gl_context_destroy(gl.context);
+		Platform::gl_context_destroy(gl.context);
 		gl.context = nullptr;
 	}
 
-	const RendererFeatures& GraphicsBackend::features()
+	const RendererFeatures& Graphics::features()
 	{
 		return gl.features;
 	}
 
-	void GraphicsBackend::update() {}
-	void GraphicsBackend::before_render() {}
-	void GraphicsBackend::after_render() {}
+	void Graphics::update() {}
+	void Graphics::before_render() {}
+	void Graphics::after_render() {}
 
-	TextureRef GraphicsBackend::create_texture(int width, int height, TextureFormat format)
+	TextureRef Graphics::create_texture(int width, int height, TextureFormat format)
 	{
 		auto resource = new OpenGL_Texture(width, height, format);
 
@@ -1176,7 +1176,7 @@ namespace Blah
 		return TextureRef(resource);
 	}
 
-	TargetRef GraphicsBackend::create_target(int width, int height, const TextureFormat* attachments, int attachmentCount)
+	TargetRef Graphics::create_target(int width, int height, const TextureFormat* attachments, int attachmentCount)
 	{
 		auto resource = new OpenGL_Target(width, height, attachments, attachmentCount);
 
@@ -1189,7 +1189,7 @@ namespace Blah
 		return TargetRef(resource);
 	}
 
-	ShaderRef GraphicsBackend::create_shader(const ShaderData* data)
+	ShaderRef Graphics::create_shader(const ShaderData* data)
 	{
 		auto resource = new OpenGL_Shader(data);
 
@@ -1202,7 +1202,7 @@ namespace Blah
 		return ShaderRef(resource);
 	}
 
-	MeshRef GraphicsBackend::create_mesh()
+	MeshRef Graphics::create_mesh()
 	{
 		auto resource = new OpenGL_Mesh();
 
@@ -1215,7 +1215,7 @@ namespace Blah
 		return MeshRef(resource);
 	}
 
-	void GraphicsBackend::render(const RenderPass& pass)
+	void Graphics::render(const RenderPass& pass)
 	{
 		// Bind the Target
 		Point size;
@@ -1476,7 +1476,7 @@ namespace Blah
 		}
 	}
 
-	void GraphicsBackend::clear_backbuffer(Color color, float depth, u8 stencil, ClearMask mask)
+	void Graphics::clear_backbuffer(Color color, float depth, u8 stencil, ClearMask mask)
 	{
 		int clear = 0;
 

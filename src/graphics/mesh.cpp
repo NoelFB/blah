@@ -1,12 +1,12 @@
 #include <blah/graphics/mesh.h>
-#include "../internal/graphics_backend.h"
+#include "../internal/graphics.h"
 
 using namespace Blah;
 
 
 MeshRef Mesh::create()
 {
-	return GraphicsBackend::create_mesh();
+	return Graphics::create_mesh();
 }
 
 VertexFormat::VertexFormat(std::initializer_list<VertexAttribute> attributes, int stride)

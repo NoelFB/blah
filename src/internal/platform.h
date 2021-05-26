@@ -7,12 +7,9 @@
 namespace Blah
 {
 	struct Config;
-	enum class FileMode;
 
-	namespace PlatformBackend
+	namespace Platform
 	{
-		typedef void* FileHandle;
-
 		// Initialize the System
 		bool init(const Config& config);
 

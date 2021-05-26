@@ -1,7 +1,7 @@
 #if !(defined(BLAH_GRAPHICS_OPENGL) || defined(BLAH_GRAPHICS_D3D11))
 
-#include "../internal/graphics_backend.h"
-#include "../internal/platform_backend.h"
+#include "graphics.h"
+#include "platform.h"
 #include <blah/common.h>
 
 namespace Blah
@@ -155,58 +155,58 @@ namespace Blah
 		}
 	};
 
-	bool GraphicsBackend::init()
+	bool Graphics::init()
 	{
 		Log::info("Dummy Renderer");
 		return true;
 	}
 
-	Renderer GraphicsBackend::renderer()
+	Renderer Graphics::renderer()
 	{
 		return Renderer::None;
 	}
 
-	void GraphicsBackend::shutdown()
+	void Graphics::shutdown()
 	{
 
 	}
 
-	const RendererFeatures& GraphicsBackend::features()
+	const RendererFeatures& Graphics::features()
 	{
 		static const RendererFeatures features{ false, true, 4096 };
 		return features;
 	}
 
-	void GraphicsBackend::update() {}
-	void GraphicsBackend::before_render() {}
-	void GraphicsBackend::after_render() {}
+	void Graphics::update() {}
+	void Graphics::before_render() {}
+	void Graphics::after_render() {}
 
-	TextureRef GraphicsBackend::create_texture(int width, int height, TextureFormat format)
+	TextureRef Graphics::create_texture(int width, int height, TextureFormat format)
 	{
 		return TextureRef(new Dummy_Texture(width, height, format, false));
 	}
 
-	TargetRef GraphicsBackend::create_target(int width, int height, const TextureFormat* attachments, int attachmentCount)
+	TargetRef Graphics::create_target(int width, int height, const TextureFormat* attachments, int attachmentCount)
 	{
 		return TargetRef(new Dummy_Target(width, height, attachments, attachmentCount));
 	}
 
-	ShaderRef GraphicsBackend::create_shader(const ShaderData* data)
+	ShaderRef Graphics::create_shader(const ShaderData* data)
 	{
 		return ShaderRef(new Dummy_Shader(data));
 	}
 
-	MeshRef GraphicsBackend::create_mesh()
+	MeshRef Graphics::create_mesh()
 	{
 		return MeshRef(new Dummy_Mesh());
 	}
 
-	void GraphicsBackend::render(const RenderPass& pass)
+	void Graphics::render(const RenderPass& pass)
 	{
 
 	}
 
-	void GraphicsBackend::clear_backbuffer(Color color)
+	void Graphics::clear_backbuffer(Color color)
 	{
 
 	}

@@ -3,8 +3,8 @@
 // TODO:
 // Note the D3D11 Implementation is still a work-in-progress
 
-#include "../internal/graphics_backend.h"
-#include "../internal/platform_backend.h"
+#include "graphics.h"
+#include "platform.h"
 #include <blah/common.h>
 #include <cstdio>
 #include <cstring>
@@ -673,7 +673,7 @@ namespace Blah
 		}
 	};
 
-	bool GraphicsBackend::init()
+	bool Graphics::init()
 	{
 		state = D3D11();
 		state.last_size = Point(App::draw_width(), App::draw_height());
@@ -687,7 +687,7 @@ namespace Blah
 		desc.SampleDesc.Quality = 0;
 		desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		desc.BufferCount = 1;
-		desc.OutputWindow = (HWND)PlatformBackend::d3d11_get_hwnd();
+		desc.OutputWindow = (HWND)Platform::d3d11_get_hwnd();
 		desc.Windowed = true;
 
 		// Creation Flags
@@ -755,12 +755,12 @@ namespace Blah
 		return true;
 	}
 
-	Renderer GraphicsBackend::renderer()
+	Renderer Graphics::renderer()
 	{
 		return Renderer::D3D11;
 	}
 
-	void GraphicsBackend::shutdown()
+	void Graphics::shutdown()
 	{
 		// release cached objects
 		for (auto& it : state.blend_cache)
@@ -787,16 +787,16 @@ namespace Blah
 		state = D3D11();
 	}
 
-	const RendererFeatures& GraphicsBackend::features()
+	const RendererFeatures& Graphics::features()
 	{
 		return state.features;
 	}
 
-	void GraphicsBackend::update()
+	void Graphics::update()
 	{
 	}
 
-	void GraphicsBackend::before_render()
+	void Graphics::before_render()
 	{
 		HRESULT hr;
 
@@ -824,13 +824,13 @@ namespace Blah
 		}
 	}
 
-	void GraphicsBackend::after_render()
+	void Graphics::after_render()
 	{
 		auto hr = state.swap_chain->Present(1, 0);
 		BLAH_ASSERT(SUCCEEDED(hr), "Failed to Present swap chain");
 	}
 
-	TextureRef GraphicsBackend::create_texture(int width, int height, TextureFormat format)
+	TextureRef Graphics::create_texture(int width, int height, TextureFormat format)
 	{
 		auto result = new D3D11_Texture(width, height, format, false);
 
@@ -841,12 +841,12 @@ namespace Blah
 		return TextureRef();
 	}
 
-	TargetRef GraphicsBackend::create_target(int width, int height, const TextureFormat* attachments, int attachment_count)
+	TargetRef Graphics::create_target(int width, int height, const TextureFormat* attachments, int attachment_count)
 	{
 		return TargetRef(new D3D11_Target(width, height, attachments, attachment_count));
 	}
 
-	ShaderRef GraphicsBackend::create_shader(const ShaderData* data)
+	ShaderRef Graphics::create_shader(const ShaderData* data)
 	{
 		auto result = new D3D11_Shader(data);
 		if (result->valid)
@@ -856,12 +856,12 @@ namespace Blah
 		return ShaderRef();
 	}
 
-	MeshRef GraphicsBackend::create_mesh()
+	MeshRef Graphics::create_mesh()
 	{
 		return MeshRef(new D3D11_Mesh());
 	}
 
-	void GraphicsBackend::render(const RenderPass& pass)
+	void Graphics::render(const RenderPass& pass)
 	{
 		auto ctx = state.context;
 		auto mesh = (D3D11_Mesh*)pass.mesh.get();
@@ -1038,7 +1038,7 @@ namespace Blah
 		}
 	}
 
-	void GraphicsBackend::clear_backbuffer(Color color, float depth, u8 stencil, ClearMask mask)
+	void Graphics::clear_backbuffer(Color color, float depth, u8 stencil, ClearMask mask)
 	{
 		if (((int)mask & (int)ClearMask::Color) == (int)ClearMask::Color)
 		{
