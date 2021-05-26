@@ -66,8 +66,6 @@ namespace Blah
 			Color color;
 		};
 
-		struct Layer;
-
 		struct Cel
 		{
 			int layer_index = 0;
