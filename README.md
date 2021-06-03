@@ -1,4 +1,4 @@
-## blah
+﻿## blah
 A small 2D C++ Game Framework, using few dependencies and simple code to mainain easy building and portability.
 
 **☆ This will likely see breaking changes! Use at your own risk! ☆**
@@ -6,13 +6,13 @@ A small 2D C++ Game Framework, using few dependencies and simple code to mainain
 #### building
  - Requires C++17 and CMake 3.12+
  - A single *Platform* backend must be enabled:
-	- [SDL2](https://github.com/NoelFB/blah/blob/master/src/internal/platform_backend_sdl2.cpp) can be enabled in CMake with `PLATFORM_SDL2`, and setting `SDL2_INCLUDE_DIRS` and `SDL2_LIBRARIES`
-	- [WIN32](https://github.com/NoelFB/blah/blob/master/src/internal/platform_backend_win32.cpp) (UNFINISHED) can be enabled in CMake with `PLATFORM_WIN32`.
-	- Additional backends can be added by implementing the [Platform Backend](https://github.com/NoelFB/blah/blob/master/src/internal/platform_backend.h)
+	- [SDL2](https://github.com/NoelFB/blah/blob/master/src/internal/platform_sdl2.cpp) can be enabled in CMake with `PLATFORM_SDL2`, and setting `SDL2_INCLUDE_DIRS` and `SDL2_LIBRARIES`
+	- [WIN32](https://github.com/NoelFB/blah/blob/master/src/internal/platform_win32.cpp) (UNFINISHED) can be enabled in CMake with `PLATFORM_WIN32`.
+	- Additional backends can be added by implementing the [Platform Backend](https://github.com/NoelFB/blah/blob/master/src/internal/platform.h)
  - A single *Graphics* backend must be enabled:
-	- [OpenGL](https://github.com/NoelFB/blah/blob/master/src/internal/graphics_backend_gl.cpp) can be enabled in CMake with `GRAPHICS_OPENGL`.
-	- [D3D11](https://github.com/NoelFB/blah/blob/master/src/internal/graphics_backend_d3d11.cpp) can be enabled in CMake with `GRAPHICS_D3D11`.
-	- Additional backends can be added by implementing the [Graphics Backend](https://github.com/NoelFB/blah/blob/master/src/internal/graphics_backend.h).
+	- [OpenGL](https://github.com/NoelFB/blah/blob/master/src/internal/graphics_gl.cpp) can be enabled in CMake with `GRAPHICS_OPENGL`.
+	- [D3D11](https://github.com/NoelFB/blah/blob/master/src/internal/graphics_d3d11.cpp) can be enabled in CMake with `GRAPHICS_D3D11`.
+	- Additional backends can be added by implementing the [Graphics Backend](https://github.com/NoelFB/blah/blob/master/src/internal/graphics.h).
  
 #### notes
  - There's no Shader abstraction, so the [Sprite Batcher](https://github.com/NoelFB/blah/blob/master/src/graphics/batch.cpp) has hard-coded GLSL/HLSL. This will need to change.
