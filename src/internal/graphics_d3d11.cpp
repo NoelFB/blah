@@ -257,12 +257,20 @@ namespace Blah
 				}
 			}
 
+			D3D11_BOX box;
+			box.left = 0;
+			box.right = m_width;
+			box.bottom = m_height;
+			box.top = 0;
+			box.front = 0;
+			box.back = 1;
+
 			// copy data to staging texture
 			state.context->CopySubresourceRegion(
 				staging, 0,
 				0, 0, 0,
 				texture, 0,
-				nullptr);
+				&box);
 
 			// get data
 			D3D11_MAPPED_SUBRESOURCE map;
@@ -274,7 +282,11 @@ namespace Blah
 				return;
 			}
 
-			memcpy(data, map.pData, m_size);
+			int bytes_per_pixel = m_size / (m_width * m_height);
+			int bytes_per_row = m_width * bytes_per_pixel;
+			for (int y = 0; y < m_height; y++)
+				memcpy(data + y * bytes_per_row, (unsigned char*)map.pData + map.RowPitch * y, bytes_per_row);
+
 			state.context->Unmap(staging, 0);
 		}
 
