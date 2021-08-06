@@ -83,7 +83,7 @@ namespace
 		"};\n"
 
 		"Texture2D    u_texture : register(t0);\n"
-		"SamplerState u_sampler : register(s0);\n"
+		"SamplerState u_texture_sampler : register(s0);\n"
 
 		"vs_out vs_main(vs_in input)\n"
 		"{\n"
@@ -99,7 +99,7 @@ namespace
 
 		"float4 ps_main(vs_out input) : SV_TARGET\n"
 		"{\n"
-		"	float4 color = u_texture.Sample(u_sampler, input.texcoord);\n"
+		"	float4 color = u_texture.Sample(u_texture_sampler, input.texcoord);\n"
 		"	return\n"
 		"		input.mask.x * color * input.color + \n"
 		"		input.mask.y * color.a * input.color + \n"
@@ -202,6 +202,8 @@ ShaderRef Batch::m_default_shader;
 
 Batch::Batch()
 {
+	texture_uniform = "u_texture";
+	sampler_uniform = "u_texture_sampler";
 	matrix_uniform = "u_matrix";
 	clear();
 }
@@ -443,12 +445,23 @@ void Batch::render(const TargetRef& target, const Mat4x4& matrix)
 
 void Batch::render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4x4& matrix)
 {
+	// get the material
 	pass.material = b.material;
 	if (!pass.material)
 		pass.material = m_default_material;
+	
+	// assign texture & sampler, fallback to whatever the first one is if the names are different
+	if (pass.material->has_value(texture_uniform))
+		pass.material->set_texture(texture_uniform, b.texture);
+	else
+		pass.material->set_texture(0, b.texture);
 
-	pass.material->set_texture(0, b.texture);
-	pass.material->set_sampler(0, b.sampler);
+	if (pass.material->has_value(sampler_uniform))
+		pass.material->set_sampler(sampler_uniform, b.sampler);
+	else
+		pass.material->set_sampler(0, b.sampler);
+
+	// assign the matrix uniform
 	pass.material->set_value(matrix_uniform, &matrix.m11, 16);
 	
 	pass.blend = b.blend;

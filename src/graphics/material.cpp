@@ -340,6 +340,20 @@ const float* Material::get_value(const char* name, i64* length) const
 	return nullptr;
 }
 
+bool Material::has_value(const char* name) const
+{
+	BLAH_ASSERT(m_shader, "Material Shader is invalid");
+	
+	if (name != nullptr && name[0] != '\0')
+	{
+		for (auto& uniform : m_shader->uniforms())
+			if (strcmp(uniform.name, name) == 0)
+				return true;
+	}
+
+	return false;
+}
+
 const Vector<TextureRef>& Material::textures() const
 {
 	return m_textures;

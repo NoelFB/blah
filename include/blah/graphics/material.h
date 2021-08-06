@@ -65,6 +65,9 @@ namespace Blah
 		// Gets a pointer to the values of the given Uniform, or nullptr if it doesn't exist.
 		const float* get_value(const char* name, i64* length = nullptr) const;
 
+		// Checks if the shader attached to the material has a uniform value with the given name
+		bool has_value(const char* name) const;
+
 		// Returns the internal Texture buffer
 		const Vector<TextureRef>& textures() const;
 

@@ -48,7 +48,9 @@ namespace Blah
 	{
 	public:
 
-		// The name of the Matrix Uniform in the Shader
+		// The name of the default uniforms to set
+		const char* texture_uniform;
+		const char* sampler_uniform;
 		const char* matrix_uniform;
 
 		// Default Sampler, set on clear
