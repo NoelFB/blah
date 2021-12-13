@@ -1,7 +1,6 @@
 #include <blah/app.h>
 #include <blah/common.h>
 #include <blah/time.h>
-#include <blah/numerics/point.h>
 #include <blah/graphics/target.h>
 #include "internal/platform.h"
 #include "internal/graphics.h"
@@ -141,6 +140,10 @@ bool App::run(const Config* c)
 
 	// input
 	Input::init();
+
+	// prepare by updating input & platform once
+	Input::update_state();
+	Platform::update(Input::state);
 
 	// startup
 	if (app_config.on_startup != nullptr)

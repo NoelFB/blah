@@ -38,13 +38,13 @@ void render()
 {
 	App::backbuffer->clear(Color::black);
 	
-	auto center = Vec2(App::backbuffer->width(), App::backbuffer->height()) / 2;
+	auto center = Vec2f(App::backbuffer->width(), App::backbuffer->height()) / 2;
 	auto rotation = Time::seconds * Calc::TAU;
-	auto transform = Mat3x2::create_transform(center, Vec2::zero, Vec2::one, rotation);
+	auto transform = Mat3x2f::create_transform(center, Vec2::zero, Vec2::one, rotation);
 
 	batch.push_matrix(transform);
-	batch.rect(Rect(-32, -32, 64, 64), Color::red);
-	batch.tex(tex, Vec2(64, 0), Color::white);
+	batch.rect(Rectf(-32, -32, 64, 64), Color::red);
+	batch.tex(tex, Vec2f(64, 0), Color::white);
 	batch.pop_matrix();
 	
 	batch.render();

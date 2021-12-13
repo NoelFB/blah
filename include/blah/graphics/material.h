@@ -4,6 +4,7 @@
 #include <blah/graphics/shader.h>
 #include <blah/graphics/sampler.h>
 #include <blah/containers/vector.h>
+#include <blah/numerics/spatial.h>
 
 namespace Blah
 {
@@ -29,6 +30,9 @@ namespace Blah
 		// Creates a new Material from the given Shader.
 		// If the Shader is invalid, it will return an invalid MaterialRef.
 		static MaterialRef create(const ShaderRef& shader);
+
+		// Clones the material and returns a new one
+		MaterialRef clone() const;
 
 		// Returns the Shader assigned to the Material.
 		ShaderRef shader() const;
@@ -61,6 +65,20 @@ namespace Blah
 		// For example if the uniform is a float2[4], a total of 8 float values
 		// can be set.
 		void set_value(const char* name, const float* value, i64 length);
+
+		// Shorthands to more easily assign uniform values
+		void set_value(const char* name, float value);
+		void set_value(const char* name, const Vec2f& value);
+		void set_value(const char* name, const Vec3f& value);
+		void set_value(const char* name, const Vec4f& value);
+		void set_value(const char* name, const Mat3x2f& value);
+		void set_value(const char* name, const Mat4x4f& value);
+		void set_value(const char* name, const Vector<float>& value);
+		void set_value(const char* name, const Vector<Vec2f>& value);
+		void set_value(const char* name, const Vector<Vec3f>& value);
+		void set_value(const char* name, const Vector<Vec4f>& value);
+		void set_value(const char* name, const Vector<Mat3x2f>& value);
+		void set_value(const char* name, const Vector<Mat4x4f>& value);
 
 		// Gets a pointer to the values of the given Uniform, or nullptr if it doesn't exist.
 		const float* get_value(const char* name, i64* length = nullptr) const;

@@ -1420,7 +1420,7 @@ namespace Blah
 
 		// Viewport
 		{
-			Rect viewport = pass.viewport;
+			Rectf viewport = pass.viewport;
 			viewport.y = size.y - viewport.y - viewport.h;
 
 			gl.Viewport((GLint)viewport.x, (GLint)viewport.y, (GLint)viewport.w, (GLint)viewport.h);
@@ -1434,7 +1434,7 @@ namespace Blah
 			}
 			else
 			{
-				Rect scissor = pass.scissor;
+				Rectf scissor = pass.scissor;
 				scissor.y = size.y - scissor.y - scissor.h;
 
 				if (scissor.w < 0)

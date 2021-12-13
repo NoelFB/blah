@@ -193,7 +193,7 @@ void Image::premultiply()
 	}
 }
 
-void Image::set_pixels(const RectI& rect, Color* data)
+void Image::set_pixels(const Recti& rect, Color* data)
 {
 	for (int y = 0; y < rect.h; y++)
 	{
@@ -257,7 +257,7 @@ bool Image::save_jpg(Stream& stream, int quality) const
 	return false;
 }
 
-void Image::get_pixels(Color* dest, const Point& dest_pos, const Point& dest_size, RectI source_rect) const
+void Image::get_pixels(Color* dest, const Point& dest_pos, const Point& dest_size, Recti source_rect) const
 {
 	// can't be outside of the source image
 	if (source_rect.x < 0) source_rect.x = 0;
@@ -279,7 +279,7 @@ void Image::get_pixels(Color* dest, const Point& dest_pos, const Point& dest_siz
 	}
 }
 
-Image Image::get_sub_image(const RectI& source_rect)
+Image Image::get_sub_image(const Recti& source_rect)
 {
 	Image img(source_rect.w, source_rect.h);
 	get_pixels(img.pixels, Point::zero, Point(img.width, img.height), source_rect);

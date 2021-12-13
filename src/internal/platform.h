@@ -88,6 +88,12 @@ namespace Blah
 		// opens a directory in the OS file explorer / finder
 		void dir_explore(const char* path);
 
+		// sets the contents of the clipboard
+		void set_clipboard(const char* text);
+
+		// gets the contents of the clipboard into the given string
+		const char* get_clipboard();
+
 		// OpenGL Methods
 		void* gl_get_func(const char* name);
 		void* gl_context_create();

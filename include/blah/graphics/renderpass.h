@@ -1,6 +1,6 @@
 #pragma once
 #include <blah/common.h>
-#include <blah/numerics/rect.h>
+#include <blah/numerics/spatial.h>
 #include <blah/containers/str.h>
 #include <blah/graphics/texture.h>
 #include <blah/graphics/target.h>
@@ -57,10 +57,10 @@ namespace Blah
 		bool has_scissor;
 
 		// The viewport (only used if hasViewport is true)
-		Rect viewport;
+		Rectf viewport;
 
 		// The scissor rectangle (only used if hasScissor is true)
-		Rect scissor;
+		Rectf scissor;
 
 		// First index in the Mesh to draw from
 		i64 index_start;

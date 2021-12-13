@@ -1,8 +1,7 @@
 #pragma once
 #include <blah/common.h>
 #include <blah/containers/str.h>
-#include <blah/numerics/vec3.h>
-#include <blah/numerics/vec4.h>
+#include <blah/numerics/spatial.h>
 
 #define BLAH_HEX_VALUE(n) ((n >= '0' && n <= '9') ? (n - '0') : ((n >= 'A' && n <= 'F') ? (10 + n - 'A') : ((n >= 'a' && n <= 'f') ? (10 + n - 'a') : 0)))
 
@@ -42,19 +41,19 @@ namespace Blah
 			, b(b)
 			, a(a) {}
 
-		constexpr Color(const Vec3& vec3)
+		constexpr Color(const Vec3f& vec3)
 			: r((int)(vec3.x * 255))
 			, g((int)(vec3.y * 255))
 			, b((int)(vec3.z * 255))
 			, a((int)(255)) {}
 
-		constexpr Color(const Vec3& vec3, float alpha)
+		constexpr Color(const Vec3f& vec3, float alpha)
 			: r((int)(vec3.x* alpha * 255))
 			, g((int)(vec3.y* alpha * 255))
 			, b((int)(vec3.z* alpha * 255))
 			, a((int)(alpha * 255)) {}
 
-		constexpr Color(const Vec4& vec4)
+		constexpr Color(const Vec4f& vec4)
 			: r((int)(vec4.x * 255))
 			, g((int)(vec4.y * 255))
 			, b((int)(vec4.z * 255))
@@ -99,15 +98,15 @@ namespace Blah
 		String to_hex_rgb() const;
 
 		// Converts the Color to a Vec3 (RGB)
-		constexpr Vec3 to_vec3() const
+		constexpr Vec3f to_vec3() const
 		{
-			return Vec3(r / 255.0f, g / 255.0f, b / 255.0f);
+			return Vec3f(r / 255.0f, g / 255.0f, b / 255.0f);
 		}
 
 		// Converts the Color to a Vec4 (RGBA)
-		constexpr Vec4 to_vec4() const
+		constexpr Vec4f to_vec4() const
 		{
-			return Vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+			return Vec4f(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 		}
 
 		// Convers the Color to a u32
@@ -118,6 +117,15 @@ namespace Blah
 				((u32)g << 16) |
 				((u32)b << 8) |
 				(u32)a;
+		}
+
+		// Convers the Color to a u32
+		constexpr u32 to_rgb() const
+		{
+			return
+				((u32)r << 16) |
+				((u32)g << 8) |
+				(u32)b;
 		}
 
 		// Returns a RGBA Color representation of the integer value
@@ -198,16 +206,6 @@ namespace Blah
 		static const Color purple;
 		static const Color teal;
 	};
-
-	inline const Color Color::transparent = Color(0, 0, 0, 0);
-	inline const Color Color::white = Color(255, 255, 255, 255);
-	inline const Color Color::black = Color(0, 0, 0, 255);
-	inline const Color Color::red = Color(255, 0, 0, 255);
-	inline const Color Color::green = Color(0, 255, 0, 255);
-	inline const Color Color::blue = Color(0, 0, 255, 255);
-	inline const Color Color::yellow = Color(255, 255, 0, 255);
-	inline const Color Color::purple = Color(255, 0, 255, 255);
-	inline const Color Color::teal = Color(0, 255, 255, 255);
 }
 
 #undef BLAH_HEX_VALUE

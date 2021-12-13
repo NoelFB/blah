@@ -3,7 +3,7 @@
 #include <blah/containers/str.h>
 #include <blah/containers/vector.h>
 #include <blah/graphics/subtexture.h>
-#include <blah/numerics/vec2.h>
+#include <blah/numerics/spatial.h>
 #include <blah/filesystem.h>
 #include <unordered_map>
 
@@ -44,7 +44,7 @@ namespace Blah
 		{
 			Subtexture subtexture;
 			float advance = 0;
-			Vec2 offset;
+			Vec2f offset;
 		};
 
 		// SpriteFont name

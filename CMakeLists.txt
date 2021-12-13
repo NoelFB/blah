@@ -32,11 +32,6 @@ add_library(blah
 
 	src/numerics/calc.cpp
 	src/numerics/color.cpp
-	src/numerics/line.cpp
-	src/numerics/mat3x2.cpp
-	src/numerics/mat4x4.cpp
-	src/numerics/rect.cpp
-	src/numerics/rectI.cpp
 
 	src/streams/bufferstream.cpp
 	src/streams/filestream.cpp

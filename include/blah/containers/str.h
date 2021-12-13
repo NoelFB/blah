@@ -165,7 +165,7 @@ namespace Blah
 		// clears and disposes the internal string buffer
 		void dispose();
 
-		~Str()
+		virtual ~Str()
 		{
 			if (m_buffer != nullptr && m_buffer != empty_buffer)
 				delete[] m_buffer;
@@ -181,10 +181,10 @@ namespace Blah
 		}
 
 		// returns a pointer to the heap buffer or to our stack allocation
-		char* data()			 { return (m_buffer != nullptr ? m_buffer : ((char*)(this) + sizeof(Str))); }
+		virtual char* data()			 { return m_buffer; }
 
 		// returns a pointer to the heap buffer or to our stack allocation
-		const char* data() const { return (m_buffer != nullptr ? m_buffer : ((char*)(this) + sizeof(Str))); }
+		virtual const char* data() const { return m_buffer; }
 
 		// assigns the contents of the string
 		void set(const Str& str) { set(str.cstr(), str.cstr() + str.m_length); }
@@ -192,9 +192,10 @@ namespace Blah
 		// assigns the contents of the string
 		void set(const char* start, const char* end = nullptr);
 
+		char* m_buffer;
+
 	private:
 		static char empty_buffer[1];
-		char* m_buffer;
 		int m_length;
 		int m_capacity;
 		int m_local_size;
@@ -220,6 +221,10 @@ namespace Blah
 		StrOf& operator=(const char* rhs)  { set(rhs); return *this; }
 		StrOf& operator=(const Str& rhs)   { set(rhs); return *this; }
 		StrOf& operator=(const StrOf& rhs) { set(rhs); return *this; }
+
+		// either return stack or heap buffer depending on which is in-use
+		char* data() override             { return m_buffer != nullptr ? m_buffer : m_local_buffer; }
+		const char* data() const override { return m_buffer != nullptr ? m_buffer : m_local_buffer; }
 
 		// creates a string from the format
 		static StrOf fmt(const char* str, ...);
@@ -251,6 +256,33 @@ namespace Blah
 
 		return str;
 	}
+
+	struct CaseInsenstiveStringHash
+	{
+		std::size_t operator()(const Blah::Str& key) const
+		{
+			std::size_t result = 2166136261U;
+
+			for (auto& it : key)
+			{
+				if (it >= 'A' && it <= 'Z')
+					result ^= (static_cast<std::size_t>(it) - 'A' + 'a');
+				else
+					result ^= static_cast<std::size_t>(it);
+				result *= 16777619U;
+			}
+
+			return result;
+		}
+	};
+
+	struct CaseInsenstiveStringCompare
+	{
+		bool operator() (const Str& lhs, const Str& rhs) const
+		{
+			return lhs.length() == rhs.length() && lhs.starts_with(rhs, true);
+		}
+	};
 }
 
 namespace std
@@ -264,7 +296,7 @@ namespace std
 
 			for (auto& it : key)
 			{
-				result ^= static_cast<size_t>(it);
+				result ^= static_cast<std::size_t>(it);
 				result *= 16777619U;
 			}
 
@@ -281,7 +313,7 @@ namespace std
 
 			for (auto& it : key)
 			{
-				result ^= static_cast<size_t>(it);
+				result ^= static_cast<std::size_t>(it);
 				result *= 16777619U;
 			}
 

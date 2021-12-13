@@ -31,3 +31,13 @@ String Color::to_hex_rgb() const
 	str[5] = hex[(b & 0x0F) >> 0];
 	return str;
 }
+
+const Color Color::transparent = Color(0, 0, 0, 0);
+const Color Color::white = Color(255, 255, 255, 255);
+const Color Color::black = Color(0, 0, 0, 255);
+const Color Color::red = Color(255, 0, 0, 255);
+const Color Color::green = Color(0, 255, 0, 255);
+const Color Color::blue = Color(0, 0, 255, 255);
+const Color Color::yellow = Color(255, 255, 0, 255);
+const Color Color::purple = Color(255, 0, 255, 255);
+const Color Color::teal = Color(0, 255, 255, 255);

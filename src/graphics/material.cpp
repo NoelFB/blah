@@ -6,7 +6,7 @@ using namespace Blah;
 
 namespace
 {
-	int calc_uniform_size(const UniformInfo& uniform)
+	int blah_calc_uniform_size(const UniformInfo& uniform)
 	{
 		int components = 0;
 
@@ -25,16 +25,6 @@ namespace
 
 		return components * uniform.array_length;
 	}
-}
-
-MaterialRef Material::create(const ShaderRef& shader)
-{
-	BLAH_ASSERT(shader, "The provided shader is invalid");
-
-	if (shader)
-		return MaterialRef(new Material(shader));
-
-	return MaterialRef();
 }
 
 Material::Material(const ShaderRef& shader)
@@ -64,10 +54,29 @@ Material::Material(const ShaderRef& shader)
 			continue;
 		}
 
-		float_size += calc_uniform_size(uniform);
+		float_size += blah_calc_uniform_size(uniform);
 	}
 
 	m_data.expand(float_size);
+}
+
+MaterialRef Material::create(const ShaderRef& shader)
+{
+	BLAH_ASSERT(shader, "The provided shader is invalid");
+
+	if (shader)
+		return MaterialRef(new Material(shader));
+
+	return MaterialRef();
+}
+
+MaterialRef Material::clone() const
+{
+	auto copy = MaterialRef(new Material(m_shader));
+	copy->m_textures = m_textures;
+	copy->m_samplers = m_samplers;
+	copy->m_data = m_data;
+	return copy;
 }
 
 ShaderRef Material::shader() const
@@ -293,7 +302,7 @@ void Material::set_value(const char* name, const float* value, i64 length)
 
 		if (strcmp(uniform.name, name) == 0)
 		{
-			auto max = calc_uniform_size(uniform);
+			auto max = blah_calc_uniform_size(uniform);
 			if (length > max)
 			{
 				Log::warn("Exceeding length of Uniform '%s' (%i / %i)", name, length, max);
@@ -304,11 +313,71 @@ void Material::set_value(const char* name, const float* value, i64 length)
 			return;
 		}
 
-		offset += calc_uniform_size(uniform);
+		offset += blah_calc_uniform_size(uniform);
 		index++;
 	}
 
 	Log::warn("No Uniform '%s' exists", name);
+}
+
+void Material::set_value(const char* name, float value)
+{
+	set_value(name, &value, 1);
+}
+
+void Material::set_value(const char* name, const Vec2f& value)
+{
+	set_value(name, &value.x, 2);
+}
+
+void Material::set_value(const char* name, const Vec3f& value)
+{
+	set_value(name, &value.x, 3);
+}
+
+void Material::set_value(const char* name, const Vec4f& value)
+{
+	set_value(name, &value.x, 4);
+}
+
+void Material::set_value(const char* name, const Mat3x2f& value)
+{
+	set_value(name, &value.m11, 6);
+}
+
+void Material::set_value(const char* name, const Mat4x4f& value)
+{
+	set_value(name, &value.m11, 16);
+}
+
+void Material::set_value(const char* name, const Vector<float>& value)
+{
+	set_value(name, value.data(), value.size());
+}
+
+void Material::set_value(const char* name, const Vector<Vec2f>& value)
+{
+	set_value(name, (float*)value.data(), value.size() * 2);
+}
+
+void Material::set_value(const char* name, const Vector<Vec3f>& value)
+{
+	set_value(name, (float*)value.data(), value.size() * 3);
+}
+
+void Material::set_value(const char* name, const Vector<Vec4f>& value)
+{
+	set_value(name, (float*)value.data(), value.size() * 4);
+}
+
+void Material::set_value(const char* name, const Vector<Mat3x2f>& value)
+{
+	set_value(name, (float*)value.data(), value.size() * 6);
+}
+
+void Material::set_value(const char* name, const Vector<Mat4x4f>& value)
+{
+	set_value(name, (float*)value.data(), value.size() * 16);
 }
 
 const float* Material::get_value(const char* name, i64* length) const
@@ -327,12 +396,12 @@ const float* Material::get_value(const char* name, i64* length) const
 		if (strcmp(uniform.name, name) == 0)
 		{
 			if (length != nullptr)
-				*length = calc_uniform_size(uniform);
+				*length = blah_calc_uniform_size(uniform);
 			return m_data.begin() + offset;
 		}
 
 		index++;
-		offset += calc_uniform_size(uniform);
+		offset += blah_calc_uniform_size(uniform);
 	}
 
 	Log::warn("No Uniform '%s' exists", name);

@@ -43,15 +43,15 @@ Packer::~Packer()
 
 void Packer::add(u64 id, int width, int height, const Color* pixels)
 {
-	add_entry(id, width, height, pixels, RectI(0, 0, width, height));
+	add_entry(id, width, height, pixels, Recti(0, 0, width, height));
 }
 
 void Packer::add(u64 id, const Image& image)
 {
-	add_entry(id, image.width, image.height, image.pixels, RectI(0, 0, image.width, image.height));
+	add_entry(id, image.width, image.height, image.pixels, Recti(0, 0, image.width, image.height));
 }
 
-void Packer::add(u64 id, const Image& image, const RectI& source)
+void Packer::add(u64 id, const Image& image, const Recti& source)
 {
 	add_entry(id, image.width, image.height, image.pixels, source);
 }
@@ -61,11 +61,11 @@ void Packer::add(u64 id, const FilePath& path)
 	add(id, Image(path.cstr()));
 }
 
-void Packer::add_entry(u64 id, int w, int h, const Color* pixels, const RectI& source)
+void Packer::add_entry(u64 id, int w, int h, const Color* pixels, const Recti& source)
 {
 	m_dirty = true;
 
-	Entry entry(id, RectI(0, 0, source.w, source.h));
+	Entry entry(id, Recti(0, 0, source.w, source.h));
 
 	// trim
 	int top = source.y, left = source.x, right = source.x, bottom = source.y;
@@ -114,7 +114,6 @@ void Packer::add_entry(u64 id, int w, int h, const Color* pixels, const RectI& s
 		entry.frame.y = source.y - top;
 		entry.packed.w = (right - left);
 		entry.packed.h = (bottom - top);
-
 
 		// create pixel data
 		entry.memory_index = m_buffer.position();
@@ -189,7 +188,7 @@ void Packer::pack()
 
 			int from = packed;
 			int index = 0;
-			Node* root = nodes[index++].Reset(RectI(0, 0, sources[from]->packed.w + padding * 2 + spacing, sources[from]->packed.h + padding * 2 + spacing));
+			Node* root = nodes[index++].Reset(Recti(0, 0, sources[from]->packed.w + padding * 2 + spacing, sources[from]->packed.h + padding * 2 + spacing));
 
 			while (packed < count)
 			{
@@ -217,18 +216,18 @@ void Packer::pack()
 						// grow right
 						if (shouldGrowRight || (!shouldGrowDown && canGrowRight))
 						{
-							Node* next = nodes[index++].Reset(RectI(0, 0, root->rect.w + w, root->rect.h));
+							Node* next = nodes[index++].Reset(Recti(0, 0, root->rect.w + w, root->rect.h));
 							next->used = true;
 							next->down = root;
-							next->right = node = nodes[index++].Reset(RectI(root->rect.w, 0, w, root->rect.h));
+							next->right = node = nodes[index++].Reset(Recti(root->rect.w, 0, w, root->rect.h));
 							root = next;
 						}
 						// grow down
 						else
 						{
-							Node* next = nodes[index++].Reset(RectI(0, 0, root->rect.w, root->rect.h + h));
+							Node* next = nodes[index++].Reset(Recti(0, 0, root->rect.w, root->rect.h + h));
 							next->used = true;
-							next->down = node = nodes[index++].Reset(RectI(0, root->rect.h, root->rect.w, h));
+							next->down = node = nodes[index++].Reset(Recti(0, root->rect.h, root->rect.w, h));
 							next->right = root;
 							root = next;
 						}
@@ -241,8 +240,8 @@ void Packer::pack()
 
 				// add
 				node->used = true;
-				node->down = nodes[index++].Reset(RectI(node->rect.x, node->rect.y + h, node->rect.w, node->rect.h - h));
-				node->right = nodes[index++].Reset(RectI(node->rect.x + w, node->rect.y, node->rect.w - w, h));
+				node->down = nodes[index++].Reset(Recti(node->rect.x, node->rect.y + h, node->rect.w, node->rect.h - h));
+				node->right = nodes[index++].Reset(Recti(node->rect.x + w, node->rect.y, node->rect.w - w, h));
 
 				sources[packed]->packed.x = node->rect.x + padding;
 				sources[packed]->packed.y = node->rect.y + padding;
@@ -276,21 +275,26 @@ void Packer::pack()
 					sources[i]->page = page;
 					if (!sources[i]->empty)
 					{
-						RectI dst = sources[i]->packed;
+						Recti dst = sources[i]->packed;
 						Color* src = (Color*)(m_buffer.data() + sources[i]->memory_index);
 
 						// TODO:
 						// Optimize this?
 						if (padding > 0)
 						{
-							pages[page].set_pixels(RectI(dst.x - padding, dst.y, dst.w, dst.h), src);
-							pages[page].set_pixels(RectI(dst.x + padding, dst.y, dst.w, dst.h), src);
-							pages[page].set_pixels(RectI(dst.x, dst.y - padding, dst.w, dst.h), src);
-							pages[page].set_pixels(RectI(dst.x, dst.y + padding, dst.w, dst.h), src);
+							Image& image = pages[page];
+							for (int x = -padding; x < dst.w + padding * 2; x++)
+								for (int y = -padding; y < dst.h + padding * 2; y++)
+								{
+									int sx = (x < 0 ? 0 : (x > dst.w - 1 ? dst.w - 1 : x));
+									int sy = (y < 0 ? 0 : (y > dst.h - 1 ? dst.h - 1 : y));
+									image.pixels[dst.x + x + (dst.y + y) * image.width] = src[sx + sy * dst.w];
+								}
 						}
-
-						pages[page].set_pixels(dst, src);
-
+						else
+						{
+							pages[page].set_pixels(dst, src);
+						}
 					}
 				}
 			}
@@ -335,7 +339,7 @@ Packer::Node* Packer::Node::Find(int w, int h)
 	return nullptr;
 }
 
-Packer::Node* Packer::Node::Reset(const RectI& rect)
+Packer::Node* Packer::Node::Reset(const Recti& rect)
 {
 	used = false;
 	this->rect = rect;

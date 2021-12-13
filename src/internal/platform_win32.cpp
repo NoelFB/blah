@@ -360,7 +360,7 @@ LRESULT CALLBACK Blah::win32_window_procedure(HWND hwnd, UINT msg, WPARAM wParam
 		return 0;
 
 	case WM_MOUSEMOVE:
-		g_platform.input_state->mouse.on_move(Vec2((float)((u16)lParam), (float)(lParam >> 16)), Vec2::zero);
+		g_platform.input_state->mouse.on_move(Vec2f((float)((u16)lParam), (float)(lParam >> 16)), Vec2f::zero);
 		return 0;
 
 	case WM_MOUSEWHEEL:
@@ -626,6 +626,17 @@ FileRef Platform::file_open(const char* path, FileMode mode)
 		return FileRef();
 
 	return FileRef(new Win32File(result));
+}
+
+// clipboard
+void Platform::set_clipboard(const char* text)
+{
+	BLAH_ASSERT(false, "Not Implemented Yet");
+}
+
+const char* Platform::get_clipboard()
+{
+	BLAH_ASSERT(false, "Not Implemented Yet");
 }
 
 void* Platform::gl_get_func(const char* name)

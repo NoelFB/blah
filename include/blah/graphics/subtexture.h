@@ -1,6 +1,6 @@
 #pragma once
 #include <blah/graphics/texture.h>
-#include <blah/numerics/rect.h>
+#include <blah/numerics/spatial.h>
 
 namespace Blah
 {
@@ -12,23 +12,23 @@ namespace Blah
 		TextureRef texture;
 
 		// Source rectangle, in pixels
-		Rect source;
+		Rectf source;
 
 		// Frame rectangle, in pixels. This describes padding around the image.
 		// This is useful for drawing images that have been trimmed. Ex. if the source
 		// is 32,32, but the original image was 64,64, the frame could be -16,-16,64,64
-		Rect frame;
+		Rectf frame;
 
 		// `draw_coords` are automatically assigned through `update` method
-		Vec2 draw_coords[4];
+		Vec2f draw_coords[4];
 
 		// `tex_coords` are automatically assigned through the `update` method
-		Vec2 tex_coords[4];
+		Vec2f tex_coords[4];
 
 		Subtexture();
 		Subtexture(const TextureRef& texture);
-		Subtexture(const TextureRef& texture, Rect source);
-		Subtexture(const TextureRef& texture, Rect source, Rect frame);
+		Subtexture(const TextureRef& texture, Rectf source);
+		Subtexture(const TextureRef& texture, Rectf source, Rectf frame);
 
 		// Returns the width of the image
 		float width() const { return frame.w; }
@@ -40,9 +40,9 @@ namespace Blah
 		void update();
 
 		// returns resulting source and frame rectangles based on the provided clip rectangle
-		void crop_info(const Rect& clip, Rect* dest_source, Rect* dest_frame) const;
+		void crop_info(const Rectf& clip, Rectf* dest_source, Rectf* dest_frame) const;
 
 		// returns a subtexture cropped to the provided rectangle
-		Subtexture crop(const Rect& clip) const;
+		Subtexture crop(const Rectf& clip) const;
 	};
 }

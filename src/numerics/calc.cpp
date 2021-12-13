@@ -1,47 +1,13 @@
 #include <blah/numerics/calc.h>
-#include <blah/numerics/vec2.h>
+#include <blah/numerics/spatial.h>
 #include <cmath>
 #include <cstdlib>
 
 using namespace Blah;
 
-float Calc::rand_float(float min, float maxExc)
-{
-	return min + rand_float(maxExc - min);
-}
-
-float Calc::rand_float(float maxExc)
-{
-	return (rand() / (float)RAND_MAX) * maxExc;
-}
-
-int Calc::rand_int(int min, int maxExc)
-{
-	return min + rand_int(maxExc - min);
-}
-
-int Calc::rand_int(int maxExc)
-{
-	if (maxExc <= 0)
-		return 0;
-	return rand() % maxExc;
-}
-
-int Calc::rand_int()
-{
-	return rand();
-}
-
 float Calc::approach(float t, float target, float delta)
 {
 	return t < target ? min(t + delta, target) : max(t - delta, target);
-}
-
-Vec2 Calc::approach(const Vec2& t, const Vec2& target, float delta)
-{
-	if ((target - t).length() <= delta)
-		return target;
-	return t + (target - t).normal() * delta;
 }
 
 float Calc::map(float t, float old_min, float old_max, float new_min, float new_max)

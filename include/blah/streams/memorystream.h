@@ -9,7 +9,7 @@ namespace Blah
 	{
 	public:
 		MemoryStream();
-		MemoryStream(char* data, size_t length);
+		MemoryStream(unsigned char* data, size_t length);
 		MemoryStream(MemoryStream&& ms) noexcept;
 		MemoryStream& operator=(MemoryStream&& ms) noexcept;
 		~MemoryStream() override { m_data = nullptr; m_length = m_position = 0; }
@@ -22,15 +22,15 @@ namespace Blah
 		bool is_writable() const override;
 		void close() override;
 
-		char* data();
-		const char* data() const;
+		unsigned char* data();
+		const unsigned char* data() const;
 
 	protected:
 		size_t read_data(void* ptr, size_t length) override;
 		size_t write_data(const void* ptr, size_t length) override;
 
 	private:
-		char* m_data;
+		unsigned char* m_data;
 		size_t m_length;
 		size_t m_position;
 	};

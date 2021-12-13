@@ -3,8 +3,6 @@
 
 namespace Blah
 {
-	struct Vec2;
-
 	namespace Calc
 	{
 		constexpr float PI = 3.141592653f;
@@ -14,19 +12,7 @@ namespace Blah
 		constexpr float UP = PI / -2;
 		constexpr float DOWN = PI / 2;
 
-		float rand_float(float min, float maxExc);
-		
-		float rand_float(float maxExc);
-
-		int rand_int(int min, int maxExc);
-
-		int rand_int(int maxExc);
-
-		int rand_int();
-
 		float approach(float t, float target, float delta);
-
-		Vec2 approach(const Vec2& t, const Vec2& target, float delta);
 
 		float map(float t, float old_min, float old_max, float new_min, float new_max);
 
@@ -40,8 +26,8 @@ namespace Blah
 
 		float abs(float x);
 
-		template<class T>
-		T clamp(T value, T min, T max) { return value < min ? min : (value > max ? max : value); }
+		template<class T, class TMin, class TMax>
+		T clamp(T value, TMin min, TMax max) { return value < min ? static_cast<T>(min) : (value > max ? static_cast<T>(max) : value); }
 
 		template<class T>
 		T min(T a, T b) { return  (T)(a < b ? a : b); }

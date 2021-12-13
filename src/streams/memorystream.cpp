@@ -6,7 +6,7 @@ using namespace Blah;
 MemoryStream::MemoryStream()
 	: m_data(nullptr), m_length(0), m_position(0) {}
 
-MemoryStream::MemoryStream(char* data, size_t length)
+MemoryStream::MemoryStream(unsigned char* data, size_t length)
 	: m_data(data), m_length(length), m_position(0) {}
 
 MemoryStream::MemoryStream(MemoryStream&& src) noexcept
@@ -89,12 +89,12 @@ void MemoryStream::close()
 	m_data = nullptr; m_length = m_position = 0;
 }
 
-char* MemoryStream::data()
+unsigned char* MemoryStream::data()
 {
 	return m_data;
 }
 
-const char* MemoryStream::data() const
+const unsigned char* MemoryStream::data() const
 {
 	return m_data;
 }

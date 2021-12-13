@@ -213,7 +213,7 @@ void SpriteFont::rebuild(const Font& font, float size, const CharSet& charset)
 			// add character
 			auto ch = font.get_character(glyph, scale);
 			m_characters[i].advance = ch.advance;
-			m_characters[i].offset = Vec2(ch.offset_x, ch.offset_y);
+			m_characters[i].offset = Vec2f(ch.offset_x, ch.offset_y);
 
 			// pack glyph
 			if (ch.has_glyph)

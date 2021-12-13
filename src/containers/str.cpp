@@ -218,7 +218,7 @@ Str& Str::append_utf16(const u16* start, const u16* end, bool swap_endian)
 	const u16 surrogate_min = 0xd800u;
 	const u16 surrogate_max = 0xdbffu;
 
-	while (start != end)
+	while ((end == nullptr && *start != 0) || (end != nullptr && start != end))
 	{
 		u16 next = (*start++);
 		if (swap_endian)

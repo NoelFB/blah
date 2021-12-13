@@ -1,8 +1,7 @@
 #pragma once
 #include <blah/images/image.h>
 #include <blah/numerics/color.h>
-#include <blah/numerics/rectI.h>
-#include <blah/numerics/point.h>
+#include <blah/numerics/spatial.h>
 #include <blah/containers/str.h>
 #include <blah/containers/vector.h>
 #include <blah/streams/bufferstream.h>
@@ -37,13 +36,13 @@ namespace Blah
 
 			// Packed frame rectangle.
 			// This won't be set until after the packer has run.
-			RectI frame;
+			Recti frame;
 
 			// Packed position and size.
 			// This won't be set until after the packer has run.
-			RectI packed;
+			Recti packed;
 
-			Entry(u64 id, const RectI& frame)
+			Entry(u64 id, const Recti& frame)
 				: memory_index(0)
 				, id(id)
 				, page(0)
@@ -83,7 +82,7 @@ namespace Blah
 		void add(u64 id, const Image& bitmap);
 
 		// add a new entry
-		void add(u64 id, const Image& bitmap, const RectI& source);
+		void add(u64 id, const Image& bitmap, const Recti& source);
 
 		// add a new entry
 		void add(u64 id, const FilePath& path);
@@ -104,13 +103,13 @@ namespace Blah
 		struct Node
 		{
 			bool used;
-			RectI rect;
+			Recti rect;
 			Node* right;
 			Node* down;
 
 			Node();
 			Node* Find(int w, int h);
-			Node* Reset(const RectI& rect);
+			Node* Reset(const Recti& rect);
 		};
 
 		// whether the packer has any changes that require it to run again
@@ -123,6 +122,6 @@ namespace Blah
 		Vector<Entry> m_entries;
 
 		// adds a new entry
-		void add_entry(u64 id, int w, int h, const Color* pixels, const RectI& source);
+		void add_entry(u64 id, int w, int h, const Color* pixels, const Recti& source);
 	};
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <blah/common.h>
-#include <blah/numerics/vec2.h>
+#include <blah/numerics/spatial.h>
 #include <blah/containers/str.h>
 #include <blah/containers/stackvector.h>
 
@@ -392,13 +392,13 @@ namespace Blah
 		u64 timestamp[Input::max_mouse_buttons];
 
 		// mouse position in screen coordinates
-		Vec2 screen_position;
+		Vec2f screen_position;
 		
 		// mouse position in pixel coordinates
-		Vec2 draw_position;
+		Vec2f draw_position;
 		
 		// mouse position on the window
-		Vec2 position;
+		Vec2f position;
 		
 		// mouse wheel value this frame
 		Point wheel;
@@ -407,7 +407,7 @@ namespace Blah
 		void on_press(MouseButton button);
 
 		// invokes a mouse movement
-		void on_move(const Vec2& position, const Vec2& screen_position);
+		void on_move(const Vec2f& position, const Vec2f& screen_position);
 
 		// invokes a key release
 		void on_release(MouseButton button);
@@ -686,7 +686,7 @@ namespace Blah
 		{}
 
 		// Current Value, -1 to 1
-		Vec2 value() const;
+		Vec2f value() const;
 
 		// Current value, either -1, 0, or 1
 		Point sign() const;
@@ -735,14 +735,18 @@ namespace Blah
 		// Input State for the previous frame
 		extern InputState last_state;
 
+		// Key-Repeating intervals
+		extern float repeat_delay;
+		extern float repeat_interval;
+
 		// Gets the Mouse Position
-		Vec2 mouse();
+		Vec2f mouse();
 
 		// Gets the Draw Mouse Position (Mouse Position / Window Size * Draw Size)
-		Vec2 mouse_draw();
+		Vec2f mouse_draw();
 
 		// Gets the Mouse Position in Screen Coordinates
-		Vec2 mouse_screen();
+		Vec2f mouse_screen();
 
 		// Checks if the given Mouse Button is pressed
 		bool pressed(MouseButton button);
@@ -765,6 +769,9 @@ namespace Blah
 		// Checks if the keyboard key was released this frame
 		bool released(Key key);
 
+		// Pressed or repeating on-interval
+		bool repeating(Key key);
+
 		// Checks if the Left or Right Ctrl Key is down
 		bool ctrl();
 
@@ -779,6 +786,12 @@ namespace Blah
 
 		// returns a string name of the button
 		const char* name_of(Button button);
+
+		// gets the string contents of the clipboard
+		const String& get_clipboard();
+
+		// sets the string contents of the clipboard
+		void set_clipboard(const String& text);
 
 		// registers a new binding
 		ButtonBindingRef register_binding(const ButtonBinding& binding);

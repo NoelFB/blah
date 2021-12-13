@@ -6,12 +6,12 @@ using namespace Blah;
 Subtexture::Subtexture() {}
 
 Subtexture::Subtexture(const TextureRef& texture)
-	: Subtexture(texture, Rect(0, 0, (float)texture->width(), (float)texture->height())) {}
+	: Subtexture(texture, Rectf(0, 0, (float)texture->width(), (float)texture->height())) {}
 
-Subtexture::Subtexture(const TextureRef& texture, Rect source)
-	: Subtexture(texture, source, Rect(0, 0, source.w, source.h)) {}
+Subtexture::Subtexture(const TextureRef& texture, Rectf source)
+	: Subtexture(texture, source, Rectf(0, 0, source.w, source.h)) {}
 
-Subtexture::Subtexture(const TextureRef& texture, Rect source, Rect frame)
+Subtexture::Subtexture(const TextureRef& texture, Rectf source, Rectf frame)
 	: texture(texture), source(source), frame(frame)
 {
 	update();
@@ -44,7 +44,7 @@ void Subtexture::update()
 	}
 }
 
-void Subtexture::crop_info(const Rect& clip, Rect* dest_source, Rect* dest_frame) const
+void Subtexture::crop_info(const Rectf& clip, Rectf* dest_source, Rectf* dest_frame) const
 {
 	*dest_source = (clip + source.top_left() + frame.top_left()).overlap_rect(source);
 
@@ -54,7 +54,7 @@ void Subtexture::crop_info(const Rect& clip, Rect* dest_source, Rect* dest_frame
 	dest_frame->h = clip.h;
 }
 
-Subtexture Subtexture::crop(const Rect& clip) const
+Subtexture Subtexture::crop(const Rectf& clip) const
 {
 	Subtexture dst;
 	dst.texture = texture;

@@ -12,8 +12,8 @@ RenderPass::RenderPass()
 	material = MaterialRef();
 	has_viewport = false;
 	has_scissor = false;
-	viewport = Rect();
-	scissor = Rect();
+	viewport = Rectf();
+	scissor = Rectf();
 	index_start = 0;
 	index_count = 0;
 	instance_count = 0;
@@ -66,7 +66,7 @@ void RenderPass::perform()
 	}
 
 	// get the total drawable size
-	auto draw_size = Vec2(pass.target->width(), pass.target->height());
+	auto draw_size = Vec2f(pass.target->width(), pass.target->height());
 
 	// Validate Viewport
 	if (!pass.has_viewport)
@@ -78,12 +78,12 @@ void RenderPass::perform()
 	}
 	else
 	{
-		pass.viewport = pass.viewport.overlap_rect(Rect(0, 0, draw_size.x, draw_size.y));
+		pass.viewport = pass.viewport.overlap_rect(Rectf(0, 0, draw_size.x, draw_size.y));
 	}
 
 	// Validate Scissor
 	if (pass.has_scissor)
-		pass.scissor = pass.scissor.overlap_rect(Rect(0, 0, draw_size.x, draw_size.y));
+		pass.scissor = pass.scissor.overlap_rect(Rectf(0, 0, draw_size.x, draw_size.y));
 
 	// perform render
 	Graphics::render(pass);

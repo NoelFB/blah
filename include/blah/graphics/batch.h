@@ -1,9 +1,6 @@
 #pragma once
 #include <blah/containers/str.h>
-#include <blah/numerics/vec2.h>
-#include <blah/numerics/rect.h>
-#include <blah/numerics/mat3x2.h>
-#include <blah/numerics/mat4x4.h>
+#include <blah/numerics/spatial.h>
 #include <blah/numerics/color.h>
 #include <blah/graphics/subtexture.h>
 #include <blah/graphics/spritefont.h>
@@ -53,6 +50,10 @@ namespace Blah
 		const char* sampler_uniform;
 		const char* matrix_uniform;
 
+		// Snaps all drawing coordinates to integer values
+		// This is useful for drawing Pixel Art stuff
+		bool integerize = false;
+
 		// Default Sampler, set on clear
 		TextureSampler default_sampler;
 
@@ -63,23 +64,23 @@ namespace Blah
 
 		// Pushes a new matrix onto the stack, and uses it for transforming all drawing.
 		// `absolute` means the matrix provided will not be transformed by the current stack.
-		void push_matrix(const Mat3x2& matrix, bool absolute = false);
+		void push_matrix(const Mat3x2f& matrix, bool absolute = false);
 
 		// Pops the matrix from the stack
-		Mat3x2 pop_matrix();
+		Mat3x2f pop_matrix();
 
 		// Gets the current matrix from the top of the stackKO
-		Mat3x2 peek_matrix() const;
+		Mat3x2f peek_matrix() const;
 
 		// Pushes a Scissor rectangle. Note this is not transformed by the matrix stack
 		// or other scissors. Each push is screen-space.
-		void push_scissor(const Rect& scissor);
+		void push_scissor(const Rectf& scissor);
 
 		// Pops a Scissor rectangle from the stack
-		Rect pop_scissor();
+		Rectf pop_scissor();
 
 		// Gets the current Scissor rectangle from the top of the stack
-		Rect peek_scissor() const;
+		Rectf peek_scissor() const;
 
 		// Pushes a blend mode
 		void push_blend(const BlendMode& blend);
@@ -130,7 +131,7 @@ namespace Blah
 		void render(const TargetRef& target = App::backbuffer);
 
 		// Draws the batch to the given target, with the provided matrix
-		void render(const TargetRef& target, const Mat4x4& matrix);
+		void render(const TargetRef& target, const Mat4x4f& matrix);
 
 		// Clears the batch
 		void clear();
@@ -138,60 +139,60 @@ namespace Blah
 		// Clears and disposes all resources that the batch is using
 		void dispose();
 
-		void line(const Vec2& from, const Vec2& to, float t, Color color);
-		void line(const Vec2& from, const Vec2& to, float t, Color fromColor, Color toColor);
+		void line(const Vec2f& from, const Vec2f& to, float t, Color color);
+		void line(const Vec2f& from, const Vec2f& to, float t, Color fromColor, Color toColor);
 
-		void bezier_line(const Vec2& from, const Vec2& b, const Vec2& to, int steps, float t, Color color);
-		void bezier_line(const Vec2& from, const Vec2& b, const Vec2& c, const Vec2& to, int steps, float t, Color color);
+		void bezier_line(const Vec2f& from, const Vec2f& b, const Vec2f& to, int steps, float t, Color color);
+		void bezier_line(const Vec2f& from, const Vec2f& b, const Vec2f& c, const Vec2f& to, int steps, float t, Color color);
 
-		void tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, Color color);
-		void tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, Color col0, Color col1, Color col2);
-		void tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& tex0, const Vec2& tex1, const Vec2& tex2, Color color);
-		void tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& tex0, const Vec2& tex1, const Vec2& tex2, Color col0, Color col1, Color col2);
+		void tri(const Vec2f& pos0, const Vec2f& pos1, const Vec2f& pos2, Color color);
+		void tri(const Vec2f& pos0, const Vec2f& pos1, const Vec2f& pos2, Color col0, Color col1, Color col2);
+		void tri(const Vec2f& pos0, const Vec2f& pos1, const Vec2f& pos2, const Vec2f& tex0, const Vec2f& tex1, const Vec2f& tex2, Color color);
+		void tri(const Vec2f& pos0, const Vec2f& pos1, const Vec2f& pos2, const Vec2f& tex0, const Vec2f& tex1, const Vec2f& tex2, Color col0, Color col1, Color col2);
 
-		void tri_line(const Vec2& a, const Vec2& b, const Vec2& c, float t, Color color);
+		void tri_line(const Vec2f& a, const Vec2f& b, const Vec2f& c, float t, Color color);
 
-		void rect(const Rect& rect, Color color);
-		void rect_line(const Rect& rect, float t, Color color);
-		void rect_rounded(const Rect& rect, float radius, int steps, Color color);
-		void rect_rounded(const Rect& rect, float rtl, int rtl_steps, float rtr, int rtr_steps, float rbr, int rbr_steps, float rbl, int rbl_steps, Color color);
-		void rect_rounded_line(const Rect& rect, float radius, int steps, float t, Color color);
-		void rect_rounded_line(const Rect& rect, float rtl, int rtl_steps, float rtr, int rtr_steps, float rbr, int rbr_steps, float rbl, int rbl_steps, float t, Color color);
+		void rect(const Rectf& rect, Color color);
+		void rect_line(const Rectf& rect, float t, Color color);
+		void rect_rounded(const Rectf& rect, float radius, int steps, Color color);
+		void rect_rounded(const Rectf& rect, float rtl, int rtl_steps, float rtr, int rtr_steps, float rbr, int rbr_steps, float rbl, int rbl_steps, Color color);
+		void rect_rounded_line(const Rectf& rect, float radius, int steps, float t, Color color);
+		void rect_rounded_line(const Rectf& rect, float rtl, int rtl_steps, float rtr, int rtr_steps, float rbr, int rbr_steps, float rbl, int rbl_steps, float t, Color color);
 
-		void semi_circle(const Vec2& center, float start_radians, float end_radians, float radius, int steps, Color centerColor, Color edgeColor);
-		void semi_circle(const Vec2& center, float start_radians, float end_radians, float radius, int steps, Color color);
-		void semi_circle_line(const Vec2& center, float start_radians, float end_radians, float radius, int steps, float t, Color color);
+		void semi_circle(const Vec2f& center, float start_radians, float end_radians, float radius, int steps, Color centerColor, Color edgeColor);
+		void semi_circle(const Vec2f& center, float start_radians, float end_radians, float radius, int steps, Color color);
+		void semi_circle_line(const Vec2f& center, float start_radians, float end_radians, float radius, int steps, float t, Color color);
 
-		void circle(const Vec2& center, float radius, int steps, Color color);
-		void circle(const Vec2& center, float radius, int steps, Color center_color, Color outer_color);
-		void circle_line(const Vec2& center, float radius, float t, int steps, Color color);
+		void circle(const Vec2f& center, float radius, int steps, Color color);
+		void circle(const Vec2f& center, float radius, int steps, Color center_color, Color outer_color);
+		void circle_line(const Vec2f& center, float radius, float t, int steps, Color color);
 
-		void quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& pos3, Color color);
-		void quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& pos3, Color col0, Color col1, Color col2, Color col3);
-		void quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& pos3, const Vec2& tex0, const Vec2& tex1, const Vec2& tex2, const Vec2& tex3, Color color);
-		void quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& pos3, const Vec2& tex0, const Vec2& tex1, const Vec2& tex2, const Vec2& tex3, Color col0, Color col1, Color col2, Color col3);
-		void quad_line(const Vec2& a, const Vec2& b, const Vec2& c, const Vec2& d, float t, Color color);
+		void quad(const Vec2f& pos0, const Vec2f& pos1, const Vec2f& pos2, const Vec2f& pos3, Color color);
+		void quad(const Vec2f& pos0, const Vec2f& pos1, const Vec2f& pos2, const Vec2f& pos3, Color col0, Color col1, Color col2, Color col3);
+		void quad(const Vec2f& pos0, const Vec2f& pos1, const Vec2f& pos2, const Vec2f& pos3, const Vec2f& tex0, const Vec2f& tex1, const Vec2f& tex2, const Vec2f& tex3, Color color);
+		void quad(const Vec2f& pos0, const Vec2f& pos1, const Vec2f& pos2, const Vec2f& pos3, const Vec2f& tex0, const Vec2f& tex1, const Vec2f& tex2, const Vec2f& tex3, Color col0, Color col1, Color col2, Color col3);
+		void quad_line(const Vec2f& a, const Vec2f& b, const Vec2f& c, const Vec2f& d, float t, Color color);
 
-		void arrow_head(const Vec2& point_pos, float radians, float side_len, Color color);
-		void arrow_head(const Vec2& point_pos, const Vec2& from_pos, float side_len, Color color);
+		void arrow_head(const Vec2f& point_pos, float radians, float side_len, Color color);
+		void arrow_head(const Vec2f& point_pos, const Vec2f& from_pos, float side_len, Color color);
 
-		void tex(const TextureRef& texture, const Vec2& position = Vec2::zero, Color color = Color::white);
-		void tex(const TextureRef& texture, const Vec2& position, const Vec2& origin, const Vec2& scale, float rotation, Color color);
-		void tex(const TextureRef& texture, const Rect& clip, const Vec2& position, const Vec2& origin, const Vec2& scale, float rotation, Color color);
+		void tex(const TextureRef& texture, const Vec2f& position = Vec2f::zero, Color color = Color::white);
+		void tex(const TextureRef& texture, const Vec2f& position, const Vec2f& origin, const Vec2f& scale, float rotation, Color color);
+		void tex(const TextureRef& texture, const Rectf& clip, const Vec2f& position, const Vec2f& origin, const Vec2f& scale, float rotation, Color color);
 
-		void tex(const Subtexture& subtexture, const Vec2& position = Vec2::zero, Color color = Color::white);
-		void tex(const Subtexture& subtexture, const Vec2& pos, const Vec2& origin, const Vec2& scale, float rotation, Color color);
-		void tex(const Subtexture& subtexture, const Rect& clip, const Vec2& pos, const Vec2& origin, const Vec2& scale, float rotation, Color color);
+		void tex(const Subtexture& subtexture, const Vec2f& position = Vec2f::zero, Color color = Color::white);
+		void tex(const Subtexture& subtexture, const Vec2f& pos, const Vec2f& origin, const Vec2f& scale, float rotation, Color color);
+		void tex(const Subtexture& subtexture, const Rectf& clip, const Vec2f& pos, const Vec2f& origin, const Vec2f& scale, float rotation, Color color);
 
-		void str(const SpriteFont& font, const String& text, const Vec2& pos, Color color);
-		void str(const SpriteFont& font, const String& text, const Vec2& pos, TextAlign align, float size, Color color);
+		void str(const SpriteFont& font, const String& text, const Vec2f& pos, Color color);
+		void str(const SpriteFont& font, const String& text, const Vec2f& pos, TextAlign align, float size, Color color);
 
 	private:
 
 		struct Vertex
 		{
-			Vec2 pos;
-			Vec2 tex;
+			Vec2f pos;
+			Vec2f tex;
 			Color col;
 
 			u8 mult;
@@ -210,7 +211,7 @@ namespace Blah
 			TextureRef texture;
 			TextureSampler sampler;
 			bool flip_vertically;
-			Rect scissor;
+			Rectf scissor;
 
 			DrawBatch() :
 				layer(0),
@@ -224,15 +225,15 @@ namespace Blah
 		static ShaderRef m_default_shader;
 		MaterialRef m_default_material;
 		MeshRef m_mesh;
-		Mat3x2 m_matrix;
+		Mat3x2f m_matrix;
 		ColorMode m_color_mode;
 		u8 m_tex_mult;
 		u8 m_tex_wash;
 		DrawBatch m_batch;
 		Vector<Vertex> m_vertices;
 		Vector<u32> m_indices;
-		Vector<Mat3x2> m_matrix_stack;
-		Vector<Rect> m_scissor_stack;
+		Vector<Mat3x2f> m_matrix_stack;
+		Vector<Rectf> m_scissor_stack;
 		Vector<BlendMode> m_blend_stack;
 		Vector<MaterialRef> m_material_stack;
 		Vector<ColorMode> m_color_mode_stack;
@@ -240,6 +241,6 @@ namespace Blah
 		Vector<DrawBatch> m_batches;
 		int m_batch_insert;
 
-		void render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4x4& matrix);
+		void render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4x4f& matrix);
 	};
 }

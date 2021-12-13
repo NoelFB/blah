@@ -53,8 +53,8 @@ namespace Blah
 	public:
 		Stopwatch();
 		void reset();
-		u64 microseconds();
-		u64 milliseconds();
+		u64 microseconds() const;
+		u64 milliseconds() const;
 
 	private:
 		u64 start_time;

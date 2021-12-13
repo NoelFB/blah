@@ -261,8 +261,8 @@ void Platform::update(InputState& state)
 		SDL_GetGlobalMouseState(&x, &y);
 
 		state.mouse.on_move(
-			Vec2((float)(x - win_x), (float)(y - win_y)),
-			Vec2((float)x, (float)y));
+			Vec2f((float)(x - win_x), (float)(y - win_y)),
+			Vec2f((float)x, (float)y));
 	}
 
 	// poll normal events
@@ -721,6 +721,17 @@ void Platform::dir_explore(const char* path)
 }
 
 #endif
+
+// clipboard
+void Platform::set_clipboard(const char* text)
+{
+	SDL_SetClipboardText(text);
+}
+
+const char* Platform::get_clipboard()
+{
+	return SDL_GetClipboardText();
+}
 
 void* Platform::gl_get_func(const char* name)
 {

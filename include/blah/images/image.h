@@ -1,7 +1,6 @@
 #pragma once
 #include <blah/numerics/color.h>
-#include <blah/numerics/rectI.h>
-#include <blah/numerics/point.h>
+#include <blah/numerics/spatial.h>
 #include <blah/filesystem.h>
 
 namespace Blah
@@ -45,7 +44,7 @@ namespace Blah
 
 		// sets the pixels at the provided rectangle to the given data
 		// data must be at least rect.w * rect.h in size!
-		void set_pixels(const RectI& rect, Color* data);
+		void set_pixels(const Recti& rect, Color* data);
 
 		// saves the image to a png file
 		bool save_png(const FilePath& file) const;
@@ -60,10 +59,10 @@ namespace Blah
 		bool save_jpg(Stream& stream, int quality) const;
 
 		// gets the pixels from the given source rectangle
-		void get_pixels(Color* dest, const Point& dest_pos, const Point& dest_size, RectI source_rect) const;
+		void get_pixels(Color* dest, const Point& dest_pos, const Point& dest_size, Recti source_rect) const;
 
 		// gets a sub image from this image
-		Image get_sub_image(const RectI& source_rect);
+		Image get_sub_image(const Recti& source_rect);
 
 	private:
 

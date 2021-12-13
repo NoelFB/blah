@@ -2,9 +2,9 @@
 #include <blah/app.h>
 #include <blah/time.h>
 #include <blah/common.h>
-#include <blah/numerics/point.h>
 #include <blah/numerics/calc.h>
 #include "internal/input.h"
+#include "internal/platform.h"
 #include <cstring>
 
 using namespace Blah;
@@ -16,10 +16,14 @@ namespace
 	Vector<WeakRef<ButtonBinding>> g_buttons;
 	Vector<WeakRef<AxisBinding>> g_axes;
 	Vector<WeakRef<StickBinding>> g_sticks;
+	String g_clipboard;
 }
 
 InputState Blah::Input::state;
 InputState Blah::Input::last_state;
+
+float Blah::Input::repeat_delay = 0.35f;
+float Blah::Input::repeat_interval = 0.025f;
 
 void Input::init()
 {
@@ -68,6 +72,9 @@ void Input::update_state()
 			controller.released[j] = false;
 		}
 	}
+
+	// get clipboard
+	g_clipboard = Platform::get_clipboard();
 }
 
 void Input::update_bindings()
@@ -112,7 +119,7 @@ void Input::update_bindings()
 	}
 }
 
-void MouseState::on_move(const Vec2& pos, const Vec2& screen_pos)
+void MouseState::on_move(const Vec2f& pos, const Vec2f& screen_pos)
 {
 	position = pos;
 	screen_position = screen_pos;
@@ -223,17 +230,17 @@ bool KeyboardState::alt()
 	return down[Key::LeftAlt] || down[Key::RightAlt];
 }
 
-Vec2 Input::mouse()
+Vec2f Input::mouse()
 {
 	return state.mouse.position;
 }
 
-Vec2 Input::mouse_draw()
+Vec2f Input::mouse_draw()
 {
 	return state.mouse.draw_position;
 }
 
-Vec2 Input::mouse_screen()
+Vec2f Input::mouse_screen()
 {
 	return state.mouse.screen_position;
 }
@@ -273,6 +280,26 @@ bool Input::released(Key key)
 	return state.keyboard.released[key];
 }
 
+bool Input::repeating(Key key)
+{
+	if (state.keyboard.pressed[key])
+		return true;
+
+	if (state.keyboard.down[key])
+	{
+		double timestamp = state.keyboard.timestamp[key] / (double)Time::ticks_per_second;
+		double current_time = Time::ticks / (double)Time::ticks_per_second;
+
+		if (current_time > timestamp + Input::repeat_delay)
+		{
+			if (Time::on_interval(current_time - timestamp, Time::delta, Input::repeat_interval, 0.0f))
+				return true;
+		}
+	}
+
+	return false;
+}
+
 bool Input::ctrl()
 {
 	return state.keyboard.ctrl();
@@ -310,6 +337,17 @@ const char* Input::name_of(Button button)
 	}
 
 	return "Unknown";
+}
+
+const String& Input::get_clipboard()
+{
+	return g_clipboard;
+}
+
+void Input::set_clipboard(const String& text)
+{
+	g_clipboard = text;
+	return Platform::set_clipboard(text);
 }
 
 ButtonBindingRef Input::register_binding(const ButtonBinding& binding)
@@ -730,17 +768,17 @@ void AxisBinding::clear()
 	positive.clear();
 }
 
-Vec2 StickBinding::value() const
+Vec2f StickBinding::value() const
 {
-	Vec2 result = Vec2(x.value(), y.value());
+	Vec2f result = Vec2f(x.value(), y.value());
 	if (round_threshold > 0 && result.length() < round_threshold)
-		return Vec2::zero;
+		return Vec2f::zero;
 	return result;
 }
 
 Point StickBinding::sign() const
 {
-	Vec2 result = value();
+	Vec2f result = value();
 	return Point((int)Calc::sign(result.x), (int)Calc::sign(result.y));
 }
 

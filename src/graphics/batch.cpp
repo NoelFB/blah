@@ -128,25 +128,22 @@ namespace
 
 namespace
 {
-	static Vec2 batch_shape_intersection(const Vec2& p0, const Vec2& p1, const Vec2& q0, const Vec2& q1)
+	static Vec2f batch_shape_intersection(const Vec2f& p0, const Vec2f& p1, const Vec2f& q0, const Vec2f& q1)
 	{
 		const auto aa = p1 - p0;
 		const auto bb = q0 - q1;
 		const auto cc = q0 - p0;
 		const auto t = (bb.x * cc.y - bb.y * cc.x) / (aa.y * bb.x - aa.x * bb.y);
 
-		return Vec2(p0.x + t * (p1.x - p0.x), p0.y + t * (p1.y - p0.y));
+		return Vec2f(p0.x + t * (p1.x - p0.x), p0.y + t * (p1.y - p0.y));
 	}
 }
 
-#define MAKE_VERTEX(vert, mat, px, py, tx, ty, c, m, w, f) \
-	(vert)->pos.x = ((px) * (mat).m11) + ((py) * (mat).m21) + (mat).m31; \
-	(vert)->pos.y = ((px) * (mat).m12) + ((py) * (mat).m22) + (mat).m32; \
-	(vert)->tex.x = tx;  \
-	if (m_batch.flip_vertically) \
-		(vert)->tex.y = 1.0f - (ty); \
-	else \
-		(vert)->tex.y = ty; \
+#define MAKE_VERTEX(vert, mat, px, py, tx, ty, c, m, w, f, cast) \
+	(vert)->pos.x = cast(((px) * (mat).m11) + ((py) * (mat).m21) + (mat).m31); \
+	(vert)->pos.y = cast(((px) * (mat).m12) + ((py) * (mat).m22) + (mat).m32); \
+	(vert)->tex.x = (tx); \
+	(vert)->tex.y = m_batch.flip_vertically ? 1.0f - (ty) : (ty); \
 	(vert)->col = c; \
 	(vert)->mult = m; \
 	(vert)->wash = w; \
@@ -163,10 +160,17 @@ namespace
 		*_i++ = (u32)m_vertices.size() + 2; \
 		*_i++ = (u32)m_vertices.size() + 3; \
 		Vertex* _v = m_vertices.expand(4); \
-		MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash); _v++; \
-		MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash); _v++; \
-		MAKE_VERTEX(_v, m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash); _v++; \
-		MAKE_VERTEX(_v, m_matrix, px3, py3, tx3, ty3, col3, mult, fill, wash); \
+		if (integerize) { \
+			MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash, std::round); _v++; \
+			MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash, std::round); _v++; \
+			MAKE_VERTEX(_v, m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash, std::round); _v++; \
+			MAKE_VERTEX(_v, m_matrix, px3, py3, tx3, ty3, col3, mult, fill, wash, std::round); \
+		} else { \
+			MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash, float); _v++; \
+			MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash, float); _v++; \
+			MAKE_VERTEX(_v, m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash, float); _v++; \
+			MAKE_VERTEX(_v, m_matrix, px3, py3, tx3, ty3, col3, mult, fill, wash, float); \
+		} \
 	}
 
 #define PUSH_TRIANGLE(px0, py0, px1, py1, px2, py2, tx0, ty0, tx1, ty1, tx2, ty2, col0, col1, col2, mult, fill, wash) \
@@ -177,9 +181,15 @@ namespace
 		*_i++ = (u32)m_vertices.size() + 1; \
 		*_i++ = (u32)m_vertices.size() + 2; \
 		Vertex* _v = m_vertices.expand(3); \
-		MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash); _v++; \
-		MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash); _v++; \
-		MAKE_VERTEX(_v, m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash); \
+		if (integerize) { \
+			MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash, std::floor); _v++; \
+			MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash, std::floor); _v++; \
+			MAKE_VERTEX(_v, m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash, std::floor); \
+		} else { \
+			MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash, float); _v++; \
+			MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash, float); _v++; \
+			MAKE_VERTEX(_v, m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash, float); \
+		} \
 	}
 
 #define INSERT_BATCH() \
@@ -213,7 +223,7 @@ Batch::~Batch()
 	dispose();
 }
 
-void Batch::push_matrix(const Mat3x2& matrix, bool absolute)
+void Batch::push_matrix(const Mat3x2f& matrix, bool absolute)
 {
 	m_matrix_stack.push_back(m_matrix);
 	if (absolute)
@@ -222,33 +232,33 @@ void Batch::push_matrix(const Mat3x2& matrix, bool absolute)
 		m_matrix = matrix * m_matrix;
 }
 
-Mat3x2 Batch::pop_matrix()
+Mat3x2f Batch::pop_matrix()
 {
 	auto was = m_matrix;
 	m_matrix = m_matrix_stack.pop();
 	return was;
 }
 
-Mat3x2 Batch::peek_matrix() const
+Mat3x2f Batch::peek_matrix() const
 {
 	return m_matrix;
 }
 
-void Batch::push_scissor(const Rect& scissor)
+void Batch::push_scissor(const Rectf& scissor)
 {
 	m_scissor_stack.push_back(m_batch.scissor);
 	SET_BATCH_VAR(scissor);
 }
 
-Rect Batch::pop_scissor()
+Rectf Batch::pop_scissor()
 {
-	Rect was = m_batch.scissor;
-	Rect scissor = m_scissor_stack.pop();
+	Rectf was = m_batch.scissor;
+	Rectf scissor = m_scissor_stack.pop();
 	SET_BATCH_VAR(scissor);
 	return was;
 }
 
-Rect Batch::peek_scissor() const
+Rectf Batch::peek_scissor() const
 {
 	return m_batch.scissor;
 }
@@ -388,10 +398,10 @@ void Batch::render(const TargetRef& target)
 	else
 		size = Point(target->width(), target->height());
 
-	render(target, Mat4x4::create_ortho_offcenter(0, (float)size.x, (float)size.y, 0, 0.01f, 1000.0f));
+	render(target, Mat4x4f::create_ortho_offcenter(0, (float)size.x, (float)size.y, 0, 0.01f, 1000.0f));
 }
 
-void Batch::render(const TargetRef& target, const Mat4x4& matrix)
+void Batch::render(const TargetRef& target, const Mat4x4f& matrix)
 {
 	// nothing to draw
 	if ((m_batches.size() <= 0 && m_batch.elements <= 0) || m_indices.size() <= 0)
@@ -422,7 +432,7 @@ void Batch::render(const TargetRef& target, const Mat4x4& matrix)
 	pass.target = target;
 	pass.mesh = m_mesh;
 	pass.has_viewport = false;
-	pass.viewport = Rect();
+	pass.viewport = Rectf();
 	pass.instance_count = 0;
 	pass.depth = Compare::None;
 	pass.cull = Cull::None;
@@ -443,7 +453,7 @@ void Batch::render(const TargetRef& target, const Mat4x4& matrix)
 		render_single_batch(pass, m_batch, matrix);
 }
 
-void Batch::render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4x4& matrix)
+void Batch::render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4x4f& matrix)
 {
 	// get the material
 	pass.material = b.material;
@@ -462,7 +472,7 @@ void Batch::render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4
 		pass.material->set_sampler(0, b.sampler);
 
 	// assign the matrix uniform
-	pass.material->set_value(matrix_uniform, &matrix.m11, 16);
+	pass.material->set_value(matrix_uniform, matrix);
 	
 	pass.blend = b.blend;
 	pass.has_scissor = b.scissor.w >= 0 && b.scissor.h >= 0;
@@ -475,7 +485,7 @@ void Batch::render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4
 
 void Batch::clear()
 {
-	m_matrix = Mat3x2::identity;
+	m_matrix = Mat3x2f::identity;
 	m_color_mode = ColorMode::Normal;
 	m_tex_mult = 255;
 	m_tex_wash = 0;
@@ -522,22 +532,22 @@ void Batch::dispose()
 	m_mesh.reset();
 }
 
-void Batch::line(const Vec2& from, const Vec2& to, float t, Color color)
+void Batch::line(const Vec2f& from, const Vec2f& to, float t, Color color)
 {
 	line(from, to, t, color, color);
 }
 
-void Batch::line(const Vec2& from, const Vec2& to, float t, Color fromColor, Color toColor)
+void Batch::line(const Vec2f& from, const Vec2f& to, float t, Color fromColor, Color toColor)
 {
 	if (from.x == to.x && from.y == to.y)
 		return;
 
-	Vec2 normal = (to - from).normal();
-	Vec2 perp = Vec2(normal.y, -normal.x);
-	Vec2 pos0 = from + perp * t * 0.5f;
-	Vec2 pos1 = to + perp * t * 0.5f;
-	Vec2 pos2 = to - perp * t * 0.5f;
-	Vec2 pos3 = from - perp * t * 0.5f;
+	Vec2f normal = (to - from).normal();
+	Vec2f perp = Vec2f(normal.y, -normal.x);
+	Vec2f pos0 = from + perp * t * 0.5f;
+	Vec2f pos1 = to + perp * t * 0.5f;
+	Vec2f pos2 = to - perp * t * 0.5f;
+	Vec2f pos3 = from - perp * t * 0.5f;
 
 	PUSH_QUAD(
 		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y, pos3.x, pos3.y,
@@ -546,14 +556,14 @@ void Batch::line(const Vec2& from, const Vec2& to, float t, Color fromColor, Col
 		0, 0, 255);
 }
 
-void Batch::bezier_line(const Vec2& from, const Vec2& b, const Vec2& to, int steps, float t, Color color)
+void Batch::bezier_line(const Vec2f& from, const Vec2f& b, const Vec2f& to, int steps, float t, Color color)
 {
-	Vec2 prev = from;
+	Vec2f prev = from;
 	float add = 1.0f / steps;
 
 	for (int i = 1; i < steps; i++)
 	{
-		Vec2 at = Vec2::lerp_bezier(from, b, to, add * i);
+		Vec2f at = Vec2f::lerp_bezier(from, b, to, add * i);
 		line(prev, at, t, color);
 		prev = at;
 	}
@@ -561,14 +571,14 @@ void Batch::bezier_line(const Vec2& from, const Vec2& b, const Vec2& to, int ste
 	line(prev, to, t, color);
 }
 
-void Batch::bezier_line(const Vec2& from, const Vec2& b, const Vec2& c, const Vec2& to, int steps, float t, Color color)
+void Batch::bezier_line(const Vec2f& from, const Vec2f& b, const Vec2f& c, const Vec2f& to, int steps, float t, Color color)
 {
-	Vec2 prev = from;
+	Vec2f prev = from;
 	float add = 1.0f / steps;
 
 	for (int i = 1; i < steps; i++)
 	{
-		Vec2 at = Vec2::lerp_bezier(from, b, c, to, add * i);
+		Vec2f at = Vec2f::lerp_bezier(from, b, c, to, add * i);
 		line(prev, at, t, color);
 		prev = at;
 	}
@@ -576,7 +586,7 @@ void Batch::bezier_line(const Vec2& from, const Vec2& b, const Vec2& c, const Ve
 	line(prev, to, t, color);
 }
 
-void Batch::tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, Color color)
+void Batch::tri(const Vec2f& pos0, const Vec2f& pos1, const Vec2f& pos2, Color color)
 {
 	PUSH_TRIANGLE(
 		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y,
@@ -585,7 +595,7 @@ void Batch::tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, Color colo
 		0, 0, 255);
 }
 
-void Batch::tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, Color col0, Color col1, Color col2)
+void Batch::tri(const Vec2f& pos0, const Vec2f& pos1, const Vec2f& pos2, Color col0, Color col1, Color col2)
 {
 	PUSH_TRIANGLE(
 		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y,
@@ -594,7 +604,7 @@ void Batch::tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, Color col0
 		0, 0, 255);
 }
 
-void Batch::tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& tex0, const Vec2& tex1, const Vec2& tex2, Color color)
+void Batch::tri(const Vec2f& pos0, const Vec2f& pos1, const Vec2f& pos2, const Vec2f& tex0, const Vec2f& tex1, const Vec2f& tex2, Color color)
 {
 	PUSH_TRIANGLE(
 		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y,
@@ -603,7 +613,7 @@ void Batch::tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2
 		m_tex_mult, m_tex_wash, 0);
 }
 
-void Batch::tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& tex0, const Vec2& tex1, const Vec2& tex2, Color col0, Color col1, Color col2)
+void Batch::tri(const Vec2f& pos0, const Vec2f& pos1, const Vec2f& pos2, const Vec2f& tex0, const Vec2f& tex1, const Vec2f& tex2, Color col0, Color col1, Color col2)
 {
 	PUSH_TRIANGLE(
 		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y,
@@ -612,7 +622,7 @@ void Batch::tri(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2
 		m_tex_mult, m_tex_wash, 0);
 }
 
-void Batch::tri_line(const Vec2& a, const Vec2& b, const Vec2& c, float t, Color color)
+void Batch::tri_line(const Vec2f& a, const Vec2f& b, const Vec2f& c, float t, Color color)
 {
 	// TODO:
 	// Detect if the thickness of the line fills the entire shape
@@ -635,7 +645,7 @@ void Batch::tri_line(const Vec2& a, const Vec2& b, const Vec2& c, float t, Color
 	quad(cc, c, a, aa, color);
 }
 
-void Batch::rect(const Rect& rect, Color color)
+void Batch::rect(const Rectf& rect, Color color)
 {
 	PUSH_QUAD(
 		rect.x, rect.y,
@@ -647,7 +657,7 @@ void Batch::rect(const Rect& rect, Color color)
 		0, 0, 255);
 }
 
-void Batch::rect_line(const Rect& rect, float t, Color color)
+void Batch::rect_line(const Rectf& rect, float t, Color color)
 {
 	if (t >= rect.w || t >= rect.h)
 	{
@@ -693,12 +703,12 @@ void Batch::rect_line(const Rect& rect, float t, Color color)
 	}
 }
 
-void Batch::rect_rounded(const Rect& rect, float radius, int steps, Color color)
+void Batch::rect_rounded(const Rectf& rect, float radius, int steps, Color color)
 {
 	rect_rounded(rect, radius, steps, radius, steps, radius, steps, radius, steps, color);
 }
 
-void Batch::rect_rounded(const Rect& rect, float rtl, int rtl_steps, float rtr, int rtr_steps, float rbr, int rbr_steps, float rbl, int rbl_steps, Color color)
+void Batch::rect_rounded(const Rectf& rect, float rtl, int rtl_steps, float rtr, int rtr_steps, float rbr, int rbr_steps, float rbl, int rbl_steps, Color color)
 {
 	// clamp
 	rtl = Calc::min(Calc::min(Calc::max(0.0f, rtl), rect.w / 2.0f), rect.h / 2.0f);
@@ -713,10 +723,10 @@ void Batch::rect_rounded(const Rect& rect, float rtl, int rtl_steps, float rtr, 
 	else
 	{
 		// get corners
-		Rect tl = Rect(rect.top_left(), Vec2(rtl, rtl));
-		Rect tr = Rect(rect.top_right() + Vec2(-rtr, 0.0f), Vec2(rtr, rtr));
-		Rect bl = Rect(rect.bottom_left() + Vec2(0.0f, -rbl), Vec2(rbl, rbl));
-		Rect br = Rect(rect.bottom_right() + Vec2(-rbr, -rbr), Vec2(rbr, rbr));
+		Rectf tl = Rectf(rect.x, rect.y, rtl, rtl);
+		Rectf tr = Rectf(rect.x + rect.w - rtr, rect.y, rtr, rtr);
+		Rectf bl = Rectf(rect.x, rect.y + rect.h - rbl, rbl, rbl);
+		Rectf br = Rectf(rect.x + rect.w - rbr, rect.y + rect.h - rbr, rbr, rbr);
 
 		// rounded corners
 		semi_circle(tl.bottom_right(), Calc::UP, Calc::LEFT, rtl, rtl_steps, color);
@@ -733,12 +743,12 @@ void Batch::rect_rounded(const Rect& rect, float rtl, int rtl_steps, float rtr, 
 	}
 }
 
-void Batch::rect_rounded_line(const Rect & rect, float radius, int steps, float t, Color color)
+void Batch::rect_rounded_line(const Rectf & rect, float radius, int steps, float t, Color color)
 {
 	rect_rounded_line(rect, radius, steps, radius, steps, radius, steps, radius, steps, t, color);
 }
 
-void Batch::rect_rounded_line(const Rect& r, float rtl, int rtl_steps, float rtr, int rtr_steps, float rbr, int rbr_steps, float rbl, int rbl_steps, float t, Color color)
+void Batch::rect_rounded_line(const Rectf& r, float rtl, int rtl_steps, float rtr, int rtr_steps, float rbr, int rbr_steps, float rbl, int rbl_steps, float t, Color color)
 {
 	// clamp
 	rtl = Calc::min(Calc::min(Calc::max(0.0f, rtl), r.w / 2.0f), r.h / 2.0f);
@@ -753,42 +763,42 @@ void Batch::rect_rounded_line(const Rect& r, float rtl, int rtl_steps, float rtr
 	else
 	{
 		// rounded corners
-		semi_circle_line(Vec2(r.x + rtl, r.y + rtl), Calc::UP, Calc::LEFT, rtl, rtl_steps, t, color);
-		semi_circle_line(Vec2(r.x + r.w - rtr, r.y + rtr), Calc::UP, Calc::UP + Calc::TAU * 0.25f, rtr, rtr_steps, t, color);
-		semi_circle_line(Vec2(r.x + rbl, r.y + r.h - rbl), Calc::DOWN, Calc::LEFT, rbl, rbl_steps, t, color);
-		semi_circle_line(Vec2(r.x + r.w - rbr, r.y + r.h - rbr), Calc::DOWN, Calc::RIGHT, rbr, rbr_steps, t, color);
+		semi_circle_line(Vec2f(r.x + rtl, r.y + rtl), Calc::UP, Calc::LEFT, rtl, rtl_steps, t, color);
+		semi_circle_line(Vec2f(r.x + r.w - rtr, r.y + rtr), Calc::UP, Calc::UP + Calc::TAU * 0.25f, rtr, rtr_steps, t, color);
+		semi_circle_line(Vec2f(r.x + rbl, r.y + r.h - rbl), Calc::DOWN, Calc::LEFT, rbl, rbl_steps, t, color);
+		semi_circle_line(Vec2f(r.x + r.w - rbr, r.y + r.h - rbr), Calc::DOWN, Calc::RIGHT, rbr, rbr_steps, t, color);
 
 		// connect sides that aren't touching
 		if (r.h > rtl + rbl)
-			rect(Rect(r.x, r.y + rtl, t, r.h - rtl - rbl), color);
+			rect(Rectf(r.x, r.y + rtl, t, r.h - rtl - rbl), color);
 		if (r.h > rtr + rbr)
-			rect(Rect(r.x + r.w - t, r.y + rtr, t, r.h - rtr - rbr), color);
+			rect(Rectf(r.x + r.w - t, r.y + rtr, t, r.h - rtr - rbr), color);
 		if (r.w > rtl + rtr)
-			rect(Rect(r.x + rtl, r.y, r.w - rtl - rtr, t), color);
+			rect(Rectf(r.x + rtl, r.y, r.w - rtl - rtr, t), color);
 		if (r.w > rbl + rbr)
-			rect(Rect(r.x + rbl, r.y + r.h - t, r.w - rbl - rbr, t), color);
+			rect(Rectf(r.x + rbl, r.y + r.h - t, r.w - rbl - rbr, t), color);
 	}
 }
 
-void Batch::semi_circle(const Vec2& center, float start_radians, float end_radians, float radius, int steps, Color centerColor, Color edgeColor)
+void Batch::semi_circle(const Vec2f& center, float start_radians, float end_radians, float radius, int steps, Color centerColor, Color edgeColor)
 {
-	Vec2 last = Vec2::from_angle(start_radians, radius);
+	Vec2f last = Vec2f::from_angle(start_radians, radius);
 	float add = Calc::angle_diff(start_radians, end_radians);
 
 	for (int i = 1; i <= steps; i++)
 	{
-		Vec2 next = Vec2::from_angle(start_radians + add * (i / (float)steps), radius);
+		Vec2f next = Vec2f::from_angle(start_radians + add * (i / (float)steps), radius);
 		tri(center + last, center + next, center, edgeColor, edgeColor, centerColor);
 		last = next;
 	}
 }
 
-void Batch::semi_circle(const Vec2& center, float start_radians, float end_radians, float radius, int steps, Color color)
+void Batch::semi_circle(const Vec2f& center, float start_radians, float end_radians, float radius, int steps, Color color)
 {
 	semi_circle(center, start_radians, end_radians, radius, steps, color, color);
 }
 
-void Batch::semi_circle_line(const Vec2& center, float start_radians, float end_radians, float radius, int steps, float t, Color color)
+void Batch::semi_circle_line(const Vec2f& center, float start_radians, float end_radians, float radius, int steps, float t, Color color)
 {
 	if (t >= radius)
 	{
@@ -798,13 +808,13 @@ void Batch::semi_circle_line(const Vec2& center, float start_radians, float end_
 	{
 		const auto add = Calc::angle_diff(start_radians, end_radians);
 
-		Vec2 last_inner = Vec2::from_angle(start_radians, radius - t);
-		Vec2 last_outer = Vec2::from_angle(start_radians, radius);
+		Vec2f last_inner = Vec2f::from_angle(start_radians, radius - t);
+		Vec2f last_outer = Vec2f::from_angle(start_radians, radius);
 
 		for (int i = 1; i <= steps; i++)
 		{
-			const auto next_inner = Vec2::from_angle(start_radians + add * (i / (float)steps), radius - t);
-			const auto next_outer = Vec2::from_angle(start_radians + add * (i / (float)steps), radius);
+			const auto next_inner = Vec2f::from_angle(start_radians + add * (i / (float)steps), radius - t);
+			const auto next_outer = Vec2f::from_angle(start_radians + add * (i / (float)steps), radius);
 
 			quad(center + last_inner, center + last_outer, center + next_outer, center + next_inner, color);
 
@@ -814,19 +824,19 @@ void Batch::semi_circle_line(const Vec2& center, float start_radians, float end_
 	}
 }
 
-void Batch::circle(const Vec2& center, float radius, int steps, Color color)
+void Batch::circle(const Vec2f& center, float radius, int steps, Color color)
 {
 	circle(center, radius, steps, color, color);
 }
 
-void Batch::circle(const Vec2& center, float radius, int steps, Color center_color, Color outer_color)
+void Batch::circle(const Vec2f& center, float radius, int steps, Color center_color, Color outer_color)
 {
-	Vec2 last = Vec2(center.x + radius, center.y);
+	Vec2f last = Vec2f(center.x + radius, center.y);
 
 	for (int i = 1; i <= steps; i++)
 	{
 		const auto radians = (i / (float)steps) * Calc::TAU;
-		const auto next = Vec2(center.x + Calc::cos(radians) * radius, center.y + Calc::sin(radians) * radius);
+		const auto next = Vec2f(center.x + Calc::cos(radians) * radius, center.y + Calc::sin(radians) * radius);
 
 		tri(last, next, center, outer_color, outer_color, center_color);
 
@@ -834,7 +844,7 @@ void Batch::circle(const Vec2& center, float radius, int steps, Color center_col
 	}
 }
 
-void Batch::circle_line(const Vec2& center, float radius, float t, int steps, Color color)
+void Batch::circle_line(const Vec2f& center, float radius, float t, int steps, Color color)
 {
 	if (t >= radius)
 	{
@@ -842,16 +852,16 @@ void Batch::circle_line(const Vec2& center, float radius, float t, int steps, Co
 	}
 	else
 	{
-		Vec2 last_inner = Vec2(center.x + radius - t, center.y);
-		Vec2 last_outer = Vec2(center.x + radius, center.y);
+		Vec2f last_inner = Vec2f(center.x + radius - t, center.y);
+		Vec2f last_outer = Vec2f(center.x + radius, center.y);
 
 		for (int i = 1; i <= steps; i++)
 		{
 			const auto radians = (i / (float)steps) * Calc::TAU;
-			const auto normal = Vec2(Calc::cos(radians), Calc::sin(radians));
+			const auto normal = Vec2f(Calc::cos(radians), Calc::sin(radians));
 
-			const auto next_inner = Vec2(center.x + normal.x * (radius - t), center.y + normal.y * (radius - t));
-			const auto next_outer = Vec2(center.x + normal.x * radius, center.y + normal.y * radius);
+			const auto next_inner = Vec2f(center.x + normal.x * (radius - t), center.y + normal.y * (radius - t));
+			const auto next_outer = Vec2f(center.x + normal.x * radius, center.y + normal.y * radius);
 
 			quad(last_inner, last_outer, next_outer, next_inner, color);
 
@@ -861,7 +871,7 @@ void Batch::circle_line(const Vec2& center, float radius, float t, int steps, Co
 	}
 }
 
-void Batch::quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& pos3, Color color)
+void Batch::quad(const Vec2f& pos0, const Vec2f& pos1, const Vec2f& pos2, const Vec2f& pos3, Color color)
 {
 	PUSH_QUAD(
 		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y, pos3.x, pos3.y,
@@ -870,7 +880,7 @@ void Batch::quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec
 		0, 0, 255);
 }
 
-void Batch::quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& pos3, Color col0, Color col1, Color col2, Color col3)
+void Batch::quad(const Vec2f& pos0, const Vec2f& pos1, const Vec2f& pos2, const Vec2f& pos3, Color col0, Color col1, Color col2, Color col3)
 {
 	PUSH_QUAD(
 		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y, pos3.x, pos3.y,
@@ -879,7 +889,7 @@ void Batch::quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec
 		0, 0, 255);
 }
 
-void Batch::quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& pos3, const Vec2& tex0, const Vec2& tex1, const Vec2& tex2, const Vec2& tex3, Color color)
+void Batch::quad(const Vec2f& pos0, const Vec2f& pos1, const Vec2f& pos2, const Vec2f& pos3, const Vec2f& tex0, const Vec2f& tex1, const Vec2f& tex2, const Vec2f& tex3, Color color)
 {
 	PUSH_QUAD(
 		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y, pos3.x, pos3.y,
@@ -888,7 +898,7 @@ void Batch::quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec
 		m_tex_mult, m_tex_wash, 0);
 }
 
-void Batch::quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec2& pos3, const Vec2& tex0, const Vec2& tex1, const Vec2& tex2, const Vec2& tex3, Color col0, Color col1, Color col2, Color col3)
+void Batch::quad(const Vec2f& pos0, const Vec2f& pos1, const Vec2f& pos2, const Vec2f& pos3, const Vec2f& tex0, const Vec2f& tex1, const Vec2f& tex2, const Vec2f& tex3, Color col0, Color col1, Color col2, Color col3)
 {
 	PUSH_QUAD(
 		pos0.x, pos0.y, pos1.x, pos1.y, pos2.x, pos2.y, pos3.x, pos3.y,
@@ -897,7 +907,7 @@ void Batch::quad(const Vec2& pos0, const Vec2& pos1, const Vec2& pos2, const Vec
 		m_tex_mult, m_tex_wash, 0);
 }
 
-void Batch::quad_line(const Vec2& a, const Vec2& b, const Vec2& c, const Vec2& d, float t, Color color)
+void Batch::quad_line(const Vec2f& a, const Vec2f& b, const Vec2f& c, const Vec2f& d, float t, Color color)
 {
 	// TODO:
 	// Detect if the thickness of the line fills the entire shape
@@ -924,22 +934,22 @@ void Batch::quad_line(const Vec2& a, const Vec2& b, const Vec2& c, const Vec2& d
 	quad(dd, d, a, aa, color);
 }
 
-void Batch::arrow_head(const Vec2& point_pos, float radians, float side_len, Color color)
+void Batch::arrow_head(const Vec2f& point_pos, float radians, float side_len, Color color)
 {
-	arrow_head(point_pos, point_pos - Vec2::from_angle(radians), side_len, color);
+	arrow_head(point_pos, point_pos - Vec2f::from_angle(radians), side_len, color);
 }
 
-void Batch::arrow_head(const Vec2& point_pos, const Vec2& from_pos, float side_len, Color color)
+void Batch::arrow_head(const Vec2f& point_pos, const Vec2f& from_pos, float side_len, Color color)
 {
 	float height = sqrtf(side_len * side_len - powf(side_len / 2, 2));
-	Vec2 dir = (point_pos - from_pos).normal();
-	Vec2 perp = dir.perpendicular();
-	Vec2 base = point_pos - dir * height;
+	Vec2f dir = (point_pos - from_pos).normal();
+	Vec2f perp = dir.turn_right();
+	Vec2f base = point_pos - dir * height;
 	
 	tri(point_pos, base + perp * side_len / 2, base - perp * side_len / 2, color);
 }
 
-void Batch::tex(const TextureRef& texture, const Vec2& pos, Color color)
+void Batch::tex(const TextureRef& texture, const Vec2f& pos, Color color)
 {
 	set_texture(texture);
 
@@ -953,9 +963,9 @@ void Batch::tex(const TextureRef& texture, const Vec2& pos, Color color)
 		m_tex_mult, m_tex_wash, 0);
 }
 
-void Batch::tex(const TextureRef& texture, const Vec2& pos, const Vec2& origin, const Vec2& scale, float rotation, Color color)
+void Batch::tex(const TextureRef& texture, const Vec2f& pos, const Vec2f& origin, const Vec2f& scale, float rotation, Color color)
 {
-	push_matrix(Mat3x2::create_transform(pos, origin, scale, rotation));
+	push_matrix(Mat3x2f::create_transform(pos, origin, scale, rotation));
 
 	set_texture(texture);
 
@@ -971,9 +981,9 @@ void Batch::tex(const TextureRef& texture, const Vec2& pos, const Vec2& origin, 
 	pop_matrix();
 }
 
-void Batch::tex(const TextureRef& texture, const Rect& clip, const Vec2& pos, const Vec2& origin, const Vec2& scale, float rotation, Color color)
+void Batch::tex(const TextureRef& texture, const Rectf& clip, const Vec2f& pos, const Vec2f& origin, const Vec2f& scale, float rotation, Color color)
 {
-	push_matrix(Mat3x2::create_transform(pos, origin, scale, rotation));
+	push_matrix(Mat3x2f::create_transform(pos, origin, scale, rotation));
 
 	set_texture(texture);
 
@@ -993,7 +1003,7 @@ void Batch::tex(const TextureRef& texture, const Rect& clip, const Vec2& pos, co
 	pop_matrix();
 }
 
-void Batch::tex(const Subtexture& sub, const Vec2& pos, Color color)
+void Batch::tex(const Subtexture& sub, const Vec2f& pos, Color color)
 {
 	if (!sub.texture)
 	{
@@ -1024,9 +1034,9 @@ void Batch::tex(const Subtexture& sub, const Vec2& pos, Color color)
 	}
 }
 
-void Batch::tex(const Subtexture& sub, const Vec2& pos, const Vec2& origin, const Vec2& scale, float rotation, Color color)
+void Batch::tex(const Subtexture& sub, const Vec2f& pos, const Vec2f& origin, const Vec2f& scale, float rotation, Color color)
 {
-	push_matrix(Mat3x2::create_transform(pos, origin, scale, rotation));
+	push_matrix(Mat3x2f::create_transform(pos, origin, scale, rotation));
 
 	if (!sub.texture)
 	{
@@ -1059,24 +1069,24 @@ void Batch::tex(const Subtexture& sub, const Vec2& pos, const Vec2& origin, cons
 	pop_matrix();
 }
 
-void Batch::tex(const Subtexture& sub, const Rect& clip, const Vec2& pos, const Vec2& origin, const Vec2& scale, float rotation, Color color)
+void Batch::tex(const Subtexture& sub, const Rectf& clip, const Vec2f& pos, const Vec2f& origin, const Vec2f& scale, float rotation, Color color)
 {
 	tex(sub.crop(clip), pos, origin, scale, rotation, color);
 }
 
-void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, Color color)
+void Batch::str(const SpriteFont& font, const String& text, const Vec2f& pos, Color color)
 {
 	str(font, text, pos, TextAlign::TopLeft, font.size, color);
 }
 
-void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, TextAlign align, float size, Color color)
+void Batch::str(const SpriteFont& font, const String& text, const Vec2f& pos, TextAlign align, float size, Color color)
 {
 	push_matrix(
-		Mat3x2::create_scale(size / font.size) *
-		Mat3x2::create_translation(pos)
+		Mat3x2f::create_scale(size / font.size) *
+		Mat3x2f::create_translation(pos)
 	);
 
-	Vec2 offset;
+	Vec2f offset;
 
 	if ((align & TextAlign::Left) == TextAlign::Left)
 		offset.x = 0;
@@ -1119,7 +1129,7 @@ void Batch::str(const SpriteFont& font, const String& text, const Vec2& pos, Tex
 		// draw it, if the subtexture exists
 		if (ch.subtexture.texture)
 		{
-			Vec2 at = offset + ch.offset;
+			Vec2f at = offset + ch.offset;
 
 			if (i > 0 && text[i - 1] != '\n')
 				at.x += font.get_kerning(last, next);

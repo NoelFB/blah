@@ -1,6 +1,6 @@
 #pragma once
 #include <blah/common.h>
-#include <blah/numerics/point.h>
+#include <blah/numerics/spatial.h>
 
 namespace Blah
 {
