@@ -2,6 +2,7 @@
 #include <blah/common.h>
 #include <initializer_list>
 #include <new>
+#include <cstring>
 
 namespace Blah
 {
@@ -182,14 +183,21 @@ namespace Blah
 
 			T* new_buffer = (T*)::operator new (sizeof(T) * new_capacity);
 
-			for (int i = 0; i < m_count; i++)
+			if constexpr (std::is_trivially_copyable<T>())
 			{
-				if (i < new_capacity)
-					new (new_buffer + i) T(std::move(m_buffer[i]));
-				m_buffer[i].~T();
+				memcpy(new_buffer, m_buffer, m_count * sizeof(T));
+			}
+			else
+			{
+				for (int i = 0; i < m_count; i++)
+				{
+					if (i < new_capacity)
+						new (new_buffer + i) T(std::move(m_buffer[i]));
+					m_buffer[i].~T();
+				}
 			}
 
-			::operator delete (m_buffer, sizeof(T)* m_capacity);
+			::operator delete (m_buffer, sizeof(T) * m_capacity);
 
 			m_buffer = new_buffer;
 			m_capacity = new_capacity;
