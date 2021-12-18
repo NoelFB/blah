@@ -471,12 +471,22 @@ void Str::set(const char* start, const char* end)
 	if (end == nullptr)
 		end = start + strlen(start);
 
-	// reserve
-	m_length = (int)(end - start);
-	reserve(m_length);
+	// make sure it actually contains characters
+	int len = (int)(end - start);
+	if (len <= 0)
+	{
+		clear();
+	}
+	else
+	{
+		m_length = len;
+		
+		// reserve
+		reserve(m_length);
 
-	// copy the data over
-	char* ptr = data();
-	memcpy(ptr, start, m_length);
-	ptr[m_length] = '\0';
+		// copy the data over
+		char* ptr = data();
+		memcpy(ptr, start, m_length);
+		ptr[m_length] = '\0';
+	}
 }

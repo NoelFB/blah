@@ -199,6 +199,8 @@ namespace Blah
 			u8 wash;
 			u8 fill;
 			u8 pad;
+
+			Vertex() = default;
 		};
 
 		struct DrawBatch
