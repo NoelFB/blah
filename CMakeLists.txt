@@ -100,7 +100,7 @@ if (PLATFORM_SDL2)
 			FetchContent_Declare(
 				SDL2
 				GIT_REPOSITORY https://github.com/libsdl-org/SDL
-				GIT_TAG release-2.0.14 # grab latest stable release
+				GIT_TAG release-2.0.18 # grab latest stable release
 			)
 			FetchContent_GetProperties(SDL2)
 			if (NOT sdl2_POPULATED)
