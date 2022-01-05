@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
 project(blah)
 
 # C++ version
@@ -102,11 +102,7 @@ if (PLATFORM_SDL2)
 				GIT_REPOSITORY https://github.com/libsdl-org/SDL
 				GIT_TAG release-2.0.18 # grab latest stable release
 			)
-			FetchContent_GetProperties(SDL2)
-			if (NOT sdl2_POPULATED)
-				FetchContent_Populate(SDL2)
-				add_subdirectory(${sdl2_SOURCE_DIR} ${sdl2_BINARY_DIR})
-			endif()
+			FetchContent_MakeAvailable(SDL2)
 
 			# statically link SDL2 since we're building it ourselves
 			set(LIBS ${LIBS} SDL2main SDL2-static)
