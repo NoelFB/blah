@@ -40,7 +40,7 @@ void render()
 	
 	auto center = Vec2f(App::backbuffer->width(), App::backbuffer->height()) / 2;
 	auto rotation = Time::seconds * Calc::TAU;
-	auto transform = Mat3x2f::create_transform(center, Vec2::zero, Vec2::one, rotation);
+	auto transform = Mat3x2f::create_transform(center, Vec2f::zero, Vec2f::one, rotation);
 
 	batch.push_matrix(transform);
 	batch.rect(Rectf(-32, -32, 64, 64), Color::red);
