@@ -556,6 +556,10 @@ namespace Blah
 	}
 
 	template<class T>
+	constexpr Vec3<T>::Vec3()
+		: x(0), y(0), z(0) {}
+
+	template<class T>
 	template<class X, class Y, class Z>
 	constexpr Vec3<T>::Vec3(X x, Y y, Z z)
 		: x(static_cast<T>(x)), y(static_cast<T>(y)), z(static_cast<T>(z)) {}
@@ -597,6 +601,10 @@ namespace Blah
 			a.z * b.x - a.x * b.z,
 			a.x * b.y - a.y * b.x);
 	}
+
+	template<class T>
+	constexpr Vec4<T>::Vec4()
+		: x(0), y(0), z(0), w(0) {}
 
 	template<class T>
 	template<class X, class Y, class Z, class W>
