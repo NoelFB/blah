@@ -108,8 +108,8 @@ namespace Blah
 			Node* down;
 
 			Node();
-			Node* Find(int w, int h);
-			Node* Reset(const Recti& rect);
+			Node* find(int w, int h);
+			Node* reset(const Recti& rect);
 		};
 
 		// whether the packer has any changes that require it to run again
