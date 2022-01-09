@@ -456,6 +456,8 @@ namespace Blah
 	template<class T>
 	Vec2<T> Vec2<T>::normal() const {
 		auto len = std::sqrt(x * x + y * y);
+		if (len <= 0)
+			return Vec2<T>(0, 0);
 		return Vec2(x / len, y / len);
 	}
 
