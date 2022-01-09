@@ -133,39 +133,43 @@ void MouseState::on_move(const Vec2f& pos, const Vec2f& screen_pos)
 
 void MouseState::on_press(MouseButton button)
 {
-	if (button >= 0 && button < Input::max_mouse_buttons)
+	int index = (int)button;
+	if (index >= 0 && index < Input::max_mouse_buttons)
 	{
-		down[button] = true;
-		pressed[button] = true;
-		timestamp[button] = Time::ticks;
+		down[index] = true;
+		pressed[index] = true;
+		timestamp[index] = Time::ticks;
 	}
 }
 
 void MouseState::on_release(MouseButton button)
 {
-	if (button >= 0 && button < Input::max_mouse_buttons)
+	int index = (int)button;
+	if (index >= 0 && index < Input::max_mouse_buttons)
 	{
-		down[button] = false;
-		released[button] = true;
+		down[index] = false;
+		released[index] = true;
 	}
 }
 
 void KeyboardState::on_press(Key key)
 {
-	if (key >= 0 && key < Input::max_keyboard_keys)
+	int index = (int)key;
+	if (index >= 0 && index < Input::max_keyboard_keys)
 	{
-		down[key] = true;
-		pressed[key] = true;
-		timestamp[key] = Time::ticks;
+		down[index] = true;
+		pressed[index] = true;
+		timestamp[index] = Time::ticks;
 	}
 }
 
 void KeyboardState::on_release(Key key)
 {
-	if (key >= 0 && key < Input::max_keyboard_keys)
+	int index = (int)key;
+	if (index >= 0 && index < Input::max_keyboard_keys)
 	{
-		down[key] = false;
-		released[key] = true;
+		down[index] = false;
+		released[index] = true;
 	}
 }
 
@@ -189,25 +193,28 @@ void ControllerState::on_disconnect()
 
 void ControllerState::on_press(Button button)
 {
-	if (button >= 0 && button < Input::max_controller_buttons && button < button_count)
+	int index = (int)button;
+	if (index >= 0 && index < Input::max_controller_buttons && index < button_count)
 	{
-		down[button] = true;
-		pressed[button] = true;
-		button_timestamp[button] = Time::ticks;
+		down[index] = true;
+		pressed[index] = true;
+		button_timestamp[index] = Time::ticks;
 	}
 }
 
 void ControllerState::on_release(Button button)
 {
-	if (button >= 0 && button < Input::max_controller_buttons && button < button_count)
+	int index = (int)button;
+	if (index >= 0 && index < Input::max_controller_buttons && index < button_count)
 	{
-		down[button] = false;
-		released[button] = true;
+		down[index] = false;
+		released[index] = true;
 	}
 }
 
-void ControllerState::on_axis(Axis index, float value)
+void ControllerState::on_axis(Axis input_axis, float value)
 {
+	int index = (int)input_axis;
 	if (index >= 0 && index < Input::max_controller_axis && index < axis_count)
 	{
 		axis[index] = value;
@@ -217,17 +224,17 @@ void ControllerState::on_axis(Axis index, float value)
 
 bool KeyboardState::ctrl()
 {
-	return down[Key::LeftControl] || down[Key::RightControl];
+	return down[(int)Key::LeftControl] || down[(int)Key::RightControl];
 }
 
 bool KeyboardState::shift()
 {
-	return down[Key::LeftShift] || down[Key::RightShift];
+	return down[(int)Key::LeftShift] || down[(int)Key::RightShift];
 }
 
 bool KeyboardState::alt()
 {
-	return down[Key::LeftAlt] || down[Key::RightAlt];
+	return down[(int)Key::LeftAlt] || down[(int)Key::RightAlt];
 }
 
 Vec2f Input::mouse()
@@ -247,17 +254,20 @@ Vec2f Input::mouse_screen()
 
 bool Input::pressed(MouseButton button)
 {
-	return state.mouse.pressed[button];
+	int index = (int)button;
+	return index >= 0 && index < Input::max_mouse_buttons && state.mouse.pressed[index];
 }
 
 bool Input::down(MouseButton button)
 {
-	return state.mouse.down[button];
+	int index = (int)button;
+	return index >= 0 && index < Input::max_mouse_buttons && state.mouse.down[index];
 }
 
 bool Input::released(MouseButton button)
 {
-	return state.mouse.released[button];
+	int index = (int)button;
+	return index >= 0 && index < Input::max_mouse_buttons&& state.mouse.released[index];
 }
 
 Point Input::mouse_wheel()
@@ -267,33 +277,40 @@ Point Input::mouse_wheel()
 
 bool Input::pressed(Key key)
 {
-	return state.keyboard.pressed[key];
+	int index = (int)key;
+	return index >= 0 && index < Input::max_keyboard_keys && state.keyboard.pressed[index];
 }
 
 bool Input::down(Key key)
 {
-	return state.keyboard.down[key];
+	int index = (int)key;
+	return index >= 0 && index < Input::max_keyboard_keys&& state.keyboard.down[index];
 }
 
 bool Input::released(Key key)
 {
-	return state.keyboard.released[key];
+	int index = (int)key;
+	return index >= 0 && index < Input::max_keyboard_keys&& state.keyboard.released[index];
 }
 
 bool Input::repeating(Key key)
 {
-	if (state.keyboard.pressed[key])
-		return true;
-
-	if (state.keyboard.down[key])
+	int index = (int)key;
+	if (index >= 0 && index < Input::max_keyboard_keys)
 	{
-		double timestamp = state.keyboard.timestamp[key] / (double)Time::ticks_per_second;
-		double current_time = Time::ticks / (double)Time::ticks_per_second;
+		if (state.keyboard.pressed[index])
+			return true;
 
-		if (current_time > timestamp + Input::repeat_delay)
+		if (state.keyboard.down[index])
 		{
-			if (Time::on_interval(current_time - timestamp, Time::delta, Input::repeat_interval, 0.0f))
-				return true;
+			double timestamp = state.keyboard.timestamp[index] / (double)Time::ticks_per_second;
+			double current_time = Time::ticks / (double)Time::ticks_per_second;
+
+			if (current_time > timestamp + Input::repeat_delay)
+			{
+				if (Time::on_interval(current_time - timestamp, Time::delta, Input::repeat_interval, 0.0f))
+					return true;
+			}
 		}
 	}
 
@@ -313,6 +330,33 @@ bool Input::shift()
 bool Input::alt()
 {
 	return state.keyboard.alt();
+}
+
+bool Input::pressed(int controller_index, Button button)
+{
+	int index = (int)button;
+	return 
+		controller_index >= 0 && controller_index < Input::max_controllers &&
+		index >= 0 && index < Input::max_controller_buttons && 
+		state.controllers[controller_index].pressed[index];
+}
+
+bool Input::down(int controller_index, Button button)
+{
+	int index = (int)button;
+	return
+		controller_index >= 0 && controller_index < Input::max_controllers&&
+		index >= 0 && index < Input::max_controller_buttons&&
+		state.controllers[controller_index].down[index];
+}
+
+bool Input::released(int controller_index, Button button)
+{
+	int index = (int)button;
+	return
+		controller_index >= 0 && controller_index < Input::max_controllers&&
+		index >= 0 && index < Input::max_controller_buttons&&
+		state.controllers[controller_index].released[index];
 }
 
 const char* Input::name_of(Key key)
@@ -542,15 +586,15 @@ void ButtonBinding::clear()
 bool ButtonBinding::get_pressed() const
 {
 	for (auto& it : keys)
-		if (Input::state.keyboard.pressed[it])
+		if (Input::pressed(it))
 			return true;
 
 	for (auto& it : mouse)
-		if (Input::state.mouse.pressed[it])
+		if (Input::pressed(it))
 			return true;
 
 	for (auto& it : buttons)
-		if (Input::state.controllers[it.controller].pressed[it.button])
+		if (Input::pressed(it.controller, it.button))
 			return true;
 
 	for (auto& it : triggers)
@@ -572,15 +616,15 @@ bool ButtonBinding::get_pressed() const
 bool ButtonBinding::get_released() const
 {
 	for (auto& it : keys)
-		if (Input::state.keyboard.released[it])
+		if (Input::released(it))
 			return true;
 
 	for (auto& it : mouse)
-		if (Input::state.mouse.released[it])
+		if (Input::released(it))
 			return true;
 
 	for (auto& it : buttons)
-		if (Input::state.controllers[it.controller].released[it.button])
+		if (Input::released(it.controller, it.button))
 			return true;
 
 	for (auto& it : triggers)
@@ -602,15 +646,15 @@ bool ButtonBinding::get_released() const
 bool ButtonBinding::get_down() const
 {
 	for (auto& it : keys)
-		if (Input::state.keyboard.down[it])
+		if (Input::down(it))
 			return true;
 
 	for (auto& it : mouse)
-		if (Input::state.mouse.down[it])
+		if (Input::down(it))
 			return true;
 
 	for (auto& it : buttons)
-		if (Input::state.controllers[it.controller].down[it.button])
+		if (Input::down(it.controller, it.button))
 			return true;
 
 	for (auto& it : triggers)
@@ -631,15 +675,15 @@ bool ButtonBinding::get_down() const
 float ButtonBinding::get_value() const
 {
 	for (auto& it : keys)
-		if (Input::state.keyboard.down[it])
+		if (Input::down(it))
 			return 1.0f;
 
 	for (auto& it : mouse)
-		if (Input::state.mouse.down[it])
+		if (Input::down(it))
 			return 1.0f;
 
 	for (auto& it : buttons)
-		if (Input::state.controllers[it.controller].down[it.button])
+		if (Input::down(it.controller, it.button))
 			return 1.0f;
 
 	float highest = 0;

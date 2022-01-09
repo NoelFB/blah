@@ -229,57 +229,41 @@ namespace Blah
 	}
 
 	// Keyboard Keys
-	struct Keys
+	enum class Key
 	{
-		enum Enumeration
-		{
-			#define DEFINE_KEY(name, value) name = value,
-			BLAH_KEY_DEFINITIONS
-			#undef DEFINE_KEY
-		};
+		#define DEFINE_KEY(name, value) name = value,
+		BLAH_KEY_DEFINITIONS
+		#undef DEFINE_KEY
 	};
-	using Key = Keys::Enumeration;
 
 	// Game Controller Buttons
-	struct Buttons
+	enum class Button
 	{
-		enum Enumeration
-		{
-			#define DEFINE_BTN(name, value) name = value,
-			BLAH_BUTTON_DEFINITIONS
-			#undef DEFINE_BTN
-		};
+		#define DEFINE_BTN(name, value) name = value,
+		BLAH_BUTTON_DEFINITIONS
+		#undef DEFINE_BTN
 	};
-	using Button = Buttons::Enumeration;
 
 	// Game Controller Axis
-	struct Axes
+	enum class Axis
 	{
-		enum Enumeration
-		{
-			None = -1,
-			LeftX = 0,
-			LeftY = 1,
-			RightX = 2,
-			RightY = 3,
-			LeftTrigger = 4,
-			RightTrigger = 5,
-		};
+		None = -1,
+		LeftX = 0,
+		LeftY = 1,
+		RightX = 2,
+		RightY = 3,
+		LeftTrigger = 4,
+		RightTrigger = 5,
 	};
-	using Axis = Axes::Enumeration;
 
 	// Mouse Buttons
-	struct MouseButtons
+	enum class MouseButton
 	{
-		enum Enumeration
-		{
-			None = -1,
-			Left = 0,
-			Middle = 1,
-			Right = 2,
-		};
+		None = -1,
+		Left = 0,
+		Middle = 1,
+		Right = 2,
 	};
-	using MouseButton = MouseButtons::Enumeration;
 
 	// Controller State
 	struct ControllerState
@@ -780,6 +764,15 @@ namespace Blah
 
 		// Checks if the Left or Right Alt Key is down
 		bool alt();
+
+		// Checks if the given Controller Button is pressed
+		bool pressed(int controller_index, Button button);
+
+		// Checks if the given Controller Button is down
+		bool down(int controller_index, Button button);
+
+		// Checks if the given Controller Button is released
+		bool released(int controller_index, Button button);
 
 		// returns a string name of the key
 		const char* name_of(Key key);
