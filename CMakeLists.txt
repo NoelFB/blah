@@ -53,20 +53,20 @@ target_include_directories(blah
 )
 
 # Platform Variables
-set(PLATFORM_SDL2 true CACHE BOOL "Use SDL2 Platform Backend")
-set(PLATFORM_WIN32 false CACHE BOOL "Use Win32 Platform Backend")
-set(GRAPHICS_OPENGL true CACHE BOOL "Use OpenGL Graphics Backend")
-set(GRAPHICS_D3D11 false CACHE BOOL "Use D3D11 Graphics Backend")
+set(BLAH_PLATFORM_SDL2 true CACHE BOOL "Use SDL2 Platform Backend")
+set(BLAH_PLATFORM_WIN32 false CACHE BOOL "Use Win32 Platform Backend")
+set(BLAH_GRAPHICS_OPENGL true CACHE BOOL "Use OpenGL Graphics Backend")
+set(BLAH_GRAPHICS_D3D11 false CACHE BOOL "Use D3D11 Graphics Backend")
 
 set(LIBS "")
 
 # use the OpenGL Graphics Backend
-if (GRAPHICS_OPENGL)
+if (BLAH_GRAPHICS_OPENGL)
 
 	add_compile_definitions(BLAH_GRAPHICS_OPENGL)
 
 # use the D3D11 Graphics Backend
-elseif (GRAPHICS_D3D11)
+elseif (BLAH_GRAPHICS_D3D11)
 
 	add_compile_definitions(BLAH_GRAPHICS_D3D11)
 	set(LIBS ${LIBS} d3d11.lib dxguid.lib D3Dcompiler.lib)
@@ -75,7 +75,7 @@ endif()
 
 # use the SDL2 Platform Backend
 # Link and create SDL2 Definition
-if (PLATFORM_SDL2)
+if (BLAH_PLATFORM_SDL2)
 	add_compile_definitions(BLAH_PLATFORM_SDL2)
 
 	# Emscripten can import SDL2 directly
@@ -106,23 +106,23 @@ if (PLATFORM_SDL2)
 
 			# statically link SDL2 since we're building it ourselves
 			set(LIBS ${LIBS} SDL2main SDL2-static)
-			target_include_directories(blah PUBLIC ${sdl2_SOURCE_DIRS}/include)
+			target_include_directories(blah PRIVATE ${sdl2_SOURCE_DIRS}/include)
 
 		else()
 
 			# Add Library and Include Dirs
 			set(LIBS ${LIBS} ${SDL2_LIBRARIES})
-			target_include_directories(blah PUBLIC ${SDL2_INCLUDE_DIRS})
+			target_include_directories(blah PRIVATE ${SDL2_INCLUDE_DIRS})
 
 		endif()
 
 	endif()
 
 # use the Win32 Platform Backend
-elseif (PLATFORM_WIN32)
+elseif (BLAH_PLATFORM_WIN32)
 
 	add_compile_definitions(BLAH_PLATFORM_WIN32)
 
 endif()
 
-target_link_libraries(blah PUBLIC ${LIBS})
+target_link_libraries(blah PRIVATE ${LIBS})
