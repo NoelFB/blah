@@ -4,7 +4,7 @@ A small 2D C++ Game Framework, using few dependencies and simple code to mainain
 **☆ This will likely see breaking changes! Use at your own risk! ☆**
 
 #### building
- - Requires C++17 and CMake 3.12+
+ - Requires C++17 and CMake 3.14+
  - A single *Platform* implementation must be enabled:
 	- [SDL2](https://github.com/NoelFB/blah/blob/master/src/internal/platform_sdl2.cpp) can be enabled in CMake with `BLAH_PLATFORM_SDL2` (default)
 	- [WIN32](https://github.com/NoelFB/blah/blob/master/src/internal/platform_win32.cpp) (UNFINISHED) can be enabled in CMake with `BLAH_PLATFORM_WIN32`
