@@ -184,12 +184,12 @@ namespace Blah
 		{
 			if (texture)
 				texture->Release();
+			texture = nullptr;
 			if (staging)
 				staging->Release();
+			staging = nullptr;
 			if (view)
 				view->Release();
-			staging = nullptr;
-			texture = nullptr;
 			view = nullptr;
 		}
 
@@ -332,6 +332,10 @@ namespace Blah
 			for (auto& it : color_views)
 				it->Release();
 			color_views.clear();
+
+			if (depth_view)
+				depth_view->Release();
+			depth_view = nullptr;
 		}
 
 		Attachments& textures() override
@@ -505,22 +509,26 @@ namespace Blah
 		{
 			if (vertex)
 				vertex->Release();
+			vertex = nullptr;
+
 			if (vertex_blob)
 				vertex_blob->Release();
+			vertex_blob = nullptr;
+
 			if (fragment)
 				fragment->Release();
+			fragment = nullptr;
+
 			if (fragment_blob)
 				fragment_blob->Release();
+			fragment_blob = nullptr;
 
 			for (auto& it : vertex_uniform_buffers)
 				it->Release();
+			vertex_uniform_buffers.clear();
 			for (auto& it : fragment_uniform_buffers)
 				it->Release();
-
-			vertex = nullptr;
-			vertex_blob = nullptr;
-			fragment = nullptr;
-			fragment_blob = nullptr;
+			fragment_uniform_buffers.clear();
 		}
 
 		Vector<UniformInfo>& uniforms() override
@@ -558,8 +566,10 @@ namespace Blah
 		{
 			if (vertex_buffer)
 				vertex_buffer->Release();
+			vertex_buffer = nullptr;
 			if (index_buffer)
 				index_buffer->Release();
+			index_buffer = nullptr;
 		}
 
 		void index_data(IndexFormat format, const void* indices, i64 count) override
@@ -759,9 +769,14 @@ namespace Blah
 				dxgi_adapter->GetDesc(&adapter_desc);
 
 				Log::info("D3D11 %ls", adapter_desc.Description);
+
+				dxgi_device->Release();
+				dxgi_adapter->Release();
 			}
 			else
+			{
 				Log::info("D3D11");
+			}
 		}
 
 		return true;
@@ -786,12 +801,14 @@ namespace Blah
 		for (auto& it : state.sampler_cache)
 			it.state->Release();
 
-		// TODO:
-		// Do we need to release live resources? ex. Texture's that
-		// haven't been released by shutdown will still exist...
-
 		// release main devices
+		if (state.backbuffer_view)
+			state.backbuffer_view->Release();
+		if (state.backbuffer_depth_view)
+			state.backbuffer_depth_view->Release();
 		state.swap_chain->Release();
+		state.context->ClearState();
+		state.context->Flush();
 		state.context->Release();
 		state.device->Release();
 
@@ -806,6 +823,7 @@ namespace Blah
 
 	void Graphics::update()
 	{
+		
 	}
 
 	void Graphics::before_render()
@@ -937,9 +955,6 @@ namespace Blah
 					&mesh->vertex_buffer,
 					&stride,
 					&offset);
-
-				D3D11_BUFFER_DESC desc;
-				mesh->vertex_buffer->GetDesc(&desc);
 			}
 
 			// Assign Index Buffer
