@@ -83,39 +83,22 @@ if (BLAH_PLATFORM_SDL2)
 
 		set_target_properties(blah PROPERTIES COMPILE_FLAGS "-s USE_SDL=2")
 
-	# Load SDL2 Normally
+	# Pull SDL2 from its Github repo
 	else()
+		include(FetchContent)
+		set(FETCHCONTENT_QUIET FALSE)
 
-		# Try to find SDL2
-		if (DEFINED SDL2_LIBRARIES AND DEFINED SDL2_INCLUDE_DIRS)
-			set(SDL2_FOUND true)
-		else()
-			find_package(SDL2 QUIET)
-		endif()
-		
-		# If CMake cannot find SDL2 library, then it gets downloaded and compiled that way
-		if (NOT ${SDL2_FOUND})
+		FetchContent_Declare(
+			SDL2
+			GIT_REPOSITORY https://github.com/libsdl-org/SDL
+			GIT_TAG release-2.0.18 # grab latest stable release
+			GIT_PROGRESS TRUE
+		)
+		FetchContent_MakeAvailable(SDL2)
 
-			include(FetchContent)
-			FetchContent_Declare(
-				SDL2
-				GIT_REPOSITORY https://github.com/libsdl-org/SDL
-				GIT_TAG release-2.0.18 # grab latest stable release
-			)
-			FetchContent_MakeAvailable(SDL2)
-
-			# statically link SDL2 since we're building it ourselves
-			set(LIBS ${LIBS} SDL2main SDL2-static)
-			target_include_directories(blah PRIVATE ${sdl2_SOURCE_DIRS}/include)
-
-		else()
-
-			# Add Library and Include Dirs
-			set(LIBS ${LIBS} ${SDL2_LIBRARIES})
-			target_include_directories(blah PRIVATE ${SDL2_INCLUDE_DIRS})
-
-		endif()
-
+		# statically link SDL2 since we're building it ourselves
+		set(LIBS ${LIBS} SDL2main SDL2-static)
+		target_include_directories(blah PRIVATE ${sdl2_SOURCE_DIRS}/include)
 	endif()
 
 # use the Win32 Platform Backend
