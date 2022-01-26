@@ -11,23 +11,20 @@
 
 #include <SDL.h>
 
+// for File Reading/Writing
+#include <filesystem>
+namespace fs = std::filesystem;
+
 #if _WIN32
-#include <SDL_syswm.h>
-// on Windows we're using the C++ <filesystem> API for now
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winuser.h>	// for SetProcessDPIAware
-#include <filesystem>	// for File Reading/Writing
 #include <shellapi.h>	// for file explore
-namespace fs = std::filesystem;
-#else
-// on non-Windows we use POSIX standard file system stuff
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <cstring>
+#include <SDL_syswm.h>
 #endif
+
+// Macro defined by X11 conflicts with MouseButton enum
+#undef None
 
 namespace Blah
 {
@@ -247,9 +244,6 @@ u64 Platform::ticks()
 	auto per_second = (double)SDL_GetPerformanceFrequency();
 	return (u64)(counter * (Time::ticks_per_second / per_second));
 }
-
-// Macro defined by X11 conflicts with MouseButton enum
-#undef None
 
 void Platform::update(InputState& state)
 {
@@ -603,9 +597,6 @@ FileRef Platform::file_open(const char* path, FileMode mode)
 	return FileRef(new SDL2File(ptr));
 }
 
-// Windows File System methods
-#if _WIN32
-
 bool Platform::file_exists(const char* path)
 {
 	return fs::is_regular_file(path);
@@ -650,85 +641,21 @@ void Platform::dir_enumerate(Vector<FilePath>& list, const char* path, bool recu
 
 void Platform::dir_explore(const char* path)
 {
-	ShellExecute(NULL, "open", path, NULL, NULL, SW_SHOWDEFAULT);
-}
+#if _WIN32
 
-// Non-Windows File System Methods
+	ShellExecute(NULL, "open", path, NULL, NULL, SW_SHOWDEFAULT);
+
+#elif __linux__
+
+	system(String::fmt("xdg-open \"%s\"", path).cstr());
+
 #else
 
-bool Platform::file_exists(const char* path)
-{
-	struct stat buffer;
-	return (stat(path, &buffer) == 0) && S_ISREG(buffer.st_mode);
-}
-
-bool Platform::file_delete(const char* path)
-{
-	return unlink(path) == 0;
-}
-
-bool Platform::dir_create(const char* path)
-{
-	char tmp[265];
-	char* p = NULL;
-	size_t len;
-
-	snprintf(tmp, sizeof(tmp), "%s", path);
-	len = strlen(tmp);
-	if (tmp[len - 1] == '/')
-		tmp[len - 1] = 0;
-	for (p = tmp + 1; *p; p++)
-		if (*p == '/') {
-			*p = 0;
-			mkdir(tmp, S_IRWXU);
-			*p = '/';
-		}
-	return mkdir(tmp, S_IRWXU) == 0;
-}
-
-bool Platform::dir_exists(const char* path)
-{
-	struct stat buffer;
-	return (stat(path, &buffer) == 0) && S_ISDIR(buffer.st_mode);
-}
-
-bool Platform::dir_delete(const char* path)
-{
-	BLAH_ASSERT(false, "not implemented");
-	return false;
-}
-
-void Platform::dir_enumerate(Vector<FilePath>& list, const char* path, bool recursive)
-{
-	DIR* dirp = opendir(path);
-	if (dirp != NULL)
-	{
-		struct dirent* dp;
-		while ((dp = readdir(dirp)) != NULL)
-		{
-			if (dp->d_name[0] == '.')
-				continue;
-
-			FilePath subpath = FilePath(path);
-			if (subpath.end()[-1] != '/') subpath = subpath.append("/");
-			subpath = subpath.append(dp->d_name);
-			list.push_back(subpath);
-
-			if (recursive && dp->d_type == DT_DIR)
-				dir_enumerate(list, subpath + "/", true);
-		}
-		closedir(dirp);
-	}
-}
-
-void Platform::dir_explore(const char* path)
-{
-	BLAH_ASSERT(false, "'dir_explore' Not Implemented");
-}
+	BLAH_ASSERT(false, "'dir_explore' not implemented");
 
 #endif
+}
 
-// clipboard
 void Platform::set_clipboard(const char* text)
 {
 	SDL_SetClipboardText(text);
