@@ -494,6 +494,12 @@ void Platform::set_position(int x, int y)
 	SDL_SetWindowPosition(g_platform.window, x, y);
 }
 
+bool Platform::get_focused()
+{
+	auto flags = SDL_GetWindowFlags(g_platform.window);
+	return (flags & SDL_WINDOW_INPUT_FOCUS) != 0 && (flags & SDL_WINDOW_MINIMIZED) == 0;
+}
+
 void Platform::set_fullscreen(bool enabled)
 {
 	if (enabled)
@@ -766,6 +772,11 @@ void* Platform::d3d11_get_hwnd()
 #else
 	return nullptr;
 #endif
+}
+
+void Platform::open_url(const char* url)
+{
+	SDL_OpenURL(url);
 }
 
 #endif // BLAH_PLATFORM_SDL2

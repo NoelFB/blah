@@ -43,6 +43,9 @@ namespace Blah
 		// Sets the Application Window Position, in Screen Coordinates
 		void set_position(int x, int y);
 
+		// Gets whether the Window has focus
+		bool get_focused();
+
 		// Sets the Window Fullscreen if enabled is not 0
 		void set_fullscreen(bool enabled);
 
@@ -102,5 +105,8 @@ namespace Blah
 
 		// D3D11 Methods
 		void* d3d11_get_hwnd();
+
+		// Tries to open a URL in a web browser
+		void open_url(const char* url);
 	}
 }

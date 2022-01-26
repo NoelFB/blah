@@ -149,6 +149,9 @@ namespace Blah
 		// macOS is usually 2.0, other platforms vary.
 		float content_scale();
 
+		// If the window is currently focused or has mouse input
+		bool focused();
+
 		// Toggles fullscreen if supported on the platform.
 		// Otherwise this function does nothing.
 		void fullscreen(bool enabled);
@@ -161,5 +164,11 @@ namespace Blah
 
 		// Reference to the window's back buffer
 		extern const TargetRef backbuffer;
+	}
+
+	namespace System
+	{
+		// Tries to open the given URL in a web browser
+		void open_url(const char* url);
 	}
 }

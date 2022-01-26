@@ -274,6 +274,11 @@ void App::fullscreen(bool enabled)
 	Platform::set_fullscreen(enabled);
 }
 
+bool App::focused()
+{
+	return Platform::get_focused();
+}
+
 Renderer App::renderer()
 {
 	return Graphics::renderer();
@@ -282,6 +287,11 @@ Renderer App::renderer()
 const RendererFeatures& Blah::App::renderer_features()
 {
 	return Graphics::features();
+}
+
+void System::open_url(const char* url)
+{
+	Platform::open_url(url);
 }
 
 namespace
