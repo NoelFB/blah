@@ -588,7 +588,8 @@ namespace Blah
 
 	template<class T>
 	Vec3<T> Vec3<T>::normal() const {
-		return Vec3(x, y, z) / length();
+		T len = length();
+		return Vec3(x / len, y / len, z / len);
 	}
 
 	template<class T>
