@@ -49,7 +49,7 @@ int main()
 	- Additional renderers can be added by implementing the [Renderer Backend](https://github.com/NoelFB/blah/blob/master/src/internal/renderer.h)
  
 #### notes
- - There's no Shader abstraction, so the [Sprite Batcher](https://github.com/NoelFB/blah/blob/master/src/graphics/batch.cpp) has hard-coded GLSL/HLSL.
+ - There's no Shader abstraction, so you need to swap between GLSL/HLSL depending on the Renderer.
  - Only floatN/mat3x2/mat4x4 uniforms are supported.
  - There's no Audio API or backend implementation yet.
  - No threaded rendering so it will explode if you try that.
