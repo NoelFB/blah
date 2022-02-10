@@ -80,7 +80,7 @@ namespace Blah
 
 		static RendererType default_type()
 		{
-#if defined(BLAH_RENDERER_D3D11) and defined(_WIN32)
+#if defined(BLAH_RENDERER_D3D11) && defined(_WIN32)
 			return RendererType::D3D11;
 #else
 			return RendererType::OpenGL;
