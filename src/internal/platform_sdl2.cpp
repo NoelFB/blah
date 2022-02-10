@@ -2,7 +2,7 @@
 
 #include "platform.h"
 #include "input.h"
-#include "graphics.h"
+#include "renderer.h"
 #include <blah/input.h>
 #include <blah/app.h>
 #include <blah/filesystem.h>
@@ -37,7 +37,7 @@ namespace Blah
 		char* base_path = nullptr;
 		char* user_path = nullptr;
 		bool displayed = false;
-	};
+	} g_platform;
 
 	// Blah SDL2 File
 	class SDL2File : public File
@@ -118,8 +118,6 @@ namespace Blah
 
 using namespace Blah;
 
-static Blah::SDL2Platform g_platform;
-
 bool Platform::init(const Config& config)
 {
 	g_platform = SDL2Platform();
@@ -150,7 +148,7 @@ bool Platform::init(const Config& config)
 	int flags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE;
 
 	// enable OpenGL
-	if (App::renderer() == Renderer::OpenGL)
+	if (config.renderer_type == RendererType::OpenGL)
 	{
 		flags |= SDL_WINDOW_OPENGL;
 
@@ -217,7 +215,7 @@ void Platform::ready()
 	// enable V-Sync
 	// TODO:
 	// This should be a toggle or controllable in some way
-	if (App::renderer() == Renderer::OpenGL)
+	if (App::renderer().type == RendererType::OpenGL)
 		SDL_GL_SetSwapInterval(1);
 #endif
 }
@@ -454,7 +452,7 @@ void Platform::sleep(int milliseconds)
 
 void Platform::present()
 {
-	if (App::renderer() == Renderer::OpenGL)
+	if (App::renderer().type == RendererType::OpenGL)
 	{
 		SDL_GL_SwapWindow(g_platform.window);
 	}
@@ -514,7 +512,7 @@ void Platform::set_size(int width, int height)
 
 void Platform::get_draw_size(int* width, int* height)
 {
-	if (App::renderer() == Renderer::OpenGL)
+	if (App::renderer().type == RendererType::OpenGL)
 	{
 		SDL_GL_GetDrawableSize(g_platform.window, width, height);
 	}

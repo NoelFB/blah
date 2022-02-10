@@ -5,6 +5,7 @@
 #include <blah/numerics/calc.h>
 #include "internal/input.h"
 #include "internal/platform.h"
+#include <blah/graphics/target.h>
 #include <cstring>
 
 using namespace Blah;
@@ -124,8 +125,8 @@ void MouseState::on_move(const Vec2f& pos, const Vec2f& screen_pos)
 	position = pos;
 	screen_position = screen_pos;
 
-	Point size = Point(App::width(), App::height());
-	Point draw = Point(App::draw_width(), App::draw_height());
+	Point size = App::get_size();
+	Point draw = Point(App::backbuffer()->width(), App::backbuffer()->height());
 
 	draw_position.x = (position.x / (float)size.x) * draw.x;
 	draw_position.y = (position.y / (float)size.y) * draw.y;

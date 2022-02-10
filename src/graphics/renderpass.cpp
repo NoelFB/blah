@@ -1,13 +1,13 @@
 #include <blah/graphics/renderpass.h>
 #include <blah/common.h>
-#include "../internal/graphics.h"
+#include "../internal/renderer.h"
 
 using namespace Blah;
 
 RenderPass::RenderPass()
 {
 	blend = BlendMode::Normal;
-	target = App::backbuffer;
+	target = App::backbuffer();
 	mesh = MeshRef();
 	material = MaterialRef();
 	has_viewport = false;
@@ -23,9 +23,13 @@ RenderPass::RenderPass()
 
 void RenderPass::perform()
 {
+	BLAH_ASSERT_RENDERER();
 	BLAH_ASSERT(material, "Trying to draw with an invalid Material");
 	BLAH_ASSERT(material->shader(), "Trying to draw with an invalid Shader");
 	BLAH_ASSERT(mesh, "Trying to draw with an invalid Mesh");
+
+	if (!Renderer::instance)
+		return;
 
 	// copy call
 	RenderPass pass = *this;
@@ -33,7 +37,7 @@ void RenderPass::perform()
 	// Validate Backbuffer
 	if (!pass.target)
 	{
-		pass.target = App::backbuffer;
+		pass.target = App::backbuffer();
 		Log::warn("Trying to draw with an invalid Target; falling back to Back Buffer");
 	}
 
@@ -86,5 +90,5 @@ void RenderPass::perform()
 		pass.scissor = pass.scissor.overlap_rect(Rectf(0, 0, draw_size.x, draw_size.y));
 
 	// perform render
-	Graphics::render(pass);
+	Renderer::instance->render(pass);
 }

@@ -38,9 +38,8 @@ add_library(blah
 	src/streams/memorystream.cpp
 	src/streams/stream.cpp
 
-	src/internal/graphics_gl.cpp
-	src/internal/graphics_d3d11.cpp
-	src/internal/graphics_dummy.cpp
+	src/internal/renderer_opengl.cpp
+	src/internal/renderer_d3d11.cpp
 	src/internal/platform_sdl2.cpp
 	src/internal/platform_win32.cpp
 )
@@ -55,22 +54,24 @@ target_include_directories(blah
 # Platform Variables
 set(BLAH_PLATFORM_SDL2 true CACHE BOOL "Use SDL2 Platform Backend")
 set(BLAH_PLATFORM_WIN32 false CACHE BOOL "Use Win32 Platform Backend")
-set(BLAH_GRAPHICS_OPENGL true CACHE BOOL "Use OpenGL Graphics Backend")
-set(BLAH_GRAPHICS_D3D11 false CACHE BOOL "Use D3D11 Graphics Backend")
+set(BLAH_RENDERER_OPENGL true CACHE BOOL "Make OpenGL Renderer available")
+if (WIN32)
+	set(BLAH_RENDERER_D3D11 true CACHE BOOL "Make D3D11 Renderer available")
+else()
+	set(BLAH_RENDERER_D3D11 false CACHE BOOL "Make D3D11 Renderer available")
+endif()
 
 set(LIBS "")
 
-# use the OpenGL Graphics Backend
-if (BLAH_GRAPHICS_OPENGL)
+# use the OpenGL Renderer Backend
+if (BLAH_RENDERER_OPENGL)
+	add_compile_definitions(BLAH_RENDERER_OPENGL)
+endif()
 
-	add_compile_definitions(BLAH_GRAPHICS_OPENGL)
-
-# use the D3D11 Graphics Backend
-elseif (BLAH_GRAPHICS_D3D11)
-
-	add_compile_definitions(BLAH_GRAPHICS_D3D11)
+# use the D3D11 Renderer Backend
+if (BLAH_RENDERER_D3D11)
+	add_compile_definitions(BLAH_RENDERER_D3D11)
 	set(LIBS ${LIBS} d3d11.lib dxguid.lib D3Dcompiler.lib)
-
 endif()
 
 # use the SDL2 Platform Backend
@@ -91,7 +92,7 @@ if (BLAH_PLATFORM_SDL2)
 		FetchContent_Declare(
 			SDL2
 			GIT_REPOSITORY https://github.com/libsdl-org/SDL
-			GIT_TAG release-2.0.18 # grab latest stable release
+			GIT_TAG release-2.0.20 # grab latest stable release
 			GIT_PROGRESS TRUE
 		)
 		FetchContent_MakeAvailable(SDL2)

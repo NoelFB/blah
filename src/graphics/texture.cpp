@@ -2,7 +2,7 @@
 #include <blah/images/image.h>
 #include <blah/streams/stream.h>
 #include <blah/common.h>
-#include "../internal/graphics.h"
+#include "../internal/renderer.h"
 
 using namespace Blah;
 
@@ -13,15 +13,21 @@ TextureRef Texture::create(const Image& image)
 
 TextureRef Texture::create(int width, int height, TextureFormat format, unsigned char* data)
 {
+	BLAH_ASSERT_RENDERER();
 	BLAH_ASSERT(width > 0 && height > 0, "Texture width and height must be larger than 0");
 	BLAH_ASSERT((int)format > (int)TextureFormat::None && (int)format < (int)TextureFormat::Count, "Invalid texture format");
 
-	auto tex = Graphics::create_texture(width, height, format);
+	if (Renderer::instance)
+	{
+		auto tex = Renderer::instance->create_texture(width, height, format);
 
-	if (tex && data != nullptr)
-		tex->set_data(data);
+		if (tex && data != nullptr)
+			tex->set_data(data);
 
-	return tex;
+		return tex;
+	}
+
+	return TextureRef();
 }
 
 TextureRef Texture::create(Stream& stream)

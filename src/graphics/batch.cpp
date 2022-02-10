@@ -118,12 +118,12 @@ namespace
 	};
 
 	const VertexFormat format = VertexFormat(
-		{
-			{ 0, VertexType::Float2, false },
-			{ 1, VertexType::Float2, false },
-			{ 2, VertexType::UByte4, true },
-			{ 3, VertexType::UByte4, true },
-		});
+	{
+		{ 0, VertexType::Float2, false },
+		{ 1, VertexType::Float2, false },
+		{ 2, VertexType::UByte4, true },
+		{ 3, VertexType::UByte4, true },
+	});
 }
 
 namespace
@@ -378,7 +378,7 @@ void Batch::set_texture(const TextureRef& texture)
 	if (m_batch.texture != texture)
 	{
 		m_batch.texture = texture;
-		m_batch.flip_vertically = App::renderer_features().origin_bottom_left && texture && texture->is_framebuffer();
+		m_batch.flip_vertically = App::renderer().origin_bottom_left && texture && texture->is_framebuffer();
 	}
 }
 
@@ -392,13 +392,8 @@ void Batch::set_sampler(const TextureSampler& sampler)
 
 void Batch::render(const TargetRef& target)
 {
-	Point size;
-	if (!target)
-		size = Point(App::draw_width(), App::draw_height());
-	else
-		size = Point(target->width(), target->height());
-
-	render(target, Mat4x4f::create_ortho_offcenter(0, (float)size.x, (float)size.y, 0, 0.01f, 1000.0f));
+	TargetRef ref = (target ? target : App::backbuffer());
+	render(ref, Mat4x4f::create_ortho_offcenter(0, (float)ref->width(), (float)ref->height(), 0, 0.01f, 1000.0f));
 }
 
 void Batch::render(const TargetRef& target, const Mat4x4f& matrix)
@@ -414,9 +409,9 @@ void Batch::render(const TargetRef& target, const Mat4x4f& matrix)
 
 		if (!m_default_shader)
 		{
-			if (App::renderer() == Renderer::OpenGL)
+			if (App::renderer().type == RendererType::OpenGL)
 				m_default_shader = Shader::create(opengl_shader_data);
-			else if (App::renderer() == Renderer::D3D11)
+			else if (App::renderer().type == RendererType::D3D11)
 				m_default_shader = Shader::create(d3d11_shader_data);
 		}
 

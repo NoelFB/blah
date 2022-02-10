@@ -42,7 +42,7 @@ namespace Blah
 
 		// Sets the Application Window Position, in Screen Coordinates
 		void set_position(int x, int y);
-
+		
 		// Gets whether the Window has focus
 		bool get_focused();
 
@@ -97,6 +97,9 @@ namespace Blah
 		// gets the contents of the clipboard into the given string
 		const char* get_clipboard();
 
+		// Tries to open a URL in a web browser
+		void open_url(const char* url);
+
 		// OpenGL Methods
 		void* gl_get_func(const char* name);
 		void* gl_context_create();
@@ -105,8 +108,5 @@ namespace Blah
 
 		// D3D11 Methods
 		void* d3d11_get_hwnd();
-
-		// Tries to open a URL in a web browser
-		void open_url(const char* url);
 	}
 }

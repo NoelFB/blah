@@ -3,7 +3,7 @@
 #include <blah/time.h>
 #include <blah/graphics/target.h>
 #include "internal/platform.h"
-#include "internal/graphics.h"
+#include "internal/renderer.h"
 #include "internal/input.h"
 
 #ifdef __EMSCRIPTEN__
@@ -13,286 +13,7 @@
 
 using namespace Blah;
 
-Config::Config()
-{
-	name = nullptr;
-	width = 0;
-	height = 0;
-	target_framerate = 60;
-	max_updates = 5;
-
-	on_startup = nullptr;
-	on_shutdown = nullptr;
-	on_update = nullptr;
-	on_render = nullptr;
-	on_exit_request = App::exit;
-	on_log = nullptr;
-}
-
-namespace
-{
-	Config app_config;
-	bool app_is_running = false;
-	bool app_is_exiting = false;
-	u64 time_last;
-	u64 time_accumulator = 0;
-
-	void app_iterate()
-	{
-		// update at a fixed timerate
-		// TODO: allow a non-fixed step update?
-		{
-			u64 time_target = (u64)((1.0 / app_config.target_framerate) * Time::ticks_per_second);
-			u64 time_curr = Platform::ticks();
-			u64 time_diff = time_curr - time_last;
-			time_last = time_curr;
-			time_accumulator += time_diff;
-
-			// do not let us run too fast
-			while (time_accumulator < time_target)
-			{
-				int milliseconds = (int)(time_target - time_accumulator) / (Time::ticks_per_second / 1000);
-				Platform::sleep(milliseconds);
-
-				time_curr = Platform::ticks();
-				time_diff = time_curr - time_last;
-				time_last = time_curr;
-				time_accumulator += time_diff;
-			}
-
-			// Do not allow us to fall behind too many updates
-			// (otherwise we'll get spiral of death)
-			u64 time_maximum = app_config.max_updates * time_target;
-			if (time_accumulator > time_maximum)
-				time_accumulator = time_maximum;
-
-			// do as many updates as we can
-			while (time_accumulator >= time_target)
-			{
-				time_accumulator -= time_target;
-
-				Time::delta = (1.0f / app_config.target_framerate);
-
-				if (Time::pause_timer > 0)
-				{
-					Time::pause_timer -= Time::delta;
-					if (Time::pause_timer <= -0.0001)
-						Time::delta = -Time::pause_timer;
-					else
-						continue;
-				}
-
-				Time::previous_ticks = Time::ticks;
-				Time::ticks += time_target;
-				Time::previous_seconds = Time::seconds;
-				Time::seconds += Time::delta;
-
-				Input::update_state();
-				Platform::update(Input::state);
-				Input::update_bindings();
-				Graphics::update();
-
-				if (app_config.on_update != nullptr)
-					app_config.on_update();
-			}
-		}
-
-		// render
-		{
-			Graphics::before_render();
-
-			if (app_config.on_render != nullptr)
-				app_config.on_render();
-
-			Graphics::after_render();
-			Platform::present();
-		}
-	}
-
-}
-
-bool App::run(const Config* c)
-{
-	BLAH_ASSERT(!app_is_running, "The Application is already running");
-	BLAH_ASSERT(c != nullptr, "The Application requires a valid Config");
-	BLAH_ASSERT(c->name != nullptr, "The Application Name cannot be null");
-	BLAH_ASSERT(c->width > 0 && c->height > 0, "The Width and Height must be larget than 0");
-	BLAH_ASSERT(c->max_updates > 0, "Max Updates must be >= 1");
-	BLAH_ASSERT(c->target_framerate > 0, "Target Framerate must be >= 1");
-
-	app_config = *c;
-	app_is_running = true;
-	app_is_exiting = false;
-
-	// initialize the system
-	if (!Platform::init(app_config))
-	{
-		Log::error("Failed to initialize Platform module");
-		return false;
-	}
-
-	// initialize graphics
-	if (!Graphics::init())
-	{
-		Log::error("Failed to initialize Graphics module");
-		return false;
-	}
-
-	// input
-	Input::init();
-
-	// prepare by updating input & platform once
-	Input::update_state();
-	Platform::update(Input::state);
-
-	// startup
-	if (app_config.on_startup != nullptr)
-		app_config.on_startup();
-
-	time_last = Platform::ticks();
-	time_accumulator = 0;
-
-	// display window
-	Platform::ready();
-
-	// Begin main loop
-	// Emscripten requires the main loop be separated into its own call
-
-#ifdef __EMSCRIPTEN__
-	emscripten_set_main_loop(app_iterate, 0, 1);
-#else
-	while (!app_is_exiting)
-		app_iterate();
-#endif
-
-	// shutdown
-	if (app_config.on_shutdown != nullptr)
-		app_config.on_shutdown();
-
-	Graphics::shutdown();
-	Platform::shutdown();
-
-	// clear static state
-	app_is_running = false;
-	app_is_exiting = false;
-
-	Time::ticks = 0;
-	Time::seconds = 0;
-	Time::previous_ticks = 0;
-	Time::previous_seconds = 0;
-	Time::delta = 0;
-
-	return true;
-}
-
-void App::exit()
-{
-	if (!app_is_exiting && app_is_running)
-		app_is_exiting = true;
-}
-
-const Config& App::config()
-{
-	return app_config;
-}
-
-const char* App::path()
-{
-	return Platform::app_path();
-}
-
-const char* App::user_path()
-{
-	return Platform::user_path();
-}
-
-const char* App::get_title()
-{
-	return Platform::get_title();
-}
-
-void App::set_title(const char* title)
-{
-	Platform::set_title(title);
-}
-
-Point App::get_position()
-{
-	Point result;
-	Platform::get_position(&result.x, &result.y);
-	return result;
-}
-
-void App::set_position(Point point)
-{
-	Platform::set_position(point.x, point.y);
-}
-
-Point App::get_size()
-{
-	Point result;
-	Platform::get_size(&result.x, &result.y);
-	return result;
-}
-
-void App::set_size(Point point)
-{
-	Platform::set_size(point.x, point.y);
-}
-
-int App::width()
-{
-	return get_size().x;
-}
-
-int App::height()
-{
-	return get_size().y;
-}
-
-int App::draw_width()
-{
-	int w, h;
-	Platform::get_draw_size(&w, &h);
-	return w;
-}
-
-int App::draw_height()
-{
-	int w, h;
-	Platform::get_draw_size(&w, &h);
-	return h;
-}
-
-float App::content_scale()
-{
-	return Platform::get_content_scale();
-}
-
-void App::fullscreen(bool enabled)
-{
-	Platform::set_fullscreen(enabled);
-}
-
-bool App::focused()
-{
-	return Platform::get_focused();
-}
-
-Renderer App::renderer()
-{
-	return Graphics::renderer();
-}
-
-const RendererFeatures& Blah::App::renderer_features()
-{
-	return Graphics::features();
-}
-
-void System::open_url(const char* url)
-{
-	Platform::open_url(url);
-}
+#define BLAH_ASSERT_RUNNING() BLAH_ASSERT(app_is_running, "The App is not running (call App::run)")
 
 namespace
 {
@@ -316,20 +37,315 @@ namespace
 
 		int width() const override
 		{
-			return App::draw_width();
+			int w, h;
+			Platform::get_draw_size(&w, &h);
+			return w;
 		}
 
 		int height() const override
 		{
-			return App::draw_height();
+			int w, h;
+			Platform::get_draw_size(&w, &h);
+			return h;
 		}
 
 		void clear(Color color, float depth, u8 stencil, ClearMask mask) override
 		{
-			Graphics::clear_backbuffer(color, depth, stencil, mask);
+			if (Renderer::instance)
+				Renderer::instance->clear_backbuffer(color, depth, stencil, mask);
 		}
 	};
 
+	Config app_config;
+	bool app_is_running = false;
+	bool app_is_exiting = false;
+	u64 app_time_last;
+	u64 app_time_accumulator = 0;
+	TargetRef app_backbuffer;
+
+	void app_iterate()
+	{
+		// update at a fixed timerate
+		// TODO: allow a non-fixed step update?
+		{
+			u64 time_target = (u64)((1.0 / app_config.target_framerate) * Time::ticks_per_second);
+			u64 time_curr = Platform::ticks();
+			u64 time_diff = time_curr - app_time_last;
+			app_time_last = time_curr;
+			app_time_accumulator += time_diff;
+
+			// do not let us run too fast
+			while (app_time_accumulator < time_target)
+			{
+				int milliseconds = (int)(time_target - app_time_accumulator) / (Time::ticks_per_second / 1000);
+				Platform::sleep(milliseconds);
+
+				time_curr = Platform::ticks();
+				time_diff = time_curr - app_time_last;
+				app_time_last = time_curr;
+				app_time_accumulator += time_diff;
+			}
+
+			// Do not allow us to fall behind too many updates
+			// (otherwise we'll get spiral of death)
+			u64 time_maximum = app_config.max_updates * time_target;
+			if (app_time_accumulator > time_maximum)
+				app_time_accumulator = time_maximum;
+
+			// do as many updates as we can
+			while (app_time_accumulator >= time_target)
+			{
+				app_time_accumulator -= time_target;
+
+				Time::delta = (1.0f / app_config.target_framerate);
+
+				if (Time::pause_timer > 0)
+				{
+					Time::pause_timer -= Time::delta;
+					if (Time::pause_timer <= -0.0001)
+						Time::delta = -Time::pause_timer;
+					else
+						continue;
+				}
+
+				Time::previous_ticks = Time::ticks;
+				Time::ticks += time_target;
+				Time::previous_seconds = Time::seconds;
+				Time::seconds += Time::delta;
+
+				Input::update_state();
+				Platform::update(Input::state);
+				Input::update_bindings();
+				Renderer::instance->update();
+
+				if (app_config.on_update != nullptr)
+					app_config.on_update();
+			}
+		}
+
+		// render
+		{
+			Renderer::instance->before_render();
+
+			if (app_config.on_render != nullptr)
+				app_config.on_render();
+
+			Renderer::instance->after_render();
+			Platform::present();
+		}
+	}
+
 }
 
-const TargetRef App::backbuffer = TargetRef(new BackBuffer());
+bool App::run(const Config* c)
+{
+	BLAH_ASSERT(!app_is_running, "The Application is already running");
+	BLAH_ASSERT(c != nullptr, "The Application requires a valid Config");
+	BLAH_ASSERT(c->name != nullptr, "The Application Name cannot be null");
+	BLAH_ASSERT(c->width > 0 && c->height > 0, "The Width and Height must be larget than 0");
+	BLAH_ASSERT(c->max_updates > 0, "Max Updates must be >= 1");
+	BLAH_ASSERT(c->target_framerate > 0, "Target Framerate must be >= 1");
+
+	// copy config over
+	app_config = *c;
+
+	// exit the application by default
+	if (!app_config.on_exit_request)
+		app_config.on_exit_request = App::exit;
+
+	// default renderer type
+	if (app_config.renderer_type == RendererType::None)
+		app_config.renderer_type = Renderer::default_type();
+
+	// default values
+	app_is_running = true;
+	app_is_exiting = false;
+	app_backbuffer = TargetRef(new BackBuffer());
+
+	// initialize the system
+	if (!Platform::init(app_config))
+	{
+		Log::error("Failed to initialize Platform module");
+		return false;
+	}
+
+	// initialize graphics
+	{
+		// instantiate
+		Renderer::instance = Renderer::try_make_renderer(app_config.renderer_type);
+
+		// wasn't able to make any
+		if (Renderer::instance == nullptr)
+		{
+			Log::error("Renderer implementation was not found");
+			return false;
+		}
+
+		if (!Renderer::instance->init())
+		{
+			Log::error("Renderer failed to initialize");
+			delete Renderer::instance;
+			return false;
+		}
+	}
+
+	// input
+	Input::init();
+
+	// prepare by updating input & platform once
+	Input::update_state();
+	Platform::update(Input::state);
+
+	// startup
+	if (app_config.on_startup != nullptr)
+		app_config.on_startup();
+
+	app_time_last = Platform::ticks();
+	app_time_accumulator = 0;
+
+	// display window
+	Platform::ready();
+
+	// Begin main loop
+	// Emscripten requires the main loop be separated into its own call
+
+#ifdef __EMSCRIPTEN__
+	emscripten_set_main_loop(app_iterate, 0, 1);
+#else
+	while (!app_is_exiting)
+		app_iterate();
+#endif
+
+	// shutdown
+	if (app_config.on_shutdown != nullptr)
+		app_config.on_shutdown();
+
+	Renderer::instance->shutdown();
+	Platform::shutdown();
+
+	// clear static state
+	app_is_running = false;
+	app_is_exiting = false;
+	app_backbuffer = nullptr;
+
+	delete Renderer::instance;
+	Renderer::instance = nullptr;
+
+	Time::ticks = 0;
+	Time::seconds = 0;
+	Time::previous_ticks = 0;
+	Time::previous_seconds = 0;
+	Time::delta = 0;
+
+	return true;
+}
+
+void App::exit()
+{
+	BLAH_ASSERT_RUNNING();
+	if (!app_is_exiting && app_is_running)
+		app_is_exiting = true;
+}
+
+const Config& App::config()
+{
+	BLAH_ASSERT_RUNNING();
+	return app_config;
+}
+
+const char* App::path()
+{
+	BLAH_ASSERT_RUNNING();
+	return Platform::app_path();
+}
+
+const char* App::user_path()
+{
+	BLAH_ASSERT_RUNNING();
+	return Platform::user_path();
+}
+
+const char* App::get_title()
+{
+	BLAH_ASSERT_RUNNING();
+	return Platform::get_title();
+}
+
+void App::set_title(const char* title)
+{
+	BLAH_ASSERT_RUNNING();
+	Platform::set_title(title);
+}
+
+Point App::get_position()
+{
+	BLAH_ASSERT_RUNNING();
+	Point result;
+	Platform::get_position(&result.x, &result.y);
+	return result;
+}
+
+void App::set_position(Point point)
+{
+	BLAH_ASSERT_RUNNING();
+	Platform::set_position(point.x, point.y);
+}
+
+Point App::get_size()
+{
+	BLAH_ASSERT_RUNNING();
+	Point result;
+	Platform::get_size(&result.x, &result.y);
+	return result;
+}
+
+void App::set_size(Point point)
+{
+	BLAH_ASSERT_RUNNING();
+	Platform::set_size(point.x, point.y);
+}
+
+Point App::get_backbuffer_size()
+{
+	BLAH_ASSERT_RUNNING();
+	if (app_backbuffer)
+		return Point(app_backbuffer->width(), app_backbuffer->height());
+	return Point(0, 0);
+}
+
+float App::content_scale()
+{
+	BLAH_ASSERT_RUNNING();
+	return Platform::get_content_scale();
+}
+
+bool App::focused()
+{
+	BLAH_ASSERT_RUNNING();
+	return Platform::get_focused();
+}
+
+void App::fullscreen(bool enabled)
+{
+	BLAH_ASSERT_RUNNING();
+	Platform::set_fullscreen(enabled);
+}
+
+const RendererFeatures& App::renderer()
+{
+	BLAH_ASSERT_RUNNING();
+	BLAH_ASSERT_RENDERER();
+	return Renderer::instance->features;
+}
+
+const TargetRef& App::backbuffer()
+{
+	BLAH_ASSERT_RUNNING();
+	return app_backbuffer;
+}
+
+void System::open_url(const char* url)
+{
+	BLAH_ASSERT_RUNNING();
+	Platform::open_url(url);
+}

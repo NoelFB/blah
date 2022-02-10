@@ -1,16 +1,20 @@
 #include <blah/graphics/shader.h>
 #include <blah/app.h>
-#include "../internal/graphics.h"
+#include "../internal/renderer.h"
 
 using namespace Blah;
 
 ShaderRef Shader::create(const ShaderData& data)
 {
+	BLAH_ASSERT_RENDERER();
 	BLAH_ASSERT(data.vertex.length() > 0, "Must provide a Vertex Shader");
 	BLAH_ASSERT(data.fragment.length() > 0, "Must provide a Fragment Shader");
-	BLAH_ASSERT(data.hlsl_attributes.size() > 0 || App::renderer() != Renderer::D3D11, "D3D11 Shaders must have hlsl_attributes assigned");
+	BLAH_ASSERT(data.hlsl_attributes.size() > 0 || App::renderer().type != RendererType::D3D11, "D3D11 Shaders must have hlsl_attributes assigned");
 
-	auto shader = Graphics::create_shader(&data);
+	ShaderRef shader;
+
+	if (Renderer::instance)
+		shader = Renderer::instance->create_shader(&data);
 	
 	// validate the shader
 	if (shader)
