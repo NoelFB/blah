@@ -17,51 +17,11 @@ using namespace Blah;
 
 namespace
 {
-	// A dummy Frame Buffer that represents the Back Buffer
-	// it doesn't actually contain any textures or details.
-	class BackBuffer final : public Target
-	{
-		Attachments empty_textures;
-
-		Attachments& textures() override
-		{
-			BLAH_ASSERT(false, "Backbuffer doesn't have any textures");
-			return empty_textures;
-		}
-
-		const Attachments& textures() const override
-		{
-			BLAH_ASSERT(false, "Backbuffer doesn't have any textures");
-			return empty_textures;
-		}
-
-		int width() const override
-		{
-			int w, h;
-			Platform::get_draw_size(&w, &h);
-			return w;
-		}
-
-		int height() const override
-		{
-			int w, h;
-			Platform::get_draw_size(&w, &h);
-			return h;
-		}
-
-		void clear(Color color, float depth, u8 stencil, ClearMask mask) override
-		{
-			if (Renderer::instance)
-				Renderer::instance->clear_backbuffer(color, depth, stencil, mask);
-		}
-	};
-
 	Config app_config;
 	bool app_is_running = false;
 	bool app_is_exiting = false;
 	u64 app_time_last;
 	u64 app_time_accumulator = 0;
-	TargetRef app_backbuffer;
 
 	void app_iterate()
 	{
@@ -135,6 +95,25 @@ namespace
 		}
 	}
 
+	// A dummy Frame Buffer that represents the Back Buffer
+	// it doesn't actually contain any textures or details.
+	class BackBuffer final : public Target
+	{
+	public:
+		Attachments empty_textures;
+		Attachments& textures() override { BLAH_ASSERT(false, "Backbuffer doesn't have any textures"); return empty_textures; }
+		const Attachments& textures() const override { BLAH_ASSERT(false, "Backbuffer doesn't have any textures"); return empty_textures; }
+		int width() const override { int w, h; Platform::get_draw_size(&w, &h); return w; }
+		int height() const override { int w, h; Platform::get_draw_size(&w, &h); return h; }
+		void clear(Color color, float depth, u8 stencil, ClearMask mask) override
+		{
+			BLAH_ASSERT_RENDERER();
+			if (Renderer::instance) Renderer::instance->clear_backbuffer(color, depth, stencil, mask);
+		}
+	};
+
+	BackBuffer app_backbuffer;
+	TargetRef app_backbuffer_ref = TargetRef(&app_backbuffer);
 }
 
 bool App::run(const Config* c)
@@ -160,7 +139,6 @@ bool App::run(const Config* c)
 	// default values
 	app_is_running = true;
 	app_is_exiting = false;
-	app_backbuffer = TargetRef(new BackBuffer());
 
 	// initialize the system
 	if (!Platform::init(app_config))
@@ -223,13 +201,12 @@ bool App::run(const Config* c)
 	Renderer::instance->shutdown();
 	Platform::shutdown();
 
+	delete Renderer::instance;
+	Renderer::instance = nullptr;
+
 	// clear static state
 	app_is_running = false;
 	app_is_exiting = false;
-	app_backbuffer = nullptr;
-
-	delete Renderer::instance;
-	Renderer::instance = nullptr;
 
 	Time::ticks = 0;
 	Time::seconds = 0;
@@ -308,8 +285,8 @@ void App::set_size(Point point)
 Point App::get_backbuffer_size()
 {
 	BLAH_ASSERT_RUNNING();
-	if (app_backbuffer)
-		return Point(app_backbuffer->width(), app_backbuffer->height());
+	if (Renderer::instance)
+		return Point(app_backbuffer.width(), app_backbuffer.height());
 	return Point(0, 0);
 }
 
@@ -341,7 +318,7 @@ const RendererFeatures& App::renderer()
 const TargetRef& App::backbuffer()
 {
 	BLAH_ASSERT_RUNNING();
-	return app_backbuffer;
+	return app_backbuffer_ref;
 }
 
 void System::open_url(const char* url)

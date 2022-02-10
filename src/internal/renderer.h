@@ -22,6 +22,9 @@ namespace Blah
 		// Renderer Features
 		RendererFeatures features;
 
+		// Default Shader for the Batcher
+		ShaderRef default_batcher_shader;
+
 		virtual ~Renderer() = default;
 
 		// Initialize the Graphics

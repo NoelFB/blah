@@ -72,7 +72,7 @@ namespace Blah
 			wglDeleteContext_fn delete_context;
 			wglMakeCurrent_fn make_current;
 		} gl;
-	};
+	} g_platform;
 
 	// Win32 File Class
 	class Win32File : public File
@@ -186,8 +186,6 @@ namespace Blah
 
 using namespace Blah;
 namespace fs = std::filesystem;
-
-static Blah::Win32Platform g_platform;
 
 bool Platform::init(const Config& config)
 {

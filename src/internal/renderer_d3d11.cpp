@@ -20,6 +20,63 @@
 
 namespace Blah
 {
+	const char* d3d11_batch_shader = ""
+		"cbuffer constants : register(b0)\n"
+		"{\n"
+		"	row_major float4x4 u_matrix;\n"
+		"}\n"
+
+		"struct vs_in\n"
+		"{\n"
+		"	float2 position : POS;\n"
+		"	float2 texcoord : TEX;\n"
+		"	float4 color : COL;\n"
+		"	float4 mask : MASK;\n"
+		"};\n"
+
+		"struct vs_out\n"
+		"{\n"
+		"	float4 position : SV_POSITION;\n"
+		"	float2 texcoord : TEX;\n"
+		"	float4 color : COL;\n"
+		"	float4 mask : MASK;\n"
+		"};\n"
+
+		"Texture2D    u_texture : register(t0);\n"
+		"SamplerState u_texture_sampler : register(s0);\n"
+
+		"vs_out vs_main(vs_in input)\n"
+		"{\n"
+		"	vs_out output;\n"
+
+		"	output.position = mul(float4(input.position, 0.0f, 1.0f), u_matrix);\n"
+		"	output.texcoord = input.texcoord;\n"
+		"	output.color = input.color;\n"
+		"	output.mask = input.mask;\n"
+
+		"	return output;\n"
+		"}\n"
+
+		"float4 ps_main(vs_out input) : SV_TARGET\n"
+		"{\n"
+		"	float4 color = u_texture.Sample(u_texture_sampler, input.texcoord);\n"
+		"	return\n"
+		"		input.mask.x * color * input.color + \n"
+		"		input.mask.y * color.a * input.color + \n"
+		"		input.mask.z * input.color;\n"
+		"}\n";
+
+	const ShaderData d3d11_batch_shader_data = {
+		d3d11_batch_shader,
+		d3d11_batch_shader,
+		{
+			{ "POS", 0 },
+			{ "TEX", 0 },
+			{ "COL", 0 },
+			{ "MASK", 0 },
+		}
+	};
+
 	class D3D11_Shader;
 
 	class Renderer_D3D11 : public Renderer
@@ -786,6 +843,9 @@ namespace Blah
 				Log::info("D3D11");
 			}
 		}
+
+		// create default sprite batch shader
+		default_batcher_shader = Shader::create(d3d11_batch_shader_data);
 
 		return true;
 	}

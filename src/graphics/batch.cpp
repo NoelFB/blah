@@ -6,117 +6,13 @@
 #include <blah/graphics/material.h>
 #include <blah/numerics/calc.h>
 #include <blah/app.h>
+#include "../internal/renderer.h"
 #include <cmath>
 
 using namespace Blah;
+
 namespace
 {
-
-	// TODO:
-	// This shader needs to be graphics API agnostic
-
-	const ShaderData opengl_shader_data = {
-		// vertex shader
-#ifdef __EMSCRIPTEN__
-		"#version 300 es\n"
-#else
-		"#version 330\n"
-#endif
-		"uniform mat4 u_matrix;\n"
-		"layout(location=0) in vec2 a_position;\n"
-		"layout(location=1) in vec2 a_tex;\n"
-		"layout(location=2) in vec4 a_color;\n"
-		"layout(location=3) in vec4 a_type;\n"
-		"out vec2 v_tex;\n"
-		"out vec4 v_col;\n"
-		"out vec4 v_type;\n"
-		"void main(void)\n"
-		"{\n"
-		"	gl_Position = u_matrix * vec4(a_position.xy, 0, 1);\n"
-		"	v_tex = a_tex;\n"
-		"	v_col = a_color;\n"
-		"	v_type = a_type;\n"
-		"}",
-
-		// fragment shader
-#ifdef __EMSCRIPTEN__
-		"#version 300 es\n"
-		"precision mediump float;\n"
-#else
-		"#version 330\n"
-#endif
-		"uniform sampler2D u_texture;\n"
-		"in vec2 v_tex;\n"
-		"in vec4 v_col;\n"
-		"in vec4 v_type;\n"
-		"out vec4 o_color;\n"
-		"void main(void)\n"
-		"{\n"
-		"	vec4 color = texture(u_texture, v_tex);\n"
-		"	o_color = \n"
-		"		v_type.x * color * v_col + \n"
-		"		v_type.y * color.a * v_col + \n"
-		"		v_type.z * v_col;\n"
-		"}"
-	};
-
-	const char* d3d11_shader = ""
-		"cbuffer constants : register(b0)\n"
-		"{\n"
-		"	row_major float4x4 u_matrix;\n"
-		"}\n"
-
-		"struct vs_in\n"
-		"{\n"
-		"	float2 position : POS;\n"
-		"	float2 texcoord : TEX;\n"
-		"	float4 color : COL;\n"
-		"	float4 mask : MASK;\n"
-		"};\n"
-
-		"struct vs_out\n"
-		"{\n"
-		"	float4 position : SV_POSITION;\n"
-		"	float2 texcoord : TEX;\n"
-		"	float4 color : COL;\n"
-		"	float4 mask : MASK;\n"
-		"};\n"
-
-		"Texture2D    u_texture : register(t0);\n"
-		"SamplerState u_texture_sampler : register(s0);\n"
-
-		"vs_out vs_main(vs_in input)\n"
-		"{\n"
-		"	vs_out output;\n"
-
-		"	output.position = mul(float4(input.position, 0.0f, 1.0f), u_matrix);\n"
-		"	output.texcoord = input.texcoord;\n"
-		"	output.color = input.color;\n"
-		"	output.mask = input.mask;\n"
-
-		"	return output;\n"
-		"}\n"
-
-		"float4 ps_main(vs_out input) : SV_TARGET\n"
-		"{\n"
-		"	float4 color = u_texture.Sample(u_texture_sampler, input.texcoord);\n"
-		"	return\n"
-		"		input.mask.x * color * input.color + \n"
-		"		input.mask.y * color.a * input.color + \n"
-		"		input.mask.z * input.color;\n"
-		"}\n";
-
-	const ShaderData d3d11_shader_data = {
-		d3d11_shader,
-		d3d11_shader,
-		{
-			{ "POS", 0 },
-			{ "TEX", 0 },
-			{ "COL", 0 },
-			{ "MASK", 0 },
-		}
-	};
-
 	const VertexFormat format = VertexFormat(
 	{
 		{ 0, VertexType::Float2, false },
@@ -124,11 +20,8 @@ namespace
 		{ 2, VertexType::UByte4, true },
 		{ 3, VertexType::UByte4, true },
 	});
-}
 
-namespace
-{
-	static Vec2f batch_shape_intersection(const Vec2f& p0, const Vec2f& p1, const Vec2f& q0, const Vec2f& q1)
+	Vec2f batch_shape_intersection(const Vec2f& p0, const Vec2f& p1, const Vec2f& q0, const Vec2f& q1)
 	{
 		const auto aa = p1 - p0;
 		const auto bb = q0 - q1;
@@ -207,21 +100,6 @@ do { \
 	if (m_batch.elements > 0 && (variable) != m_batch.variable) \
 		INSERT_BATCH(); \
 	m_batch.variable = variable;
-
-ShaderRef Batch::m_default_shader;
-
-Batch::Batch()
-{
-	texture_uniform = "u_texture";
-	sampler_uniform = "u_texture_sampler";
-	matrix_uniform = "u_matrix";
-	clear();
-}
-
-Batch::~Batch()
-{
-	dispose();
-}
 
 void Batch::push_matrix(const Mat3x2f& matrix, bool absolute)
 {
@@ -407,16 +285,11 @@ void Batch::render(const TargetRef& target, const Mat4x4f& matrix)
 		if (!m_mesh)
 			m_mesh = Mesh::create();
 
-		if (!m_default_shader)
-		{
-			if (App::renderer().type == RendererType::OpenGL)
-				m_default_shader = Shader::create(opengl_shader_data);
-			else if (App::renderer().type == RendererType::D3D11)
-				m_default_shader = Shader::create(d3d11_shader_data);
-		}
-
 		if (!m_default_material)
-			m_default_material = Material::create(m_default_shader);
+		{
+			BLAH_ASSERT_RENDERER();
+			m_default_material = Material::create(Renderer::instance->default_batcher_shader);
+		}
 	}
 
 	// upload data

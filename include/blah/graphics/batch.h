@@ -46,9 +46,9 @@ namespace Blah
 	public:
 
 		// The name of the default uniforms to set
-		const char* texture_uniform;
-		const char* sampler_uniform;
-		const char* matrix_uniform;
+		String texture_uniform = "u_texture";
+		String sampler_uniform = "u_texture_sampler";
+		String matrix_uniform = "u_matrix";
 
 		// Snaps all drawing coordinates to integer values
 		// This is useful for drawing Pixel Art stuff
@@ -56,11 +56,6 @@ namespace Blah
 
 		// Default Sampler, set on clear
 		TextureSampler default_sampler;
-
-		Batch();
-		Batch(const Batch& other) = delete;
-		Batch& operator=(const Batch& other) = delete;
-		~Batch();
 
 		// Pushes a new matrix onto the stack, and uses it for transforming all drawing.
 		// `absolute` means the matrix provided will not be transformed by the current stack.
@@ -199,8 +194,6 @@ namespace Blah
 			u8 wash;
 			u8 fill;
 			u8 pad;
-
-			Vertex() = default;
 		};
 
 		struct DrawBatch
@@ -224,13 +217,12 @@ namespace Blah
 				scissor(0, 0, -1, -1) {}
 		};
 
-		static ShaderRef m_default_shader;
 		MaterialRef m_default_material;
 		MeshRef m_mesh;
-		Mat3x2f m_matrix;
-		ColorMode m_color_mode;
-		u8 m_tex_mult;
-		u8 m_tex_wash;
+		Mat3x2f m_matrix = Mat3x2f::identity;
+		ColorMode m_color_mode = ColorMode::Normal;
+		u8 m_tex_mult = 255;
+		u8 m_tex_wash = 0;
 		DrawBatch m_batch;
 		Vector<Vertex> m_vertices;
 		Vector<u32> m_indices;
@@ -241,7 +233,7 @@ namespace Blah
 		Vector<ColorMode> m_color_mode_stack;
 		Vector<int> m_layer_stack;
 		Vector<DrawBatch> m_batches;
-		int m_batch_insert;
+		int m_batch_insert = 0;
 
 		void render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4x4f& matrix);
 	};

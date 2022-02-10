@@ -3,49 +3,49 @@
 
 namespace Blah
 {
-	struct Time
+	namespace Time
 	{
 		// ticks per second (microseconds, in this case)
-		static constexpr u64 ticks_per_second = 1000000;
+		constexpr u64 ticks_per_second = 1000000;
 
 		// uptime, in ticks
-		static u64 ticks;
+		extern u64 ticks;
 
 		// uptime, in seconds
-		static double seconds;
+		extern double seconds;
 
 		// previous frame uptime, in ticks
-		static u64 previous_ticks;
+		extern u64 previous_ticks;
 
 		// previous frame uptime, in seconds
-		static double previous_seconds;
+		extern double previous_seconds;
 
 		// delta time from last frame
-		static float delta;
+		extern float delta;
 
 		// time the application should pause for
-		static float pause_timer;
+		extern float pause_timer;
 
 		// pauses the entire application for the given time
-		static void pause_for(float duration);
+		void pause_for(float duration);
 
 		// returns true on the given time interval
-		static bool on_interval(double time, float delta, float interval, float offset);
+		bool on_interval(double time, float delta, float interval, float offset);
 
 		// returns true on the given time interval
-		static bool on_interval(float delta, float interval, float offset);
+		bool on_interval(float delta, float interval, float offset);
 
 		// returns true on the given time interval
-		static bool on_interval(float interval, float offset = 0);
+		bool on_interval(float interval, float offset = 0);
 
 		// returns true when the given timestamp is passed
-		static bool on_time(double time, double timestamp);
+		bool on_time(double time, double timestamp);
 
 		// returns true between time intervals
-		static bool between_interval(double time, float interval, float offset);
+		bool between_interval(double time, float interval, float offset);
 		
 		// returns true between time intervals
-		static bool between_interval(float interval, float offset = 0);
+		bool between_interval(float interval, float offset = 0);
 	};
 
 	class Stopwatch
