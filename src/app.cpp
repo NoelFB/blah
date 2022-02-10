@@ -113,7 +113,7 @@ namespace
 	};
 
 	BackBuffer app_backbuffer;
-	TargetRef app_backbuffer_ref = TargetRef(&app_backbuffer);
+	TargetRef app_backbuffer_ref = TargetRef(&app_backbuffer, [](BackBuffer*) {});
 }
 
 bool App::run(const Config* c)
