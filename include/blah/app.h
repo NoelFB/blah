@@ -5,10 +5,10 @@
 namespace Blah
 {
 	// Application Event Functions
-	using AppEventFn = Func<void()>;
+	using AppEventFn = Func<void>;
 
 	// Application Logging Functions
-	using AppLogFn = Func<void(const char* message, Log::Category category)>;
+	using AppLogFn = Func<void, const char*, Log::Category>;
 
 	// Type of Renderer the Application is using
 	enum class RendererType

@@ -13,10 +13,9 @@ MeshRef Mesh::create()
 	return MeshRef();
 }
 
-VertexFormat::VertexFormat(std::initializer_list<VertexAttribute> attributes, int stride)
+VertexFormat::VertexFormat(const StackVector<VertexAttribute, 16>& attr, int stride)
 {
-	for (auto& it : attributes)
-		this->attributes.push_back(it);
+	attributes = attr;
 
 	if (stride <= 0)
 	{

@@ -44,7 +44,7 @@ namespace Blah
 		int stride = 0;
 
 		VertexFormat() = default;
-		VertexFormat(std::initializer_list<VertexAttribute> attributes, int stride = 0);
+		VertexFormat(const StackVector<VertexAttribute, 16>& attributes, int stride = 0);
 	};
 
 	// Supported Vertex Index formats

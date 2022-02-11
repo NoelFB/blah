@@ -7,10 +7,10 @@ using namespace Blah;
 
 void Log::info(const char* format, ...)
 {
-	char msg[BLAH_MESSAGE];
+	char msg[max_length];
 	va_list ap;
 	va_start(ap, format);
-	vsnprintf(msg, sizeof(char) * BLAH_MESSAGE, format, ap);
+	vsnprintf(msg, sizeof(char) * max_length, format, ap);
 	va_end(ap);
 
 	if (App::config().on_log)
@@ -25,10 +25,10 @@ void Log::info(const char* format, ...)
 
 void Log::warn(const char* format, ...)
 {
-	char msg[BLAH_MESSAGE];
+	char msg[max_length];
 	va_list ap;
 	va_start(ap, format);
-	vsnprintf(msg, sizeof(char) * BLAH_MESSAGE, format, ap);
+	vsnprintf(msg, sizeof(char) * max_length, format, ap);
 	va_end(ap);
 
 	if (App::config().on_log)
@@ -43,10 +43,10 @@ void Log::warn(const char* format, ...)
 
 void Log::error(const char* format, ...)
 {
-	char msg[BLAH_MESSAGE];
+	char msg[max_length];
 	va_list ap;
 	va_start(ap, format);
-	vsnprintf(msg, sizeof(char) * BLAH_MESSAGE, format, ap);
+	vsnprintf(msg, sizeof(char) * max_length, format, ap);
 	va_end(ap);
 
 	if (App::config().on_log)

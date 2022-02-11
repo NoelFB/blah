@@ -14,9 +14,9 @@ namespace
 {
 	InputState g_empty_state;
 	ControllerState g_empty_controller;
-	Vector<WeakRef<ButtonBinding>> g_buttons;
-	Vector<WeakRef<AxisBinding>> g_axes;
-	Vector<WeakRef<StickBinding>> g_sticks;
+	Vector<Ref<ButtonBinding>> g_buttons;
+	Vector<Ref<AxisBinding>> g_axes;
+	Vector<Ref<StickBinding>> g_sticks;
 	String g_clipboard;
 }
 
@@ -82,40 +82,42 @@ void Input::update_bindings()
 {
 	for (int i = 0; i < g_buttons.size(); i++)
 	{
-		if (g_buttons[i].use_count() <= 0)
+		// we're the only user, so remove it
+		if (g_buttons[i].use_count() <= 1)
 		{
 			g_buttons.erase(i);
 			i--;
 		}
-		else if (auto binding = g_buttons[i].lock())
+		// keep updating
+		else
 		{
-			binding->update();
+			g_buttons[i]->update();
 		}
 	}
 
 	for (int i = 0; i < g_axes.size(); i++)
 	{
-		if (g_axes[i].use_count() <= 0)
+		if (g_axes[i].use_count() <= 1)
 		{
 			g_axes.erase(i);
 			i--;
 		}
-		else if (auto binding = g_axes[i].lock())
+		else
 		{
-			binding->update();
+			g_axes[i]->update();
 		}
 	}
 
 	for (int i = 0; i < g_sticks.size(); i++)
 	{
-		if (g_sticks[i].use_count() <= 0)
+		if (g_sticks[i].use_count() <= 1)
 		{
 			g_sticks.erase(i);
 			i--;
 		}
-		else if (auto binding = g_sticks[i].lock())
+		else
 		{
-			binding->update();
+			g_sticks[i]->update();
 		}
 	}
 }
@@ -397,22 +399,22 @@ void Input::set_clipboard(const String& text)
 
 ButtonBindingRef Input::register_binding(const ButtonBinding& binding)
 {
-	auto result = std::make_shared<ButtonBinding>(binding);
-	g_buttons.push_back(WeakRef<ButtonBinding>(result));
+	auto result = Ref<ButtonBinding>(new ButtonBinding(binding));
+	g_buttons.push_back(result);
 	return result;
 }
 
 AxisBindingRef Input::register_binding(const AxisBinding& binding)
 {
-	auto result = std::make_shared<AxisBinding>(binding);
-	g_axes.push_back(WeakRef<AxisBinding>(result));
+	auto result = Ref<AxisBinding>(new AxisBinding(binding));
+	g_axes.push_back(result);
 	return result;
 }
 
 StickBindingRef Input::register_binding(const StickBinding& binding)
 {
-	auto result = std::make_shared<StickBinding>(binding);
-	g_sticks.push_back(WeakRef<StickBinding>(result));
+	auto result = Ref<StickBinding>(new StickBinding(binding));
+	g_sticks.push_back(result);
 	return result;
 }
 

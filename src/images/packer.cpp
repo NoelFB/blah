@@ -160,9 +160,9 @@ void Packer::pack()
 				sources[index++] = &m_entries[i];
 
 			std::sort(sources.begin(), sources.end(), [](Packer::Entry* a, Packer::Entry* b)
-				{
-					return a->packed.w * a->packed.h > b->packed.w * b->packed.h;
-				});
+			{
+				return a->packed.w * a->packed.h > b->packed.w * b->packed.h;
+			});
 		}
 
 		// make sure the largest isn't too large

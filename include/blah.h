@@ -37,4 +37,3 @@
 #include "blah/streams/filestream.h"
 #include "blah/streams/memorystream.h"
 #include "blah/streams/stream.h"
-#include "blah/streams/endian.h"

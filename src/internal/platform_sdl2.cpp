@@ -11,16 +11,16 @@
 
 #include <SDL.h>
 
-// for File Reading/Writing
+// for File Reading / Writing
 #include <filesystem>
-namespace fs = std::filesystem;
 
+// Windows requires a few extra includes
 #if _WIN32
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include <windows.h>    // for the following includes
 #include <winuser.h>	// for SetProcessDPIAware
-#include <shellapi.h>	// for file explore
-#include <SDL_syswm.h>
+#include <shellapi.h>	// for ShellExecute for dir_explore
+#include <SDL_syswm.h>  // for SDL_SysWMinfo for D3D11
 #endif
 
 // Macro defined by X11 conflicts with MouseButton enum
@@ -40,50 +40,19 @@ namespace Blah
 	} g_platform;
 
 	// Blah SDL2 File
-	class SDL2File : public File
+	struct SDL2File : public File
 	{
-	private:
-		SDL_RWops* m_handle;
-
-	public:
-		SDL2File(SDL_RWops* handle)
-		{
-			m_handle = handle;
-		}
-
-		~SDL2File()
-		{
-			if (m_handle)
-				SDL_RWclose(m_handle);
-		}
-
-		size_t length() override
-		{
-			return SDL_RWsize(m_handle);
-		}
-
-		size_t position() override
-		{
-			return SDL_RWtell(m_handle);
-		}
-
-		size_t seek(size_t position) override
-		{
-			return SDL_RWseek(m_handle, position, RW_SEEK_SET);
-		}
-
-		size_t read(unsigned char* buffer, size_t length) override
-		{
-			return SDL_RWread(m_handle, buffer, sizeof(char), length);
-		}
-
-		size_t write(const unsigned char* buffer, size_t length) override
-		{
-			return SDL_RWwrite(m_handle, buffer, sizeof(char), length);
-		}
+		SDL_RWops* handle;
+		SDL2File(SDL_RWops* handle) : handle(handle) { }
+		~SDL2File() { if (handle) SDL_RWclose(handle); }
+		size_t length() override { return SDL_RWsize(handle); }
+		size_t position() override { return SDL_RWtell(handle); }
+		size_t seek(size_t position) override { return SDL_RWseek(handle, position, RW_SEEK_SET); }
+		size_t read(unsigned char* buffer, size_t length) override { return SDL_RWread(handle, buffer, sizeof(char), length); }
+		size_t write(const unsigned char* buffer, size_t length) override { return SDL_RWwrite(handle, buffer, sizeof(char), length); }
 	};
 
-	void sdl_log(void* userdata, int category, SDL_LogPriority priority, const char* message)
+	void blah_sdl_log(void* userdata, int category, SDL_LogPriority priority, const char* message)
 	{
 		if (priority <= SDL_LOG_PRIORITY_INFO)
 			Log::info(message);
@@ -93,7 +62,7 @@ namespace Blah
 			Log::error(message);
 	}
 
-	int sdl_find_joystick_index(SDL_Joystick** joysticks, SDL_JoystickID instance_id)
+	int blah_sdl_find_joystick_index(SDL_Joystick** joysticks, SDL_JoystickID instance_id)
 	{
 		for (int i = 0; i < Input::max_controllers; i++)
 			if (joysticks[i] != nullptr && SDL_JoystickInstanceID(joysticks[i]) == instance_id)
@@ -101,7 +70,7 @@ namespace Blah
 		return -1;
 	}
 
-	int sdl_find_gamepad_index(SDL_GameController** gamepads, SDL_JoystickID instance_id)
+	int blah_sdl_find_gamepad_index(SDL_GameController** gamepads, SDL_JoystickID instance_id)
 	{
 		for (int i = 0; i < Input::max_controllers; i++)
 		{
@@ -131,7 +100,7 @@ bool Platform::init(const Config& config)
 	// TODO:
 	// control this via some kind of config flag
 	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
-	SDL_LogSetOutputFunction(sdl_log, nullptr);
+	SDL_LogSetOutputFunction(blah_sdl_log, nullptr);
 
 	// Get SDL version
 	SDL_version version;
@@ -331,7 +300,7 @@ void Platform::update(InputState& state)
 		}
 		else if (event.type == SDL_JOYDEVICEREMOVED)
 		{
-			auto index = sdl_find_joystick_index(g_platform.joysticks, event.jdevice.which);
+			auto index = blah_sdl_find_joystick_index(g_platform.joysticks, event.jdevice.which);
 			if (index >= 0)
 			{
 				if (SDL_IsGameController(index) == SDL_FALSE)
@@ -343,7 +312,7 @@ void Platform::update(InputState& state)
 		}
 		else if (event.type == SDL_JOYBUTTONDOWN)
 		{
-			auto index = sdl_find_joystick_index(g_platform.joysticks, event.jdevice.which);
+			auto index = blah_sdl_find_joystick_index(g_platform.joysticks, event.jdevice.which);
 			if (index >= 0)
 			{
 				if (SDL_IsGameController(index) == SDL_FALSE)
@@ -352,7 +321,7 @@ void Platform::update(InputState& state)
 		}
 		else if (event.type == SDL_JOYBUTTONUP)
 		{
-			auto index = sdl_find_joystick_index(g_platform.joysticks, event.jdevice.which);
+			auto index = blah_sdl_find_joystick_index(g_platform.joysticks, event.jdevice.which);
 			if (index >= 0)
 			{
 				if (SDL_IsGameController(index) == SDL_FALSE)
@@ -361,7 +330,7 @@ void Platform::update(InputState& state)
 		}
 		else if (event.type == SDL_JOYAXISMOTION)
 		{
-			auto index = sdl_find_joystick_index(g_platform.joysticks, event.jdevice.which);
+			auto index = blah_sdl_find_joystick_index(g_platform.joysticks, event.jdevice.which);
 			if (index >= 0)
 			{
 				if (SDL_IsGameController(index) == SDL_FALSE)
@@ -392,7 +361,7 @@ void Platform::update(InputState& state)
 		}
 		else if (event.type == SDL_CONTROLLERDEVICEREMOVED)
 		{
-			auto index = sdl_find_gamepad_index(g_platform.gamepads, event.cdevice.which);
+			auto index = blah_sdl_find_gamepad_index(g_platform.gamepads, event.cdevice.which);
 			if (index >= 0)
 			{
 				state.controllers[index].on_disconnect();
@@ -401,7 +370,7 @@ void Platform::update(InputState& state)
 		}
 		else if (event.type == SDL_CONTROLLERBUTTONDOWN)
 		{
-			auto index = sdl_find_gamepad_index(g_platform.gamepads, event.cdevice.which);
+			auto index = blah_sdl_find_gamepad_index(g_platform.gamepads, event.cdevice.which);
 			if (index >= 0)
 			{
 				Button button = Button::None;
@@ -413,7 +382,7 @@ void Platform::update(InputState& state)
 		}
 		else if (event.type == SDL_CONTROLLERBUTTONUP)
 		{
-			auto index = sdl_find_gamepad_index(g_platform.gamepads, event.cdevice.which);
+			auto index = blah_sdl_find_gamepad_index(g_platform.gamepads, event.cdevice.which);
 			if (index >= 0)
 			{
 				Button button = Button::None;
@@ -425,7 +394,7 @@ void Platform::update(InputState& state)
 		}
 		else if (event.type == SDL_CONTROLLERAXISMOTION)
 		{
-			auto index = sdl_find_gamepad_index(g_platform.gamepads, event.cdevice.which);
+			auto index = blah_sdl_find_gamepad_index(g_platform.gamepads, event.cdevice.which);
 			if (index >= 0)
 			{
 				Axis axis = Axis::None;
@@ -597,41 +566,41 @@ FileRef Platform::file_open(const char* path, FileMode mode)
 
 bool Platform::file_exists(const char* path)
 {
-	return fs::is_regular_file(path);
+	return std::filesystem::is_regular_file(path);
 }
 
 bool Platform::file_delete(const char* path)
 {
-	return fs::remove(path);
+	return std::filesystem::remove(path);
 }
 
 bool Platform::dir_create(const char* path)
 {
-	return fs::create_directories(path);
+	return std::filesystem::create_directories(path);
 }
 
 bool Platform::dir_exists(const char* path)
 {
-	return fs::is_directory(path);
+	return std::filesystem::is_directory(path);
 }
 
 bool Platform::dir_delete(const char* path)
 {
-	return fs::remove_all(path) > 0;
+	return std::filesystem::remove_all(path) > 0;
 }
 
 void Platform::dir_enumerate(Vector<FilePath>& list, const char* path, bool recursive)
 {
-	if (fs::is_directory(path))
+	if (std::filesystem::is_directory(path))
 	{
 		if (recursive)
 		{
-			for (auto& p : fs::recursive_directory_iterator(path))
+			for (auto& p : std::filesystem::recursive_directory_iterator(path))
 				list.emplace_back(p.path().string().c_str());
 		}
 		else
 		{
-			for (auto& p : fs::directory_iterator(path))
+			for (auto& p : std::filesystem::directory_iterator(path))
 				list.emplace_back(p.path().string().c_str());
 		}
 	}

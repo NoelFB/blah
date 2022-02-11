@@ -112,18 +112,12 @@ namespace
 		}
 	};
 
-	BackBuffer app_backbuffer;
-	TargetRef app_backbuffer_ref = TargetRef(&app_backbuffer, [](BackBuffer*) {});
+	TargetRef app_backbuffer;
 }
 
 bool App::run(const Config* c)
 {
 	BLAH_ASSERT(!app_is_running, "The Application is already running");
-	BLAH_ASSERT(c != nullptr, "The Application requires a valid Config");
-	BLAH_ASSERT(c->name != nullptr, "The Application Name cannot be null");
-	BLAH_ASSERT(c->width > 0 && c->height > 0, "The Width and Height must be larget than 0");
-	BLAH_ASSERT(c->max_updates > 0, "Max Updates must be >= 1");
-	BLAH_ASSERT(c->target_framerate > 0, "Target Framerate must be >= 1");
 
 	// copy config over
 	app_config = *c;
@@ -136,9 +130,19 @@ bool App::run(const Config* c)
 	if (app_config.renderer_type == RendererType::None)
 		app_config.renderer_type = Renderer::default_type();
 
+	// exit out if setup is wrong
+	BLAH_ASSERT(c != nullptr, "The Application requires a valid Config");
+	BLAH_ASSERT(c->name != nullptr, "The Application Name cannot be null");
+	BLAH_ASSERT(c->width > 0 && c->height > 0, "The Width and Height must be larget than 0");
+	BLAH_ASSERT(c->max_updates > 0, "Max Updates must be >= 1");
+	BLAH_ASSERT(c->target_framerate > 0, "Target Framerate must be >= 1");
+	if (app_is_running || c == nullptr || c->width <= 0 || c->height <= 0 || c->max_updates <= 0 || c->target_framerate <= 0)
+		return false;
+
 	// default values
 	app_is_running = true;
 	app_is_exiting = false;
+	app_backbuffer = TargetRef(new BackBuffer());
 
 	// initialize the system
 	if (!Platform::init(app_config))
@@ -207,6 +211,7 @@ bool App::run(const Config* c)
 	// clear static state
 	app_is_running = false;
 	app_is_exiting = false;
+	app_backbuffer = TargetRef();
 
 	Time::ticks = 0;
 	Time::seconds = 0;
@@ -286,7 +291,7 @@ Point App::get_backbuffer_size()
 {
 	BLAH_ASSERT_RUNNING();
 	if (Renderer::instance)
-		return Point(app_backbuffer.width(), app_backbuffer.height());
+		return Point(app_backbuffer->width(), app_backbuffer->height());
 	return Point(0, 0);
 }
 
@@ -318,7 +323,7 @@ const RendererFeatures& App::renderer()
 const TargetRef& App::backbuffer()
 {
 	BLAH_ASSERT_RUNNING();
-	return app_backbuffer_ref;
+	return app_backbuffer;
 }
 
 void System::open_url(const char* url)

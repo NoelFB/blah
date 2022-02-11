@@ -52,14 +52,14 @@ target_include_directories(blah
 )
 
 # Platform Variables
-set(BLAH_PLATFORM_SDL2 true CACHE BOOL "Use SDL2 Platform Backend")
-set(BLAH_PLATFORM_WIN32 false CACHE BOOL "Use Win32 Platform Backend")
-set(BLAH_RENDERER_OPENGL true CACHE BOOL "Make OpenGL Renderer available")
+option(BLAH_PLATFORM_SDL2 "Use SDL2 Platform Backend" ON)
+option(BLAH_PLATFORM_WIN32 "Use Win32 Platform Backend" OFF)
+option(BLAH_RENDERER_OPENGL "Make OpenGL Renderer available" ON)
 if (WIN32)
-	set(BLAH_RENDERER_D3D11 true CACHE BOOL "Make D3D11 Renderer available")
-else()
-	set(BLAH_RENDERER_D3D11 false CACHE BOOL "Make D3D11 Renderer available")
+	option(BLAH_RENDERER_D3D11 "Make D3D11 Renderer available" ON)
 endif()
+option(BLAH_NO_FUNCTIONAL "Don't use std::function" OFF)
+option(BLAH_NO_SHARED_PTR "Don't use std::shared_ptr for Resources" OFF)
 
 set(LIBS "")
 

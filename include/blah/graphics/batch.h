@@ -123,7 +123,7 @@ namespace Blah
 		void set_sampler(const TextureSampler& sampler);
 
 		// Draws the batch to the given target
-		void render(const TargetRef& target = nullptr);
+		void render(const TargetRef& target = TargetRef());
 
 		// Draws the batch to the given target, with the provided matrix
 		void render(const TargetRef& target, const Mat4x4f& matrix);

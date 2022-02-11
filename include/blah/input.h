@@ -1,5 +1,4 @@
 #pragma once
-
 #include <blah/common.h>
 #include <blah/numerics/spatial.h>
 #include <blah/containers/str.h>

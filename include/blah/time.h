@@ -14,14 +14,14 @@ namespace Blah
 		// uptime, in seconds
 		extern double seconds;
 
+		// delta time from last frame
+		extern float delta;
+
 		// previous frame uptime, in ticks
 		extern u64 previous_ticks;
 
 		// previous frame uptime, in seconds
 		extern double previous_seconds;
-
-		// delta time from last frame
-		extern float delta;
 
 		// time the application should pause for
 		extern float pause_timer;

@@ -1,8 +1,6 @@
 #pragma once
 #include <blah/common.h>
-#include <initializer_list>
-#include <new>
-#include <cstring>
+#include <string.h>
 
 namespace Blah
 {
@@ -19,9 +17,9 @@ namespace Blah
 
 		Vector();
 		Vector(int capacity);
+		Vector(const InitializerList<T>& list);
 		Vector(const Vector& src);
 		Vector(Vector&& src) noexcept;
-		Vector(std::initializer_list<T> list);
 		~Vector();
 
 		Vector& operator=(const Vector& src);
@@ -98,9 +96,8 @@ namespace Blah
 		src.m_count = 0;
 	}
 
-
 	template<class T>
-	inline Vector<T>::Vector(std::initializer_list<T> list)
+	inline Vector<T>::Vector(const InitializerList<T>& list)
 	{
 		m_buffer = nullptr;
 		m_count = m_capacity = 0;

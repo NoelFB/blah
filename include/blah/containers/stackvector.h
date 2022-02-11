@@ -1,7 +1,5 @@
 #pragma once
 #include <blah/common.h>
-#include <new>
-#include <initializer_list>
 
 namespace Blah
 {
@@ -19,7 +17,7 @@ namespace Blah
 		static constexpr size_t capacity = Capacity;
 
 		StackVector();
-		StackVector(const std::initializer_list<T>& init);
+		StackVector(const InitializerList<T>& list);
 		StackVector(const StackVector& src);
 		StackVector(StackVector&& src) noexcept;
 		~StackVector();
@@ -62,7 +60,7 @@ namespace Blah
 	}
 
 	template<class T, size_t Capacity>
-	inline StackVector<T, Capacity>::StackVector(const std::initializer_list<T>& init)
+	inline StackVector<T, Capacity>::StackVector(const InitializerList<T>& init)
 	{
 		m_count = 0;
 		for (auto& it : init)
