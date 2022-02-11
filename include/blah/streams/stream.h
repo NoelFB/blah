@@ -1,7 +1,7 @@
 #pragma once
 #include <blah/common.h>
 #include <blah/containers/str.h>
-#include <blah/streams/endian.h>
+#include <blah/numerics/calc.h>
 #include <string.h>
 
 namespace Blah
@@ -49,22 +49,16 @@ namespace Blah
 		String read_line();
 
 		// reads a number
-		template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
-		T read()
-		{
-			return read<T>(Endian::Little);
-		}
-
-		// reads a number
-		template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
-		T read(Endian endian)
-		{
-			T result;
-			read(&result, sizeof(T));
-			if (!Blah::is_endian(endian))
-				Blah::swap_endian(&result);
-			return result;
-		}
+		u8  read_u8 (Endian endian = Endian::Little);
+		u16 read_u16(Endian endian = Endian::Little);
+		u32 read_u32(Endian endian = Endian::Little);
+		u64 read_u64(Endian endian = Endian::Little);
+		i8  read_i8 (Endian endian = Endian::Little);
+		i16 read_i16(Endian endian = Endian::Little);
+		i32 read_i32(Endian endian = Endian::Little);
+		i64 read_i64(Endian endian = Endian::Little);
+		f32 read_f32(Endian endian = Endian::Little);
+		f64 read_f64(Endian endian = Endian::Little);
 
 		// writes the amount of bytes to the stream from the given buffer, and returns the amount written
 		size_t write(const void* buffer, size_t length);
@@ -72,24 +66,17 @@ namespace Blah
 		// writes the contents of a string to the stream
 		size_t write(const String& string);
 
-		// writes a number
-		template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
-		size_t write(const T& value)
-		{
-			return write<T>(value, Endian::Little);
-		}
-
-		// writes a number
-		template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
-		size_t write(const T& value, Endian endian)
-		{
-			T writing = value;
-
-			if (!Blah::is_endian(endian))
-				Blah::swap_endian(&writing);
-
-			return write(&writing, sizeof(T));
-		}
+		// writes a number, returns number of bytes written
+		size_t write_u8 (u8  value, Endian endian = Endian::Little);
+		size_t write_u16(u16 value, Endian endian = Endian::Little);
+		size_t write_u32(u32 value, Endian endian = Endian::Little);
+		size_t write_u64(u64 value, Endian endian = Endian::Little);
+		size_t write_i8 (i8  value, Endian endian = Endian::Little);
+		size_t write_i16(i16 value, Endian endian = Endian::Little);
+		size_t write_i32(i32 value, Endian endian = Endian::Little);
+		size_t write_i64(i64 value, Endian endian = Endian::Little);
+		size_t write_f32(f32 value, Endian endian = Endian::Little);
+		size_t write_f64(f64 value, Endian endian = Endian::Little);
 
 	protected:
 		// reads the amount of bytes into the given buffer, and returns the amount read

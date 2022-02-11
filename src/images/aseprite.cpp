@@ -90,10 +90,10 @@ void Aseprite::parse(Stream& stream)
 	// header
 	{
 		// filesize
-		stream.read<u32>(Endian::Little);
+		stream.read_u32(Endian::Little);
 
 		// magic number
-		auto magic = stream.read<u16>(Endian::Little);
+		auto magic = stream.read_u16(Endian::Little);
 		if (magic != 0xA5E0)
 		{
 			BLAH_ASSERT(false, "File is not a valid Aseprite file");
@@ -101,21 +101,21 @@ void Aseprite::parse(Stream& stream)
 		}
 
 		// main info
-		frame_count = stream.read<u16>(Endian::Little);
-		width = stream.read<u16>(Endian::Little);
-		height = stream.read<u16>(Endian::Little);
-		mode = static_cast<Aseprite::Modes>(stream.read<u16>(Endian::Little) / 8);
+		frame_count = stream.read_u16(Endian::Little);
+		width = stream.read_u16(Endian::Little);
+		height = stream.read_u16(Endian::Little);
+		mode = static_cast<Aseprite::Modes>(stream.read_u16(Endian::Little) / 8);
 
 		// don't care about other info
-		stream.read<u32>(Endian::Little);		// Flags
-		stream.read<u16>(Endian::Little);		// Speed (deprecated)
-		stream.read<u32>(Endian::Little);		// Should be 0
-		stream.read<u32>(Endian::Little);		// Should be 0
-		stream.read<u8>(Endian::Little);		// Palette entry
+		stream.read_u32(Endian::Little);		// Flags
+		stream.read_u16(Endian::Little);		// Speed (deprecated)
+		stream.read_u32(Endian::Little);		// Should be 0
+		stream.read_u32(Endian::Little);		// Should be 0
+		stream.read_u8(Endian::Little);		// Palette entry
 		stream.seek(stream.position() + 3);			// Ignore these bytes
-		stream.read<u16>(Endian::Little);		// Number of colors (0 means 256 for old sprites)
-		stream.read<i8>(Endian::Little);		// Pixel width
-		stream.read<i8>(Endian::Little);		// Pixel height
+		stream.read_u16(Endian::Little);		// Number of colors (0 means 256 for old sprites)
+		stream.read_i8(Endian::Little);		// Pixel width
+		stream.read_i8(Endian::Little);		// Pixel height
 		stream.seek(stream.position() + 92);		// For Future
 	}
 
@@ -125,22 +125,22 @@ void Aseprite::parse(Stream& stream)
 	for (int i = 0; i < frame_count; i++)
 	{
 		auto frameStart = stream.position();
-		auto frameEnd = frameStart + stream.read<u32>(Endian::Little);
+		auto frameEnd = frameStart + stream.read_u32(Endian::Little);
 		unsigned int chunks = 0;
 
 		// frame header
 		{
-			auto magic = stream.read<u16>(Endian::Little); // magic number
+			auto magic = stream.read_u16(Endian::Little); // magic number
 			if (magic != 0xF1FA)
 			{
 				BLAH_ASSERT(false, "File is not a valid Aseprite file");
 				return;
 			}
 
-			auto old_chunk_count = stream.read<u16>(Endian::Little);
-			frames[i].duration = stream.read<u16>(Endian::Little);
+			auto old_chunk_count = stream.read_u16(Endian::Little);
+			frames[i].duration = stream.read_u16(Endian::Little);
 			stream.seek(stream.position() + 2); // for future
-			auto new_chunk_count = stream.read<u32>(Endian::Little);
+			auto new_chunk_count = stream.read_u32(Endian::Little);
 
 			if (old_chunk_count == 0xFFFF)
 				chunks = new_chunk_count;
@@ -155,8 +155,8 @@ void Aseprite::parse(Stream& stream)
 		for (unsigned int j = 0; j < chunks; j++)
 		{
 			auto chunkStart = stream.position();
-			auto chunkEnd = chunkStart + stream.read<u32>(Endian::Little);
-			auto chunkType = static_cast<Chunks>(stream.read<u16>(Endian::Little));
+			auto chunkEnd = chunkStart + stream.read_u32(Endian::Little);
+			auto chunkType = static_cast<Chunks>(stream.read_u16(Endian::Little));
 
 			switch (chunkType)
 			{
@@ -181,17 +181,17 @@ void Aseprite::parse_layer(Stream& stream, int frame)
 	layers.emplace_back();
 
 	auto& layer = layers.back();
-	layer.flag = static_cast<LayerFlags>(stream.read<u16>(Endian::Little));
+	layer.flag = static_cast<LayerFlags>(stream.read_u16(Endian::Little));
 	layer.visible = ((int)layer.flag & (int)LayerFlags::Visible) == (int)LayerFlags::Visible;
-	layer.type = static_cast<LayerTypes>(stream.read<u16>(Endian::Little));
-	layer.child_level = stream.read<u16>(Endian::Little);
-	stream.read<u16>(Endian::Little); // width
-	stream.read<u16>(Endian::Little); // height
-	layer.blendmode = stream.read<u16>(Endian::Little);
-	layer.alpha = stream.read<u8>(Endian::Little);
+	layer.type = static_cast<LayerTypes>(stream.read_u16(Endian::Little));
+	layer.child_level = stream.read_u16(Endian::Little);
+	stream.read_u16(Endian::Little); // width
+	stream.read_u16(Endian::Little); // height
+	layer.blendmode = stream.read_u16(Endian::Little);
+	layer.alpha = stream.read_u8(Endian::Little);
 	stream.seek(stream.position() + 3); // for future
 
-	layer.name.set_length(stream.read<u16>(Endian::Little));
+	layer.name.set_length(stream.read_u16(Endian::Little));
 	stream.read(layer.name.cstr(), layer.name.length());
 
 	layer.userdata.color = 0xffffff;
@@ -205,20 +205,20 @@ void Aseprite::parse_cel(Stream& stream, int frameIndex, size_t maxPosition)
 
 	frame.cels.emplace_back();
 	auto& cel = frame.cels.back();
-	cel.layer_index = stream.read<u16>(Endian::Little);
-	cel.x = stream.read<u16>(Endian::Little);
-	cel.y = stream.read<u16>(Endian::Little);
-	cel.alpha = stream.read<u8>(Endian::Little);
+	cel.layer_index = stream.read_u16(Endian::Little);
+	cel.x = stream.read_u16(Endian::Little);
+	cel.y = stream.read_u16(Endian::Little);
+	cel.alpha = stream.read_u8(Endian::Little);
 	cel.linked_frame_index = -1;
 
-	auto celType = stream.read<u16>(Endian::Little);
+	auto celType = stream.read_u16(Endian::Little);
 	stream.seek(stream.position() + 7);
 
 	// RAW or DEFLATE
 	if (celType == 0 || celType == 2)
 	{
-		auto width = stream.read<u16>(Endian::Little);
-		auto height = stream.read<u16>(Endian::Little);
+		auto width = stream.read_u16(Endian::Little);
+		auto height = stream.read_u16(Endian::Little);
 		auto count = width * height * (int)mode;
 
 		cel.image = Image(width, height);
@@ -274,7 +274,7 @@ void Aseprite::parse_cel(Stream& stream, int frameIndex, size_t maxPosition)
 	// this cel directly references a previous cel
 	else if (celType == 1)
 	{
-		cel.linked_frame_index = stream.read<u16>(Endian::Little);
+		cel.linked_frame_index = stream.read_u16(Endian::Little);
 	}
 
 	// draw to frame if visible
@@ -290,21 +290,21 @@ void Aseprite::parse_cel(Stream& stream, int frameIndex, size_t maxPosition)
 
 void Aseprite::parse_palette(Stream& stream, int frame)
 {
-	/* size */ stream.read<u32>(Endian::Little);
-	auto start = stream.read<u32>(Endian::Little);
-	auto end = stream.read<u32>(Endian::Little);
+	/* size */ stream.read_u32(Endian::Little);
+	auto start = stream.read_u32(Endian::Little);
+	auto end = stream.read_u32(Endian::Little);
 	stream.seek(stream.position() + 8);
 
 	palette.resize(palette.size() + (end - start + 1));
 
 	for (int p = 0, len = static_cast<int>(end - start) + 1; p < len; p++)
 	{
-		auto hasName = stream.read<u16>(Endian::Little);
-		palette[start + p] = stream.read<u32>(Endian::Little);
+		auto hasName = stream.read_u16(Endian::Little);
+		palette[start + p] = stream.read_u32(Endian::Little);
 
 		if (hasName & 0xF000)
 		{
-			int len = stream.read<u16>(Endian::Little);
+			int len = stream.read_u16(Endian::Little);
 			stream.seek(stream.position() + len);
 		}
 	}
@@ -314,38 +314,38 @@ void Aseprite::parse_user_data(Stream& stream, int frame)
 {
 	if (m_last_userdata != nullptr)
 	{
-		auto flags = stream.read<u32>(Endian::Little);
+		auto flags = stream.read_u32(Endian::Little);
 
 		// has text
 		if (flags & (1 << 0))
 		{
-			m_last_userdata->text.set_length(stream.read<u16>(Endian::Little));
+			m_last_userdata->text.set_length(stream.read_u16(Endian::Little));
 			stream.read(m_last_userdata->text.cstr(), m_last_userdata->text.length());
 		}
 
 		// has color
 		if (flags & (1 << 1))
-			m_last_userdata->color = stream.read<u32>(Endian::Little);
+			m_last_userdata->color = stream.read_u32(Endian::Little);
 	}
 }
 
 void Aseprite::parse_tag(Stream& stream, int frame)
 {
-	auto count = stream.read<u16>(Endian::Little);
+	auto count = stream.read_u16(Endian::Little);
 	stream.seek(stream.position() + 8);
 
 	for (int t = 0; t < count; t++)
 	{
 		Tag tag;
-		tag.from = stream.read<u16>(Endian::Little);
-		tag.to = stream.read<u16>(Endian::Little);
-		tag.loops = static_cast<LoopDirections>(stream.read<i8>(Endian::Little));
+		tag.from = stream.read_u16(Endian::Little);
+		tag.to = stream.read_u16(Endian::Little);
+		tag.loops = static_cast<LoopDirections>(stream.read_i8(Endian::Little));
 
 		stream.seek(stream.position() + 8);
-		tag.color = Color(stream.read<i8>(), stream.read<i8>(), stream.read<i8>(Endian::Little), 255);
+		tag.color = Color(stream.read_i8(), stream.read_i8(), stream.read_i8(Endian::Little), 255);
 		stream.seek(stream.position() + 1);
 
-		tag.name.set_length(stream.read<u16>(Endian::Little));
+		tag.name.set_length(stream.read_u16(Endian::Little));
 		stream.read(tag.name.cstr(), tag.name.length());
 
 		tags.push_back(tag);
@@ -354,12 +354,12 @@ void Aseprite::parse_tag(Stream& stream, int frame)
 
 void Aseprite::parse_slice(Stream& stream, int frame)
 {
-	int count = stream.read<u32>(Endian::Little);
-	int flags = stream.read<u32>(Endian::Little);
-	stream.read<u32>(Endian::Little); // reserved
+	int count = stream.read_u32(Endian::Little);
+	int flags = stream.read_u32(Endian::Little);
+	stream.read_u32(Endian::Little); // reserved
 
 	String name;
-	name.set_length(stream.read<u16>(Endian::Little));
+	name.set_length(stream.read_u16(Endian::Little));
 	stream.read(name.cstr(), name.length());
 
 	for (int s = 0; s < count; s++)
@@ -368,19 +368,19 @@ void Aseprite::parse_slice(Stream& stream, int frame)
 
 		auto& slice = slices.back();
 		slice.name = name;
-		slice.frame = stream.read<u32>(Endian::Little);
-		slice.origin.x = stream.read<i32>(Endian::Little);
-		slice.origin.y = stream.read<i32>(Endian::Little);
-		slice.width = stream.read<u32>(Endian::Little);
-		slice.height = stream.read<u32>(Endian::Little);
+		slice.frame = stream.read_u32(Endian::Little);
+		slice.origin.x = stream.read_i32(Endian::Little);
+		slice.origin.y = stream.read_i32(Endian::Little);
+		slice.width = stream.read_u32(Endian::Little);
+		slice.height = stream.read_u32(Endian::Little);
 
 		// 9 slice (ignored atm)
 		if (flags & (1 << 0))
 		{
-			stream.read<i32>(Endian::Little);
-			stream.read<i32>(Endian::Little);
-			stream.read<u32>(Endian::Little);
-			stream.read<u32>(Endian::Little);
+			stream.read_i32(Endian::Little);
+			stream.read_i32(Endian::Little);
+			stream.read_u32(Endian::Little);
+			stream.read_u32(Endian::Little);
 		}
 
 		// pivot point
@@ -388,8 +388,8 @@ void Aseprite::parse_slice(Stream& stream, int frame)
 		if (flags & (1 << 1))
 		{
 			slice.has_pivot = true;
-			slice.pivot.x = stream.read<u32>(Endian::Little);
-			slice.pivot.y = stream.read<u32>(Endian::Little);
+			slice.pivot.x = stream.read_u32(Endian::Little);
+			slice.pivot.y = stream.read_u32(Endian::Little);
 		}
 
 		slice.userdata.color = 0xffffff;

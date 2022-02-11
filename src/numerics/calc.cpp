@@ -113,13 +113,3 @@ float Calc::lerp(float a, float b, float t)
 {
 	return a + (b - a) * t;
 }
-
-bool Calc::is_big_endian()
-{
-	return (*((short*)"AB") == 0x4243);
-}
-
-bool Calc::is_little_endian()
-{
-	return (*((short*)"AB") != 0x4243);
-}
