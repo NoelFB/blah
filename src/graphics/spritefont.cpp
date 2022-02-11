@@ -192,7 +192,6 @@ void SpriteFont::rebuild(const Font& font, float size, const CharSet& charset)
 	packer.max_size = 8192;
 	packer.power_of_two = true;
 	
-	std::unordered_map<Codepoint, int> glyphs;
 	Vector<Color> buffer;
 
 	for (auto& range : charset)
@@ -208,12 +207,12 @@ void SpriteFont::rebuild(const Font& font, float size, const CharSet& charset)
 			if (glyph <= 0)
 				continue;
 
-			glyphs[i] = glyph;
-
 			// add character
 			auto ch = font.get_character(glyph, scale);
-			m_characters[i].advance = ch.advance;
-			m_characters[i].offset = Vec2f(ch.offset_x, ch.offset_y);
+			auto& sfch = get_character(i);
+			sfch.codepoint = i;
+			sfch.advance = ch.advance;
+			sfch.offset = Vec2f(ch.offset_x, ch.offset_y);
 
 			// pack glyph
 			if (ch.has_glyph)
@@ -236,66 +235,138 @@ void SpriteFont::rebuild(const Font& font, float size, const CharSet& charset)
 	// add character subtextures
 	for (auto& it : packer.entries())
 		if (!it.empty)
-			m_characters[(Codepoint)it.id].subtexture = Subtexture(m_atlas[it.page], it.packed, it.frame);
+			get_character((Codepoint)it.id).subtexture = Subtexture(m_atlas[it.page], it.packed, it.frame);
 
 	// add kerning
-	for (auto a = glyphs.begin(); a != glyphs.end(); a++)
-		for (auto b = glyphs.begin(); b != glyphs.end(); b++)
-		{
-			auto kern = font.get_kerning(a->second, b->second, scale);
-			if (kern != 0)
-				set_kerning(a->first, b->first, kern);
-		}
-}
-
-float SpriteFont::get_kerning(Codepoint codepoint0, Codepoint codepoint1) const
-{
-	u64 index = ((u64)codepoint0 << 32) | codepoint1;
-
-	auto it = m_kerning.find(index);
-	if (it != m_kerning.end())
-		return it->second;
-	return 0.0f;
-}
-
-void SpriteFont::set_kerning(Codepoint codepoint0, Codepoint codepoint1, float value)
-{
-	u64 index = ((u64)codepoint0 << 32) | codepoint1;
-
-	if (value == 0)
+	for (auto& a : m_characters)
 	{
-		m_kerning.erase(index);
+		for (auto& b : m_characters)
+		{
+			auto kerning_value = font.get_kerning(a.glyph, b.glyph, scale);
+			if (kerning_value != 0)
+				set_kerning(a.codepoint, b.codepoint, kerning_value);
+		}
+	}
+}
+
+namespace
+{
+	bool find_character_index(const Vector<SpriteFont::Character>& items, SpriteFont::Codepoint codepoint, int lower, int higher, int* index)
+	{
+		while (lower <= higher)
+		{
+			// found
+			int mid = (higher + lower) / 2;
+			if (items[mid].codepoint == codepoint)
+			{
+				*index = mid;
+				return true;
+			}
+
+			// search upper / lower bounds
+			if (items[mid].codepoint < codepoint)
+				lower = mid + 1;
+			else
+				higher = mid - 1;
+		}
+
+		// not found
+		*index = lower;
+		return false;
+	}
+
+	bool find_kerning_index(const Vector<SpriteFont::Kerning>& items, SpriteFont::Codepoint a, SpriteFont::Codepoint b, int lower, int higher, int* index)
+	{
+		while (lower <= higher)
+		{
+			// found
+			int mid = (higher + lower) / 2;
+			if (items[mid].a == a && items[mid].b == b)
+			{
+				*index = mid;
+				return true;
+			}
+
+			// search upper / lower bounds
+			if (items[mid].a == a)
+			{
+				if (items[mid].b < b)
+					lower = mid + 1;
+				else
+					higher = mid - 1;
+			}
+			else if (items[mid].a < a)
+				lower = mid + 1;
+			else
+				higher = mid - 1;
+		}
+
+		// not found
+		*index = lower;
+		return false;
+	}
+}
+
+float SpriteFont::get_kerning(Codepoint a, Codepoint b) const
+{
+	int index;
+	if (find_kerning_index(m_kerning, a, b, 0, m_kerning.size() - 1, &index))
+		return m_kerning[index].value;
+	return 0;
+}
+
+void SpriteFont::set_kerning(Codepoint a, Codepoint b, float value)
+{
+	int index;
+	if (find_kerning_index(m_kerning, a, b, 0, m_kerning.size() - 1, &index))
+	{
+		m_kerning[index].value = value;
 	}
 	else
 	{
-		m_kerning[index] = value;
+		m_kerning.expand();
+		for (int i = m_kerning.size() - 1; i > index; i--)
+			m_kerning[i] = std::move(m_kerning[i - 1]);
+		m_kerning[index].a = a;
+		m_kerning[index].b = b;
+		m_kerning[index].value = value;
 	}
 }
 
 SpriteFont::Character& SpriteFont::get_character(Codepoint codepoint)
 {
-	return m_characters[codepoint];
+	int index;
+	if (find_character_index(m_characters, codepoint, 0, m_characters.size() - 1, &index))
+	{
+		return m_characters[index];
+	}
+	else
+	{
+		m_characters.expand();
+		for (int i = m_characters.size() - 1; i > index; i --)
+			m_characters[i] = std::move(m_characters[i - 1]);
+		m_characters[index].codepoint = codepoint;
+		return m_characters[index];
+	}
 }
 
 const SpriteFont::Character& SpriteFont::get_character(Codepoint codepoint) const
 {
 	static const Character empty;
-	auto it = m_characters.find(codepoint);
-	if (it != m_characters.end())
-		return it->second;
+
+	int index;
+	if (find_character_index(m_characters, codepoint, 0, m_characters.size() - 1, &index))
+		return m_characters[index];
+
 	return empty;
 }
 
 SpriteFont::Character& SpriteFont::operator[](Codepoint codepoint)
 {
-	return m_characters[codepoint];
+	return get_character(codepoint);
 }
 
 const SpriteFont::Character& SpriteFont::operator[](Codepoint codepoint) const
 {
-	static const Character empty;
-	auto it = m_characters.find(codepoint);
-	if (it != m_characters.end())
-		return it->second;
-	return empty;
+	return get_character(codepoint);
 }

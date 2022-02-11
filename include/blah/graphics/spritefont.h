@@ -5,7 +5,6 @@
 #include <blah/graphics/subtexture.h>
 #include <blah/numerics/spatial.h>
 #include <blah/filesystem.h>
-#include <unordered_map>
 
 namespace Blah
 {
@@ -42,9 +41,18 @@ namespace Blah
 		// Character Entry
 		struct Character
 		{
+			Codepoint codepoint = 0;
+			int glyph = 0;
 			Subtexture subtexture;
 			float advance = 0;
 			Vec2f offset;
+		};
+
+		struct Kerning
+		{
+			Codepoint a;
+			Codepoint b;
+			float value;
 		};
 
 		// SpriteFont name
@@ -119,14 +127,8 @@ namespace Blah
 		const Character& operator[](Codepoint codepoint) const;
 
 	private:
-		// character set
-		std::unordered_map<Codepoint, Character> m_characters;
-
-		// kerning
-		// key is 2 codepoints combined ((first << 32) | second)
-		std::unordered_map<u64, float> m_kerning;
-
-		// built texture
+		Vector<Character> m_characters;
+		Vector<Kerning> m_kerning;
 		Vector<TextureRef> m_atlas;
 	};
 }
