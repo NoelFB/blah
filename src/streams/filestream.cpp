@@ -5,11 +5,6 @@
 
 using namespace Blah;
 
-FileStream::FileStream()
-{
-	m_mode = FileMode::OpenRead;
-}
-
 FileStream::FileStream(const FilePath& path, FileMode mode)
 	: m_mode(mode)
 	, m_file(File::open(path, mode))
@@ -58,8 +53,6 @@ size_t FileStream::read_data(void* ptr, size_t length)
 
 	if (m_file)
 		return m_file->read((unsigned char*)ptr, length);
-
-	BLAH_ASSERT(false, "Unable to read from Stream");
 	return 0;
 }
 
@@ -70,8 +63,6 @@ size_t FileStream::write_data(const void* ptr, size_t length)
 
 	if (m_file)
 		return m_file->write((const unsigned char*)ptr, length);
-
-	BLAH_ASSERT(false, "Unable to write to Stream");
 	return 0;
 }
 
@@ -88,9 +79,4 @@ bool FileStream::is_readable() const
 bool FileStream::is_writable() const
 {
 	return m_file.get() && (m_mode != FileMode::OpenRead);
-}
-
-void FileStream::close()
-{
-	m_file.reset();
 }

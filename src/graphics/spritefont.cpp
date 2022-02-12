@@ -14,14 +14,6 @@ SpriteFont::CharRange::CharRange(Codepoint from, Codepoint to)
 
 const SpriteFont::CharSet SpriteFont::CharRange::ASCII = SpriteFont::CharSet({ CharRange(32, 128) });
 
-SpriteFont::SpriteFont()
-{
-	size = 0;
-	ascent = 0;
-	descent = 0;
-	line_gap = 0;
-}
-
 SpriteFont::SpriteFont(const FilePath& file, float size)
 {
 	rebuild(file, size, CharRange::ASCII);
@@ -32,52 +24,22 @@ SpriteFont::SpriteFont(const FilePath& file, float size, const CharSet& charset)
 	rebuild(file, size, charset);
 }
 
-SpriteFont::SpriteFont(const Font& font, float size)
+SpriteFont::SpriteFont(const FontRef& font, float size)
 {
 	rebuild(font, size, CharRange::ASCII);
 }
 
-SpriteFont::SpriteFont(const Font& font, float size, const CharSet& charset)
+SpriteFont::SpriteFont(const FontRef& font, float size, const CharSet& charset)
 {
 	rebuild(font, size, charset);
 }
 
-SpriteFont::SpriteFont(SpriteFont&& src) noexcept
-{
-	name = src.name;
-	size = src.size;
-	ascent = src.ascent;
-	descent = src.descent;
-	line_gap = src.line_gap;
-	m_characters = std::move(src.m_characters);
-	m_kerning = std::move(src.m_kerning);
-	m_atlas = std::move(src.m_atlas);
-}
-
-SpriteFont::~SpriteFont()
-{
-	dispose();
-}
-
-void SpriteFont::dispose()
+void SpriteFont::clear()
 {
 	m_atlas.clear();
 	m_characters.clear();
 	m_kerning.clear();
-	name.dispose();
-}
-
-SpriteFont& SpriteFont::operator=(SpriteFont && src) noexcept
-{
-	name = src.name;
-	size = src.size;
-	ascent = src.ascent;
-	descent = src.descent;
-	line_gap = src.line_gap;
-	m_characters = std::move(src.m_characters);
-	m_kerning = std::move(src.m_kerning);
-	m_atlas = std::move(src.m_atlas);
-	return *this;
+	name.clear();
 }
 
 float SpriteFont::width_of(const String& text) const
@@ -86,7 +48,7 @@ float SpriteFont::width_of(const String& text) const
 	float line_width = 0;
 
 	Codepoint last = 0;
-	for (int i = 0; i < text.length(); i ++)
+	for (int i = 0; i < text.length(); i += text.utf8_length(i))
 	{
 		if (text[i] == '\n')
 		{
@@ -94,21 +56,12 @@ float SpriteFont::width_of(const String& text) const
 			continue;
 		}
 
-		// get codepoint
 		auto next = text.utf8_at(i);
-
-		// increment length
-		line_width += this->operator[](next).advance;
-		
-		// add kerning
+		line_width += get_character(next).advance;
 		if (i > 0)
 			line_width += get_kerning(last, next);
-
 		if (line_width > width)
 			width = line_width;
-
-		// move to thext utf8 character
-		i += text.utf8_length(i) - 1;
 		last = next;
 	}
 
@@ -123,26 +76,15 @@ float SpriteFont::width_of_line(const String& text, int start) const
 	float width = 0;
 
 	Codepoint last = 0;
-	for (auto i = start; i < text.length(); i ++)
+	for (auto i = start; i < text.length(); i += text.utf8_length(i))
 	{
 		if (text[i] == '\n')
 			return width;
 
-		// get codepoint
 		auto next = text.utf8_at(i);
-
-		// increment length
-		width += this->operator[](next).advance;
-		
-		// add kerning
+		width += get_character(next).advance;
 		if (i > 0)
 			width += get_kerning(last, next);
-
-		// move to thext utf8 character
-		auto len = text.utf8_length(i);
-		if (len > 0)
-			i += len - 1;
-
 		last = next;
 	}
 
@@ -155,11 +97,10 @@ float SpriteFont::height_of(const String& text) const
 		return 0;
 
 	float height = line_height();
-	for (auto i = 0; i < text.length(); i ++)
+	for (auto i = 0; i < text.length(); i += text.utf8_length(i))
 	{
 		if (text[i] == '\n')
 			height += line_height();
-		i += text.utf8_length(i) - 1;
 	}
 
 	return height - line_gap;
@@ -167,23 +108,24 @@ float SpriteFont::height_of(const String& text) const
 
 void SpriteFont::rebuild(const FilePath& file, float sz, const CharSet& charset)
 {
-	dispose();
+	clear();
 
-	Font font(file);
-	if (font.is_valid())
+	if (auto font = Font::create(file))
 		rebuild(font, sz, charset);
 }
 
-void SpriteFont::rebuild(const Font& font, float size, const CharSet& charset)
+void SpriteFont::rebuild(const FontRef& font, float size, const CharSet& charset)
 {
-	dispose();
+	clear();
+	if (!font)
+		return;
 
-	float scale = font.get_scale(size);
+	float scale = font->get_scale(size);
 
-	name = font.family_name();
-	ascent = font.ascent() * scale;
-	descent = font.descent() * scale;
-	line_gap = font.line_gap() * scale;
+	name = font->family_name();
+	ascent = font->ascent() * scale;
+	descent = font->descent() * scale;
+	line_gap = font->line_gap() * scale;
 	this->size = size;
 
 	Packer packer;
@@ -203,12 +145,12 @@ void SpriteFont::rebuild(const Font& font, float size, const CharSet& charset)
 
 		for (auto i = from; i < to; i++)
 		{
-			auto glyph = font.get_glyph(i);
+			auto glyph = font->get_glyph(i);
 			if (glyph <= 0)
 				continue;
 
 			// add character
-			auto ch = font.get_character(glyph, scale);
+			auto ch = font->get_character(glyph, scale);
 			auto& sfch = get_character(i);
 			sfch.codepoint = i;
 			sfch.advance = ch.advance;
@@ -220,7 +162,7 @@ void SpriteFont::rebuild(const Font& font, float size, const CharSet& charset)
 				if (buffer.size() < ch.width * ch.height)
 					buffer.resize(ch.width * ch.height);
 
-				if (font.get_image(ch, buffer.data()))
+				if (font->get_image(ch, buffer.data()))
 					packer.add(i, ch.width, ch.height, buffer.data());
 			}
 		}
@@ -242,7 +184,7 @@ void SpriteFont::rebuild(const Font& font, float size, const CharSet& charset)
 	{
 		for (auto& b : m_characters)
 		{
-			auto kerning_value = font.get_kerning(a.glyph, b.glyph, scale);
+			auto kerning_value = font->get_kerning(a.glyph, b.glyph, scale);
 			if (kerning_value != 0)
 				set_kerning(a.codepoint, b.codepoint, kerning_value);
 		}

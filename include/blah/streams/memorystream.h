@@ -8,30 +8,28 @@ namespace Blah
 	class MemoryStream : public Stream
 	{
 	public:
-		MemoryStream();
-		MemoryStream(unsigned char* data, size_t length);
-		MemoryStream(MemoryStream&& ms) noexcept;
-		MemoryStream& operator=(MemoryStream&& ms) noexcept;
-		~MemoryStream() override { m_data = nullptr; m_length = m_position = 0; }
+		MemoryStream() = default;
+		MemoryStream(u8* data, size_t length);
+		MemoryStream(const u8* data, size_t length);
 
 		size_t length() const override;
 		size_t position() const override;
-		size_t seek(size_t seekTo) override;
+		size_t seek(size_t seek_to) override;
 		bool is_open() const override;
 		bool is_readable() const override;
 		bool is_writable() const override;
-		void close() override;
 
-		unsigned char* data();
-		const unsigned char* data() const;
+		u8* data();
+		const u8* data() const;
 
 	protected:
 		size_t read_data(void* ptr, size_t length) override;
 		size_t write_data(const void* ptr, size_t length) override;
 
 	private:
-		unsigned char* m_data;
-		size_t m_length;
-		size_t m_position;
+		u8* m_data = nullptr;
+		const u8* m_const_data = nullptr;
+		size_t m_length = 0;
+		size_t m_position = 0;
 	};
 }

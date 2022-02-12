@@ -7,7 +7,7 @@ namespace Blah
 	class FileStream : public Stream
 	{
 	public:
-		FileStream();
+		FileStream() = default;
 		FileStream(const FilePath& path, FileMode mode);
 		FileStream(FileStream&& fs) noexcept;
 		FileStream& operator=(FileStream&& fs) noexcept;
@@ -18,14 +18,13 @@ namespace Blah
 		bool is_open() const override;
 		bool is_readable() const override;
 		bool is_writable() const override;
-		void close() override;
 
 	protected:
 		size_t read_data(void* ptr, size_t length) override;
 		size_t write_data(const void* ptr, size_t length) override;
 
 	private:
-		FileMode m_mode;
+		FileMode m_mode = FileMode::OpenRead;
 		FileRef m_file;
 	};
 }

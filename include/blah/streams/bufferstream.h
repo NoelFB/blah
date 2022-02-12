@@ -8,34 +8,28 @@ namespace Blah
 	class BufferStream : public Stream
 	{
 	public:
-		BufferStream();
+		BufferStream() = default;
 		BufferStream(int capacity);
-		BufferStream(BufferStream&& bs) noexcept;
-		BufferStream& operator=(BufferStream&& bs) noexcept;
-		~BufferStream();
 
 		size_t length() const override;
 		size_t position() const override;
-		size_t seek(size_t seekTo) override;
+		size_t seek(size_t seek_to) override;
 		bool is_open() const override;
 		bool is_readable() const override;
 		bool is_writable() const override;
-		void close() override;
 
 		void resize(size_t length);
 		void clear();
 
-		char* data();
-		const char* data() const;
+		u8* data();
+		const u8* data() const;
 
 	protected:
 		size_t read_data(void* ptr, size_t length) override;
 		size_t write_data(const void* ptr, size_t length) override;
 
 	private:
-		char* m_buffer;
-		size_t m_capacity;
-		size_t m_length;
-		size_t m_position;
+		Vector<u8> m_buffer;
+		size_t m_position = 0;
 	};
 }

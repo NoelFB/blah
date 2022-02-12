@@ -69,11 +69,6 @@ namespace Blah
 
 		Packer();
 		Packer(int max_size, int spacing, bool power_of_two);
-		Packer(const Packer&) = delete;
-		Packer& operator=(const Packer&) = delete;
-		Packer(Packer&& src) noexcept;
-		Packer& operator=(Packer&& src) noexcept;
-		~Packer();
 		
 		// add a new entry
 		void add(u64 id, int width, int height, const Color* pixels);
@@ -95,9 +90,6 @@ namespace Blah
 
 		// clear the current packer data
 		void clear();
-
-		// dispose all resources used by the packer
-		void dispose();
 
 	private:
 		struct Node

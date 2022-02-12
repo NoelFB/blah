@@ -3,30 +3,11 @@
 
 using namespace Blah;
 
-MemoryStream::MemoryStream()
-	: m_data(nullptr), m_length(0), m_position(0) {}
+MemoryStream::MemoryStream(u8* data, size_t length)
+	: m_data(data), m_const_data(nullptr), m_length(length), m_position(0) {}
 
-MemoryStream::MemoryStream(unsigned char* data, size_t length)
-	: m_data(data), m_length(length), m_position(0) {}
-
-MemoryStream::MemoryStream(MemoryStream&& src) noexcept
-{
-	m_data = src.m_data;
-	m_position = src.m_position;
-	m_length = src.m_length;
-	src.m_data = nullptr;
-	src.m_length = src.m_position = 0;
-}
-
-MemoryStream& MemoryStream::operator=(MemoryStream&& src) noexcept
-{
-	m_data = src.m_data;
-	m_position = src.m_position;
-	m_length = src.m_length;
-	src.m_data = nullptr;
-	src.m_length = src.m_position = 0;
-	return *this;
-}
+MemoryStream::MemoryStream(const u8* data, size_t length)
+	: m_data(nullptr), m_const_data(data), m_length(length), m_position(0) {}
 
 size_t MemoryStream::length() const
 {
@@ -38,63 +19,60 @@ size_t MemoryStream::position() const
 	return m_position;
 }
 
-size_t MemoryStream::seek(size_t seekTo)
+size_t MemoryStream::seek(size_t seek_to)
 {
-	return m_position = (seekTo < 0 ? 0 : (seekTo > m_length ? m_length : seekTo));
+	return m_position = (seek_to < 0 ? 0 : (seek_to > m_length ? m_length : seek_to));
 }
 
 size_t MemoryStream::read_data(void* ptr, size_t len)
 {
-	if (len < 0 || ptr == nullptr)
+	const u8* src = (m_data ? m_data : m_const_data);
+
+	if (src == nullptr || ptr == nullptr || len <= 0 || m_length <= 0 || m_position >= m_length)
 		return 0;
 
 	if (len > m_length - m_position)
 		len = m_length - m_position;
 
-	memcpy(ptr, m_data + m_position, (size_t)len);
+	memcpy(ptr, src + m_position, len);
 	m_position += len;
 	return len;
 }
 
 size_t MemoryStream::write_data(const void* ptr, size_t len)
 {
-	if (len < 0 || ptr == nullptr)
+	if (m_data == nullptr || ptr == nullptr || len <= 0 || m_length <= 0 || m_position >= m_length)
 		return 0;
 
 	if (len > m_length - m_position)
 		len = m_length - m_position;
 
-	memcpy(m_data + m_position, ptr, (size_t)len);
+	memcpy(m_data + m_position, ptr, len);
 	m_position += len;
 	return len;
 }
 
 bool MemoryStream::is_open() const
 {
-	return m_data != nullptr;
+	return (m_data || m_const_data) && m_length > 0;
 }
 
 bool MemoryStream::is_readable() const
 {
-	return true;
+	return (m_data || m_const_data) && m_length > 0;
 }
 
 bool MemoryStream::is_writable() const
 {
-	return true;
+	return m_data != nullptr && m_length > 0;
 }
 
-void MemoryStream::close()
-{
-	m_data = nullptr; m_length = m_position = 0;
-}
-
-unsigned char* MemoryStream::data()
+u8* MemoryStream::data()
 {
 	return m_data;
 }
 
-const unsigned char* MemoryStream::data() const
+const u8* MemoryStream::data() const
 {
-	return m_data;
+	return (m_data ? m_data : m_const_data);
 }

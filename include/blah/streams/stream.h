@@ -2,7 +2,6 @@
 #include <blah/common.h>
 #include <blah/containers/str.h>
 #include <blah/math/calc.h>
-#include <string.h>
 
 namespace Blah
 {
@@ -32,9 +31,6 @@ namespace Blah
 
 		// returns true of the stream is writable
 		virtual bool is_writable() const = 0;
-
-		// closes the stream
-		virtual void close() = 0;
 
 		// pipes the contents of this stream to another stream
 		size_t pipe(Stream& to, size_t length);

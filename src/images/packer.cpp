@@ -11,36 +11,6 @@ Packer::Packer()
 Packer::Packer(int max_size, int spacing, bool power_of_two)
 	: max_size(max_size), power_of_two(power_of_two), spacing(spacing), padding(1), m_dirty(false) { }
 
-Packer::Packer(Packer&& src) noexcept
-{
-	max_size = src.max_size;
-	power_of_two = src.power_of_two;
-	spacing = src.spacing;
-	padding = src.padding;
-	m_dirty = src.m_dirty;
-	pages = std::move(src.pages);
-	m_entries = std::move(src.m_entries);
-	m_buffer = std::move(src.m_buffer);
-}
-
-Packer& Packer::operator=(Packer&& src) noexcept
-{
-	max_size = src.max_size;
-	power_of_two = src.power_of_two;
-	spacing = src.spacing;
-	padding = src.padding;
-	m_dirty = src.m_dirty;
-	pages = std::move(src.pages);
-	m_entries = std::move(src.m_entries);
-	m_buffer = std::move(src.m_buffer);
-	return *this;
-}
-
-Packer::~Packer()
-{
-	dispose();
-}
-
 void Packer::add(u64 id, int width, int height, const Color* pixels)
 {
 	add_entry(id, width, height, pixels, Recti(0, 0, width, height));
@@ -308,17 +278,7 @@ void Packer::clear()
 {
 	pages.clear();
 	m_entries.clear();
-	m_dirty = false;
-}
-
-void Packer::dispose()
-{
-	pages.clear();
-	m_entries.clear();
-	m_buffer.close();
-	max_size = 0;
-	power_of_two = 0;
-	spacing = 0;
+	m_buffer.clear();
 	m_dirty = false;
 }
 

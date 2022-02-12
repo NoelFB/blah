@@ -3,13 +3,12 @@
 #include <blah/containers/str.h>
 #include <blah/containers/vector.h>
 #include <blah/graphics/subtexture.h>
+#include <blah/images/font.h>
 #include <blah/math/spatial.h>
 #include <blah/filesystem.h>
 
 namespace Blah
 {
-	class Font;
-
 	// Sprite Font is a bitmap font implementation for font rendering.
 	// It can be constructed from a Font (ttf) and will automatically create 
 	// texture atlases for rendering. You can add your own characters
@@ -59,30 +58,25 @@ namespace Blah
 		String name;
 
 		// Height, in pixels
-		float size;
+		float size = 0;
 
 		// Ascent, in pixels
-		float ascent;
+		float ascent = 0;
 
 		// Descent, in pixels
-		float descent;
+		float descent = 0;
 
 		// Line Gap, in pixels
-		float line_gap;
+		float line_gap = 0;
 
-		SpriteFont();
+		SpriteFont() = default;
 		SpriteFont(const FilePath& file, float size);
 		SpriteFont(const FilePath& file, float size, const CharSet& charset);
-		SpriteFont(const Font& font, float size);
-		SpriteFont(const Font& font, float size, const CharSet& charset);
-		SpriteFont(const SpriteFont&) = delete;
-		SpriteFont& operator=(const SpriteFont&) = delete;
-		SpriteFont(SpriteFont&& src) noexcept;
-		SpriteFont& operator=(SpriteFont&& src) noexcept;
-		~SpriteFont();
+		SpriteFont(const FontRef& font, float size);
+		SpriteFont(const FontRef& font, float size, const CharSet& charset);
 
 		// releases all assets used by the spritefont
-		void dispose();
+		void clear();
 
 		// gets the height of the sprite font
 		float height() const { return ascent - descent; }
@@ -106,7 +100,7 @@ namespace Blah
 		void rebuild(const FilePath& file, float size, const CharSet& charset);
 
 		// disposes the existing spritefont data and rebuilds from the given font
-		void rebuild(const Font& font, float size, const CharSet& charset);
+		void rebuild(const FontRef& font, float size, const CharSet& charset);
 
 		// gets the kerning between two characters
 		float get_kerning(Codepoint codepoint0, Codepoint codepoint1) const;

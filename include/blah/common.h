@@ -81,61 +81,46 @@ namespace Blah
 #else
 namespace Blah
 {
+	struct RefDel { virtual ~RefDel() = default; virtual void delete_it(void* it) = 0; };
+	template<class Y> struct RefDelOf : public RefDel { void delete_it(void* it) { delete (Y*)it; } };
+
 	template<typename T>
 	class Ref
 	{
 	template<class Y> friend class Ref;
 	private:
-		T* m_instance;
-		i32* m_counter;
-		Ref(T* instance, i32* counter) : m_instance(instance), m_counter(counter) {}
+		inline static RefDelOf<T> del;
+
+		T* m_obj = nullptr;
+		u32* m_num = nullptr;
+		RefDel* m_del = nullptr;
+
+		Ref(T* o, u32* n, RefDel* d) : m_obj(o), m_num(n), m_del(d) {}
+
+		void copy(const Ref& rhs) { m_obj = rhs.m_obj; m_num = rhs.m_num; m_del = rhs.m_del; }
+		void zero() { m_obj = nullptr; m_num = nullptr; m_del = nullptr; }
+		void steal(Ref& rhs) { copy(rhs); rhs.zero(); }
+		void increment() { if (m_num) (*m_num)++; }
 
 	public:
-		Ref() : m_instance(nullptr), m_counter(nullptr) {}
-
+		Ref() = default;
 		template<class Y>
-		Ref(Y* instance) : Ref(static_cast<T*>(instance), new i32(1)) {}
-		Ref(const Ref& rhs) : Ref(rhs.m_instance, rhs.m_counter) { if (m_counter) (*m_counter)++; }
-		Ref(Ref&& rhs) : Ref(rhs.m_instance, rhs.m_counter) { rhs.m_instance = nullptr; rhs.m_counter = nullptr; }
-
-		Ref& operator=(const Ref& rhs)
-		{
-			if (this != &rhs)
-			{
-				reset();
-				m_instance = rhs.m_instance; m_counter = rhs.m_counter;
-				if (m_counter) (*m_counter)++;
-			}
-			return *this;
-		}
-
-		Ref& operator=(Ref&& rhs)
-		{
-			if (this != &rhs)
-			{
-				reset();
-				m_instance = rhs.m_instance; m_counter = rhs.m_counter;
-				rhs.m_instance = nullptr; rhs.m_counter = nullptr;
-			}
-			return *this;
-		}
-
+		Ref(Y* instance) : Ref(static_cast<T*>(instance), new u32(1), &Ref<Y>::del) {}
+		Ref(const Ref& rhs) { copy(rhs); increment(); }
+		Ref(Ref&& rhs) { steal(rhs); }
 		~Ref() { reset(); }
 
-		void reset()
-		{
-			if (m_counter) (*m_counter)--;
-			if (m_counter && (*m_counter) <= 0) { delete m_instance; delete m_counter; }
-			m_instance = nullptr; m_counter = nullptr;
-		}
+		Ref& operator=(const Ref& rhs) { if (this != &rhs) { reset(); copy(rhs); increment(); } return *this; }
+		Ref& operator=(Ref&& rhs) { if (this != &rhs) { reset(); steal(rhs); } return *this; }
 
-		int use_count() const { return (m_counter ? (*m_counter) : 0); }
-		T* get() const { return m_instance; }
-		T* operator->() const { return m_instance; }
-		operator bool() const { return m_counter && (*m_counter) > 0; }
-		template<class Y> bool operator==(const Ref<Y>& rhs) const { return m_counter == rhs.m_counter; }
-		template<class Y> bool operator!=(const Ref<Y>& rhs) const { return m_counter != rhs.m_counter; }
-		template<class Y> operator Ref<Y>() { if (m_counter) (*m_counter)++; return Ref<Y>(static_cast<Y*>(m_instance), m_counter); }
+		void reset() { if (m_num && --(*m_num) <= 0) { m_del->delete_it(m_obj); delete m_num; } zero(); }
+		int use_count() const { return (m_num ? (*m_num) : 0); }
+		T* get() const { return m_obj; }
+		T* operator->() const { return m_obj; }
+		operator bool() const { return m_num && (*m_num) > 0; }
+		template<class Y> bool operator==(const Ref<Y>& rhs) const { return m_num == rhs.m_num; }
+		template<class Y> bool operator!=(const Ref<Y>& rhs) const { return m_num != rhs.m_num; }
+		template<class Y> operator Ref<Y>() { increment(); return Ref<Y>(static_cast<Y*>(m_obj), m_num, m_del); }
 	};
 }
 #endif

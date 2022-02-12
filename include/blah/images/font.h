@@ -1,14 +1,23 @@
 #pragma once
+#include <blah/common.h>
 #include <blah/streams/stream.h>
 #include <blah/images/image.h>
 #include <blah/containers/str.h>
+#include <blah/containers/vector.h>
 #include <blah/filesystem.h>
 
 namespace Blah
 {
-	// Loads fonts from file and can blit individual characters to images
+	class Font;
+	using FontRef = Ref<Font>;
+
+	// Loads fonts from file and can blit individual characters to images.
+	// Use Font::create() to instantiate a FontRef.
 	class Font
 	{
+	private:
+		Font() = default;
+
 	public:
 
 		// Font uses u32 Codepoints
@@ -42,18 +51,11 @@ namespace Blah
 			bool has_glyph = false;
 		};
 
-		Font();
-		Font(Stream& stream);
-		Font(const FilePath& path);
-		Font(const Font&) = delete;
-		Font& operator=(const Font&) = delete;
-		Font(Font&& src) noexcept;
-		Font& operator=(Font&& src) noexcept;
-		~Font();
+		// creates a new font from the given file path
+		static FontRef create(const FilePath& path);
 
-		// Releases all Font resources
-		// Note that after doing this various properties may become invalid (ex. font name)
-		void dispose();
+		// creates a new font from the Stream
+		static FontRef create(Stream& stream);
 
 		// returns the font family name
 		const String& family_name() const;
@@ -97,18 +99,13 @@ namespace Blah
 		// If the character doesn't exist, this will return an empty image.
 		Image get_image(const Character& ch) const;
 
-		// checks if the Font is valid
-		bool is_valid() const;
-
 	private:
-		void load(Stream& stream);
-		void* m_font;
-		unsigned char* m_data;
+		Ref<void> m_font;
+		Vector<u8> m_buffer;
 		String m_family_name;
 		String m_style_name;
-		int m_ascent;
-		int m_descent;
-		int m_line_gap;
-		bool m_valid;
+		int m_ascent = 0;
+		int m_descent = 0;
+		int m_line_gap = 0;
 	};
 }
