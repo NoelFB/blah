@@ -1,6 +1,7 @@
 #pragma once
 #include <blah/common.h>
 #include <blah/filesystem.h>
+#include <blah/math/color.h>
 
 namespace Blah
 {
@@ -74,12 +75,20 @@ namespace Blah
 
 		// Sets the data of the Texture.
 		// Note that the data should be the same format and size as the Texture. There is no row padding.
-		virtual void set_data(unsigned char* data) = 0;
+		virtual void set_data(const u8* data) = 0;
+
+		// Sets the data of the Texture to the provided Color buffer.
+		// If the Texture Format is not RGBA, this won't do anything.
+		void set_data(const Color* data);
 
 		// Gets the data of the Texture.
 		// Note that the data will be written to in the same format as the Texture,
 		// and you should allocate enough space for the full texture. There is no row padding.
-		virtual void get_data(unsigned char* data) = 0;
+		virtual void get_data(u8* data) = 0;
+
+		// Gets the data of the Texture.
+		// If the Texture Format is not RGBA, this won't do anything.
+		void get_data(Color* data);
 
 		// Returns true if the Texture is part of a FrameBuffer
 		virtual bool is_framebuffer() const = 0;

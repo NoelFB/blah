@@ -39,3 +39,15 @@ TextureRef Texture::create(const FilePath& file)
 {
 	return create(Image(file));
 }
+
+void Texture::set_data(const Color* data)
+{
+	if (format() == TextureFormat::RGBA)
+		set_data((u8*)data);
+}
+
+void Texture::get_data(Color* data)
+{
+	if (format() == TextureFormat::RGBA)
+		get_data((u8*)data);
+}
