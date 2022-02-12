@@ -109,7 +109,7 @@ namespace Blah
 		}
 
 		// Returns an RGB hex string of the color
-		String Color::to_hex_rgb() const
+		String to_hex_rgb() const
 		{
 			static const char* hex = "0123456789ABCDEF";
 
