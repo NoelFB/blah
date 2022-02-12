@@ -254,7 +254,7 @@ typedef char             GLchar;
 	GL_FUNC(BindTexture, void, GLenum target, GLuint id) \
 	GL_FUNC(BindRenderbuffer, void, GLenum target, GLuint id) \
 	GL_FUNC(BindFramebuffer, void, GLenum target, GLuint id) \
-	GL_FUNC(TexImage2D, void, GLenum target, GLint level, GLenum internalFormat, GLint width, GLint height, GLint border, GLenum format, GLenum type, void* data) \
+	GL_FUNC(TexImage2D, void, GLenum target, GLint level, GLenum internalFormat, GLint width, GLint height, GLint border, GLenum format, GLenum type, const void* data) \
 	GL_FUNC(FramebufferRenderbuffer, void, GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) \
 	GL_FUNC(FramebufferTexture2D, void, GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) \
 	GL_FUNC(TexParameteri, void, GLenum target, GLenum name, GLint param) \
@@ -709,14 +709,14 @@ namespace Blah
 			}
 		}
 
-		virtual void set_data(unsigned char* data) override
+		virtual void set_data(const u8* data) override
 		{
 			renderer->gl.ActiveTexture(GL_TEXTURE0);
 			renderer->gl.BindTexture(GL_TEXTURE_2D, m_id);
 			renderer->gl.TexImage2D(GL_TEXTURE_2D, 0, m_gl_internal_format, m_width, m_height, 0, m_gl_format, m_gl_type, data);
 		}
 
-		virtual void get_data(unsigned char* data) override
+		virtual void get_data(u8* data) override
 		{
 			renderer->gl.ActiveTexture(GL_TEXTURE0);
 			renderer->gl.BindTexture(GL_TEXTURE_2D, m_id);

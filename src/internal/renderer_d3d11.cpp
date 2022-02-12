@@ -274,7 +274,7 @@ namespace Blah
 			return m_format;
 		}
 
-		void set_data(unsigned char* data) override
+		void set_data(const u8* data) override
 		{
 			// bounds
 			D3D11_BOX box;
@@ -295,7 +295,7 @@ namespace Blah
 				0);
 		}
 
-		void get_data(unsigned char* data) override
+		void get_data(u8* data) override
 		{
 			HRESULT hr;
 
