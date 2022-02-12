@@ -1,14 +1,11 @@
 #pragma once
+#include <blah/containers/vector.h>
 #include <blah/containers/str.h>
+#include <blah/drawing/spritefont.h>
+#include <blah/drawing/subtexture.h>
 #include <blah/math/spatial.h>
 #include <blah/math/color.h>
-#include <blah/graphics/subtexture.h>
-#include <blah/graphics/spritefont.h>
-#include <blah/containers/vector.h>
-#include <blah/graphics/blend.h>
-#include <blah/graphics/sampler.h>
-#include <blah/graphics/renderpass.h>
-#include <blah/app.h>
+#include <blah/graphics.h>
 
 namespace Blah
 {
@@ -235,6 +232,6 @@ namespace Blah
 		Vector<DrawBatch> m_batches;
 		int m_batch_insert = 0;
 
-		void render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4x4f& matrix);
+		void render_single_batch(DrawCall& pass, const DrawBatch& b, const Mat4x4f& matrix);
 	};
 }

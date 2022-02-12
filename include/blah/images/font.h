@@ -1,6 +1,6 @@
 #pragma once
 #include <blah/common.h>
-#include <blah/streams/stream.h>
+#include <blah/stream.h>
 #include <blah/images/image.h>
 #include <blah/containers/str.h>
 #include <blah/containers/vector.h>

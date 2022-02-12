@@ -5,7 +5,6 @@
 #include <blah/math/calc.h>
 #include "internal/internal.h"
 #include "internal/platform.h"
-#include <blah/graphics/target.h>
 #include <cstring>
 
 using namespace Blah;

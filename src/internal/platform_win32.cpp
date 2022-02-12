@@ -44,8 +44,8 @@ namespace Blah
 		size_t length() override;
 		size_t position() override;
 		size_t seek(size_t position) override;
-		size_t read(unsigned char* buffer, size_t length) override;
-		size_t write(const unsigned char* buffer, size_t length) override;
+		size_t read(void* buffer, size_t length) override;
+		size_t write(const void* buffer, size_t length) override;
 	};
 
 	struct Win32_Platform : public Platform
@@ -181,7 +181,7 @@ size_t Win32File::seek(size_t position)
 	return result.QuadPart;
 }
 
-size_t Win32File::read(unsigned char* buffer, size_t length)
+size_t Win32File::read(void* buffer, size_t length)
 {
 	static const DWORD read_step = 65536;
 
@@ -204,7 +204,7 @@ size_t Win32File::read(unsigned char* buffer, size_t length)
 	return read;
 }
 
-size_t Win32File::write(const unsigned char* buffer, size_t length)
+size_t Win32File::write(const void* buffer, size_t length)
 {
 	static const DWORD write_step = 65536;
 

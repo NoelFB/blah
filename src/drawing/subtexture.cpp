@@ -1,4 +1,4 @@
-#include <blah/graphics/subtexture.h>
+#include <blah/drawing/subtexture.h>
 #include <blah/math/calc.h>
 
 using namespace Blah;

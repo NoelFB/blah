@@ -136,7 +136,7 @@ namespace Blah
 		void update() override;
 		void before_render() override;
 		void after_render() override;
-		void render(const RenderPass& pass) override;
+		void render(const DrawCall& pass) override;
 		void clear_backbuffer(Color color, float depth, u8 stencil, ClearMask mask) override;
 		TextureRef create_texture(int width, int height, TextureFormat format) override;
 		TargetRef create_target(int width, int height, const TextureFormat* attachments, int attachment_count) override;
@@ -145,9 +145,9 @@ namespace Blah
 
 		ID3D11InputLayout* get_layout(D3D11_Shader* shader, const VertexFormat& format);
 		ID3D11BlendState* get_blend(const BlendMode& blend);
-		ID3D11RasterizerState* get_rasterizer(const RenderPass& pass);
+		ID3D11RasterizerState* get_rasterizer(const DrawCall& pass);
 		ID3D11SamplerState* get_sampler(const TextureSampler& sampler);
-		ID3D11DepthStencilState* get_depthstencil(const RenderPass& pass);
+		ID3D11DepthStencilState* get_depthstencil(const DrawCall& pass);
 	};
 
 	// Utility Methods
@@ -947,7 +947,7 @@ namespace Blah
 		return MeshRef(new D3D11_Mesh());
 	}
 
-	void Renderer_D3D11::render(const RenderPass& pass)
+	void Renderer_D3D11::render(const DrawCall& pass)
 	{
 		auto ctx = context;
 		auto mesh = (D3D11_Mesh*)pass.mesh.get();
@@ -1531,7 +1531,7 @@ namespace Blah
 		return nullptr;
 	}
 
-	ID3D11RasterizerState* Renderer_D3D11::get_rasterizer(const RenderPass& pass)
+	ID3D11RasterizerState* Renderer_D3D11::get_rasterizer(const DrawCall& pass)
 	{
 		for (auto& it : rasterizer_cache)
 			if (it.cull == pass.cull && it.has_scissor == pass.has_scissor)
@@ -1572,7 +1572,7 @@ namespace Blah
 		return nullptr;
 	}
 
-	ID3D11DepthStencilState* Renderer_D3D11::get_depthstencil(const RenderPass& pass)
+	ID3D11DepthStencilState* Renderer_D3D11::get_depthstencil(const DrawCall& pass)
 	{
 		for (auto& it : depthstencil_cache)
 			if (it.depth == pass.depth)

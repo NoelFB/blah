@@ -2,6 +2,7 @@
 #include <blah/math/color.h>
 #include <blah/math/spatial.h>
 #include <blah/filesystem.h>
+#include <blah/stream.h>
 
 namespace Blah
 {

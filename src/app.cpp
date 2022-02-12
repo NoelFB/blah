@@ -1,7 +1,6 @@
 #include <blah/app.h>
 #include <blah/common.h>
 #include <blah/time.h>
-#include <blah/graphics/target.h>
 #include "internal/internal.h"
 #include "internal/platform.h"
 #include "internal/renderer.h"

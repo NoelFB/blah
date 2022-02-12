@@ -1,11 +1,6 @@
 #pragma once
 #include <blah/app.h>
-#include <blah/graphics/renderpass.h>
-#include <blah/graphics/texture.h>
-#include <blah/graphics/target.h>
-#include <blah/graphics/shader.h>
-#include <blah/graphics/mesh.h>
-#include <blah/graphics/material.h>
+#include <blah/graphics.h>
 #include <blah/math/color.h>
 
 namespace Blah
@@ -38,7 +33,7 @@ namespace Blah
 		virtual void after_render() = 0;
 
 		// Performs a draw call
-		virtual void render(const RenderPass& pass) = 0;
+		virtual void render(const DrawCall& pass) = 0;
 
 		// Clears the backbuffer
 		virtual void clear_backbuffer(Color color, float depth, u8 stencil, ClearMask mask) = 0;

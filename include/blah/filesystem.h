@@ -42,6 +42,9 @@ namespace Blah
 		// Default Destructor
 		virtual ~File() = default;
 
+		// Gets the Mode the File was opened with
+		FileMode mode() const;
+
 		// Gets the File Length
 		virtual size_t length() = 0;
 
@@ -52,10 +55,13 @@ namespace Blah
 		virtual size_t seek(size_t position) = 0;
 
 		// Reads from the File into the buffer, and returns how many bytes were successfully read
-		virtual size_t read(unsigned char* buffer, size_t length) = 0;
+		virtual size_t read(void* buffer, size_t length) = 0;
 
 		// Writes from the buffer into the File, nd returns how many bytes were successfully written
-		virtual size_t write(const unsigned char* buffer, size_t length) = 0;
+		virtual size_t write(const void* buffer, size_t length) = 0;
+
+	private:
+		FileMode m_mode;
 	};
 
 	namespace Directory

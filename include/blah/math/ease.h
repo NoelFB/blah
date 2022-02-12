@@ -1,6 +1,6 @@
 #pragma once
-#include <blah/math/calc.h>
 #include <blah/common.h>
+#include <blah/math/calc.h>
 
 namespace Blah
 {
@@ -9,16 +9,16 @@ namespace Blah
 	enum class Easers
 	{
 		Linear,
-		QuadIn, QuadOut, QuadInOut,
-		CubeIn, CubeOut, CubeInOut,
-		QuartIn, QuartOut, QuartInOut,
-		QuintIn, QuintOut, QuintInOut,
-		SineIn, SineOut, SineInOut,
-		CircIn, CircOut, CircInOut,
-		ExpIn, ExpOut, ExpInOut,
+		QuadIn,    QuadOut,    QuadInOut,
+		CubeIn,    CubeOut,    CubeInOut,
+		QuartIn,   QuartOut,   QuartInOut,
+		QuintIn,   QuintOut,   QuintInOut,
+		SineIn,    SineOut,    SineInOut,
+		CircIn,    CircOut,    CircInOut,
+		ExpIn,     ExpOut,     ExpInOut,
 		ElasticIn, ElasticOut, ElasticInOut,
-		BackIn, BackOut, BackInOut,
-		BounceIn, BounceOut, BounceInOut,
+		BackIn,    BackOut,    BackInOut,
+		BounceIn,  BounceOut,  BounceInOut,
 		Count
 	};
 

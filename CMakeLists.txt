@@ -11,30 +11,16 @@ add_library(blah
 	src/common.cpp
 	src/time.cpp
 	src/input.cpp
-
-	src/graphics/batch.cpp
-	src/graphics/blend.cpp
-	src/graphics/material.cpp
-	src/graphics/mesh.cpp
-	src/graphics/renderpass.cpp
-	src/graphics/shader.cpp
-	src/graphics/spritefont.cpp
-	src/graphics/subtexture.cpp
-	src/graphics/target.cpp
-	src/graphics/texture.cpp
-
+	src/stream.cpp
+	src/graphics.cpp
 	src/containers/str.cpp
-
+	src/drawing/batch.cpp
+	src/drawing/spritefont.cpp
+	src/drawing/subtexture.cpp
 	src/images/aseprite.cpp
 	src/images/font.cpp
 	src/images/image.cpp
 	src/images/packer.cpp
-
-	src/streams/bufferstream.cpp
-	src/streams/filestream.cpp
-	src/streams/memorystream.cpp
-	src/streams/stream.cpp
-
 	src/internal/renderer_opengl.cpp
 	src/internal/renderer_d3d11.cpp
 	src/internal/platform_sdl2.cpp

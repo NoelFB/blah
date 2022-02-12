@@ -1,10 +1,15 @@
 #pragma once
 #include <blah/common.h>
 #include <blah/containers/str.h>
+#include <blah/containers/vector.h>
 #include <blah/math/calc.h>
+#include <blah/filesystem.h>
 
 namespace Blah
 {
+	// Stream is a generic handler to read and write data to various buffers.
+	// The purpose is to allow serializers to not care what they're writing data to,
+	// be it a file or memory.
 	class Stream
 	{
 	public:
@@ -44,7 +49,7 @@ namespace Blah
 		// reads a string until a newline '\n' or null-terminator '\0' is found
 		String read_line();
 
-		// reads a number
+		// reads a number, returns the value read.
 		u8  read_u8 (Endian endian = Endian::Little);
 		u16 read_u16(Endian endian = Endian::Little);
 		u32 read_u32(Endian endian = Endian::Little);
@@ -80,5 +85,87 @@ namespace Blah
 
 		// writes the amount of bytes to the stream from the given buffer, and returns the amount written
 		virtual size_t write_data(const void* buffer, size_t length) = 0;
+	};
+
+	// File Stream reads & writes over a File handle
+	class FileStream : public Stream
+	{
+	public:
+		FileStream() = default;
+		FileStream(const FilePath& path, FileMode mode);
+		FileStream(const FileRef& file);
+
+		size_t length() const override;
+		size_t position() const override;
+		size_t seek(size_t position) override;
+		bool is_open() const override;
+		bool is_readable() const override;
+		bool is_writable() const override;
+
+	protected:
+		size_t read_data(void* ptr, size_t length) override;
+		size_t write_data(const void* ptr, size_t length) override;
+
+	private:
+		FileRef m_file;
+	};
+
+	// Memory Stream moves over an existing buffer.
+	// The Buffer must exist for the duration of the Memory Stream.
+	class MemoryStream : public Stream
+	{
+	public:
+		MemoryStream() = default;
+		MemoryStream(u8* data, size_t length);
+		MemoryStream(const u8* data, size_t length);
+
+		size_t length() const override;
+		size_t position() const override;
+		size_t seek(size_t seek_to) override;
+		bool is_open() const override;
+		bool is_readable() const override;
+		bool is_writable() const override;
+
+		u8* data();
+		const u8* data() const;
+
+	protected:
+		size_t read_data(void* ptr, size_t length) override;
+		size_t write_data(const void* ptr, size_t length) override;
+
+	private:
+		u8* m_data = nullptr;
+		const u8* m_const_data = nullptr;
+		size_t m_length = 0;
+		size_t m_position = 0;
+	};
+
+	// Buffer Stream reads and writes to an internal buffer.
+	// It will grow the capacity if it needs to while writing.
+	class BufferStream : public Stream
+	{
+	public:
+		BufferStream() = default;
+		BufferStream(int capacity);
+
+		size_t length() const override;
+		size_t position() const override;
+		size_t seek(size_t seek_to) override;
+		bool is_open() const override;
+		bool is_readable() const override;
+		bool is_writable() const override;
+
+		void resize(size_t length);
+		void clear();
+		u8* data();
+		const u8* data() const;
+
+	protected:
+		size_t read_data(void* ptr, size_t length) override;
+		size_t write_data(const void* ptr, size_t length) override;
+
+	private:
+		Vector<u8> m_buffer;
+		size_t m_position = 0;
 	};
 }

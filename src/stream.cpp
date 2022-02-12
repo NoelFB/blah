@@ -1,8 +1,10 @@
-#include <blah/streams/stream.h>
+#include <blah/stream.h>
 #include <blah/containers/str.h>
 #include <string.h>
 
 using namespace Blah;
+
+// Stream Base Class Implementation
 
 size_t Stream::pipe(Stream& stream, size_t length)
 {
@@ -33,7 +35,6 @@ size_t Stream::read(void* buffer, size_t length)
 	return read_data(buffer, length);
 }
 
-// reads a string. if length < 0, assumes null-terminated
 String Stream::read_string(int length)
 {
 	String result;
@@ -204,3 +205,190 @@ size_t Stream::write_f64(double value, Endian endian)
 	return write_data(&value, sizeof(double));
 }
 
+
+// File Stream Implementation
+
+FileStream::FileStream(const FilePath& path, FileMode mode)
+	: m_file(File::open(path, mode)) {}
+
+FileStream::FileStream(const FileRef& file)
+	: m_file(file) {}
+
+size_t FileStream::length() const
+{
+	return (m_file ? m_file->length() : 0);
+}
+
+size_t FileStream::position() const
+{
+	return (m_file ? m_file->position() : 0);
+}
+
+size_t FileStream::seek(size_t seek_to)
+{
+	return (m_file ? m_file->seek(seek_to) : 0);
+}
+
+size_t FileStream::read_data(void* ptr, size_t length)
+{
+	return (m_file ? m_file->read(ptr, length) : 0);
+}
+
+size_t FileStream::write_data(const void* ptr, size_t length)
+{
+	return (m_file ? m_file->write(ptr, length) : 0);
+}
+
+bool FileStream::is_open() const
+{
+	return m_file ? true : false;
+}
+
+bool FileStream::is_readable() const
+{
+	return m_file && m_file->mode() != FileMode::CreateWrite;
+}
+
+bool FileStream::is_writable() const
+{
+	return m_file && m_file->mode() != FileMode::OpenRead;
+}
+
+
+// Memory Stream Implementation
+
+MemoryStream::MemoryStream(u8* data, size_t length)
+	: m_data(data), m_const_data(nullptr), m_length(length), m_position(0) {}
+
+MemoryStream::MemoryStream(const u8* data, size_t length)
+	: m_data(nullptr), m_const_data(data), m_length(length), m_position(0) {}
+
+size_t MemoryStream::length() const
+{
+	return m_length;
+}
+
+size_t MemoryStream::position() const
+{
+	return m_position;
+}
+
+size_t MemoryStream::seek(size_t seek_to)
+{
+	return m_position = (seek_to < 0 ? 0 : (seek_to > m_length ? m_length : seek_to));
+}
+
+size_t MemoryStream::read_data(void* ptr, size_t len)
+{
+	const u8* src = (m_data ? m_data : m_const_data);
+
+	if (src == nullptr || ptr == nullptr || len <= 0 || m_length <= 0 || m_position >= m_length)
+		return 0;
+
+	if (len > m_length - m_position)
+		len = m_length - m_position;
+
+	memcpy(ptr, src + m_position, len);
+	m_position += len;
+	return len;
+}
+
+size_t MemoryStream::write_data(const void* ptr, size_t len)
+{
+	if (m_data == nullptr || ptr == nullptr || len <= 0 || m_length <= 0 || m_position >= m_length)
+		return 0;
+
+	if (len > m_length - m_position)
+		len = m_length - m_position;
+
+	memcpy(m_data + m_position, ptr, len);
+	m_position += len;
+	return len;
+}
+
+bool MemoryStream::is_open() const { return (m_data || m_const_data) && m_length > 0; }
+bool MemoryStream::is_readable() const { return (m_data || m_const_data) && m_length > 0; }
+bool MemoryStream::is_writable() const { return m_data != nullptr && m_length > 0; }
+u8* MemoryStream::data() { return m_data; }
+const u8* MemoryStream::data() const { return (m_data ? m_data : m_const_data); }
+
+
+// Buffer Stream Implementation
+
+BufferStream::BufferStream(int capacity)
+{
+	m_buffer.resize(capacity);
+}
+
+size_t BufferStream::length() const
+{
+	return m_buffer.size();
+}
+
+size_t BufferStream::position() const
+{
+	return m_position;
+}
+
+size_t BufferStream::seek(size_t seek_to)
+{
+	return m_position = (seek_to < 0 ? 0 : (seek_to > m_buffer.size() ? m_buffer.size() : seek_to));
+}
+
+size_t BufferStream::read_data(void* ptr, size_t len)
+{
+	if (ptr == nullptr || len <= 0)
+		return 0;
+
+	if (len > m_buffer.size() - m_position)
+		len = m_buffer.size() - m_position;
+
+	memcpy(ptr, m_buffer.data() + m_position, (size_t)len);
+	m_position += len;
+	return len;
+}
+
+size_t BufferStream::write_data(const void* ptr, size_t len)
+{
+	if (len < 0)
+		return 0;
+
+	// resize
+	if (m_position + len > m_buffer.size())
+		resize(m_position + len);
+
+	// copy data
+	if (ptr != nullptr)
+		memcpy(m_buffer.data() + m_position, ptr, (size_t)len);
+
+	// increment position
+	m_position += len;
+
+	// return the amount we wrote
+	return len;
+}
+
+bool BufferStream::is_open() const { return true; }
+bool BufferStream::is_readable() const { return true; }
+bool BufferStream::is_writable() const { return true; }
+
+void BufferStream::resize(size_t length)
+{
+	m_buffer.resize(length);
+}
+
+void BufferStream::clear()
+{
+	m_buffer.clear();
+	m_position = 0;
+}
+
+u8* BufferStream::data()
+{
+	return m_buffer.data();
+}
+
+const u8* BufferStream::data() const
+{
+	return m_buffer.data();
+}

@@ -67,8 +67,8 @@ namespace Blah
 		size_t length() override { return SDL_RWsize(handle); }
 		size_t position() override { return SDL_RWtell(handle); }
 		size_t seek(size_t position) override { return SDL_RWseek(handle, position, RW_SEEK_SET); }
-		size_t read(unsigned char* buffer, size_t length) override { return SDL_RWread(handle, buffer, sizeof(char), length); }
-		size_t write(const unsigned char* buffer, size_t length) override { return SDL_RWwrite(handle, buffer, sizeof(char), length); }
+		size_t read(void* buffer, size_t length) override { return SDL_RWread(handle, buffer, sizeof(char), length); }
+		size_t write(const void* buffer, size_t length) override { return SDL_RWwrite(handle, buffer, sizeof(char), length); }
 	};
 
 	struct SDL2_Platform : public Platform

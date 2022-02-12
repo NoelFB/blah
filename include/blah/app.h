@@ -1,5 +1,6 @@
 #pragma once
 #include <blah/common.h>
+#include <blah/graphics.h>
 #include <blah/math/spatial.h>
 
 namespace Blah
@@ -9,31 +10,6 @@ namespace Blah
 
 	// Application Logging Functions
 	using AppLogFn = Func<void, const char*, Log::Category>;
-
-	// Type of Renderer the Application is using
-	enum class RendererType
-	{
-		None = -1,
-		OpenGL,
-		D3D11,
-	};
-
-	// Renderer Information
-	struct RendererInfo
-	{
-		// The type of Renderer being used
-		RendererType type = RendererType::None;
-
-		// Whether Mesh Instancing is available
-		bool instancing = false;
-
-		// Whether the Texture origin is the bottom left.
-		// This is true for OpenGL.
-		bool origin_bottom_left = false;
-
-		// Maximum Texture Size available
-		int max_texture_size = 0;
-	};
 
 	// Application Configuration
 	struct Config
@@ -83,10 +59,6 @@ namespace Blah
 		// Defaults to printf.
 		AppLogFn on_log = nullptr;
 	};
-
-	// Forward declare Target for the BackBuffer
-	class Target;
-	using TargetRef = Ref<Target>;
 
 	// Application
 	namespace App

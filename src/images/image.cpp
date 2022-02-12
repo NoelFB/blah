@@ -1,7 +1,4 @@
 #include <blah/images/image.h>
-#include <blah/streams/stream.h>
-#include <blah/streams/filestream.h>
-#include <blah/common.h>
 
 using namespace Blah;
 

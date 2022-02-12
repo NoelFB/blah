@@ -418,7 +418,7 @@ namespace Blah
 		void update() override;
 		void before_render() override;
 		void after_render() override;
-		void render(const RenderPass& pass) override;
+		void render(const DrawCall& pass) override;
 		void clear_backbuffer(Color color, float depth, u8 stencil, ClearMask mask) override;
 		TextureRef create_texture(int width, int height, TextureFormat format) override;
 		TargetRef create_target(int width, int height, const TextureFormat* attachments, int attachment_count) override;
@@ -1272,7 +1272,7 @@ namespace Blah
 		return MeshRef(resource);
 	}
 
-	void Renderer_OpenGL::render(const RenderPass& pass)
+	void Renderer_OpenGL::render(const DrawCall& pass)
 	{
 		// Bind the Target
 		if (pass.target == App::backbuffer())

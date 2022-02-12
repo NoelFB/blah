@@ -233,15 +233,15 @@ namespace Blah
 		static const Color teal;
 	};
 
-	inline const Color Color::transparent = Color(0, 0, 0, 0);
-	inline const Color Color::white = Color(255, 255, 255, 255);
-	inline const Color Color::black = Color(0, 0, 0, 255);
-	inline const Color Color::red = Color(255, 0, 0, 255);
-	inline const Color Color::green = Color(0, 255, 0, 255);
-	inline const Color Color::blue = Color(0, 0, 255, 255);
-	inline const Color Color::yellow = Color(255, 255, 0, 255);
-	inline const Color Color::purple = Color(255, 0, 255, 255);
-	inline const Color Color::teal = Color(0, 255, 255, 255);
+	inline const Color Color::transparent = Color(  0,   0,   0,   0);
+	inline const Color Color::white       = Color(255, 255, 255);
+	inline const Color Color::black       = Color(  0,   0,   0);
+	inline const Color Color::red         = Color(255,   0,   0);
+	inline const Color Color::green       = Color(  0, 255,   0);
+	inline const Color Color::blue        = Color(  0,   0, 255);
+	inline const Color Color::yellow      = Color(255, 255,   0);
+	inline const Color Color::purple      = Color(255,   0, 255);
+	inline const Color Color::teal        = Color(  0, 255, 255);
 }
 
 #undef BLAH_HEX_VALUE

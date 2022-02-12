@@ -1,5 +1,4 @@
 #include <blah/filesystem.h>
-#include <blah/streams/filestream.h>
 #include "internal/internal.h"
 
 using namespace Blah;
@@ -7,9 +6,13 @@ using namespace Blah;
 FileRef File::open(const FilePath& path, FileMode mode)
 {
 	BLAH_ASSERT_PLATFORM();
+
+	FileRef ref;
 	if (App::Internal::platform)
-		return App::Internal::platform->file_open(path.cstr(), mode);
-	return FileRef();
+		ref = App::Internal::platform->file_open(path.cstr(), mode);
+	if (ref)
+		ref->m_mode = mode;
+	return ref;
 }
 
 bool File::exists(const FilePath& path)
@@ -26,6 +29,11 @@ bool File::destroy(const FilePath& path)
 	if (App::Internal::platform)
 		return App::Internal::platform->file_delete(path.cstr());
 	return false;
+}
+
+FileMode File::mode() const
+{
+	return m_mode;
 }
 
 bool Directory::create(const FilePath& path)

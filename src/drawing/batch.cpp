@@ -1,13 +1,7 @@
-#include <blah/graphics/batch.h>
-#include <blah/graphics/texture.h>
-#include <blah/graphics/target.h>
-#include <blah/graphics/mesh.h>
-#include <blah/graphics/shader.h>
-#include <blah/graphics/material.h>
+#include <blah/drawing/batch.h>
 #include <blah/math/calc.h>
 #include <blah/app.h>
 #include "../internal/internal.h"
-#include <cmath>
 
 using namespace Blah;
 
@@ -296,7 +290,7 @@ void Batch::render(const TargetRef& target, const Mat4x4f& matrix)
 	m_mesh->index_data(IndexFormat::UInt32, m_indices.data(), m_indices.size());
 	m_mesh->vertex_data(format, m_vertices.data(), m_vertices.size());
 
-	RenderPass pass;
+	DrawCall pass;
 	pass.target = target;
 	pass.mesh = m_mesh;
 	pass.has_viewport = false;
@@ -321,7 +315,7 @@ void Batch::render(const TargetRef& target, const Mat4x4f& matrix)
 		render_single_batch(pass, m_batch, matrix);
 }
 
-void Batch::render_single_batch(RenderPass& pass, const DrawBatch& b, const Mat4x4f& matrix)
+void Batch::render_single_batch(DrawCall& pass, const DrawBatch& b, const Mat4x4f& matrix)
 {
 	// get the material
 	pass.material = b.material;
