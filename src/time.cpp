@@ -1,8 +1,7 @@
 #include <blah/time.h>
-#include <chrono>
+#include "internal/platform.h"
 
 using namespace Blah;
-using namespace std::chrono;
 
 u64 Time::ticks = 0;
 u64 Time::previous_ticks = 0;
@@ -62,7 +61,7 @@ Stopwatch::Stopwatch()
 
 void Stopwatch::reset()
 {
-	start_time = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now().time_since_epoch()).count();
+	start_time = Platform::ticks();
 }
 
 u64 Stopwatch::milliseconds() const
@@ -72,5 +71,5 @@ u64 Stopwatch::milliseconds() const
 
 u64 Stopwatch::microseconds() const
 {
-	return std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now().time_since_epoch()).count() - start_time;
+	return Platform::ticks() - start_time;
 }
