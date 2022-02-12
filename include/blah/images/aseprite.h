@@ -8,8 +8,9 @@
 namespace Blah
 {
 	// A simple Aseprite file parser.
-	// This implementation does not support Aseprite blendmodes,
-	// aside from the default blend mode.
+	// Note:
+	//  - This implementation does not support Aseprite blendmodes.
+	//  - This implementation does not yet support Tilesets.
 	class Aseprite
 	{
 	public:
@@ -121,21 +122,15 @@ namespace Blah
 		Modes mode = Modes::RGBA;
 		int width = 0;
 		int height = 0;
-
 		Vector<Layer> layers;
 		Vector<Frame> frames;
 		Vector<Tag>   tags;
 		Vector<Slice> slices;
 		Vector<Color> palette;
 
-		Aseprite();
+		Aseprite() = default;
 		Aseprite(const FilePath& path);
 		Aseprite(Stream& stream);
-		Aseprite(const Aseprite& src);
-		Aseprite(Aseprite&& src) noexcept;
-		Aseprite& operator=(const Aseprite& src);
-		Aseprite& operator=(Aseprite&& src) noexcept;
-		~Aseprite();
 
 	private:
 		UserData* m_last_userdata = nullptr;

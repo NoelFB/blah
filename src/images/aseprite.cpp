@@ -10,9 +10,6 @@
 
 using namespace Blah;
 
-Aseprite::Aseprite()
-= default;
-
 Aseprite::Aseprite(const FilePath& path)
 {
 	FileStream fs(path, FileMode::OpenRead);
@@ -23,59 +20,6 @@ Aseprite::Aseprite(Stream& stream)
 {
 	parse(stream);
 }
-
-Aseprite::Aseprite(const Aseprite& src)
-{
-	mode = src.mode;
-	width = src.width;
-	height = src.height;
-	layers = src.layers;
-	frames = src.frames;
-	tags = src.tags;
-	slices = src.slices;
-	palette = src.palette;
-}
-
-Aseprite::Aseprite(Aseprite&& src) noexcept
-{
-	mode = src.mode;
-	width = src.width;
-	height = src.height;
-	layers = std::move(src.layers);
-	frames = std::move(src.frames);
-	tags = std::move(src.tags);
-	slices = std::move(src.slices);
-	palette = std::move(src.palette);
-}
-
-Aseprite& Aseprite::operator=(const Aseprite& src)
-{
-	mode = src.mode;
-	width = src.width;
-	height = src.height;
-	layers = src.layers;
-	frames = src.frames;
-	tags = src.tags;
-	slices = src.slices;
-	palette = src.palette;
-	return *this;
-}
-
-Aseprite& Aseprite::operator=(Aseprite&& src) noexcept
-{
-	mode = src.mode;
-	width = src.width;
-	height = src.height;
-	layers = std::move(src.layers);
-	frames = std::move(src.frames);
-	tags = std::move(src.tags);
-	slices = std::move(src.slices);
-	palette = std::move(src.palette);
-	return *this;
-}
-
-Aseprite::~Aseprite()
-= default;
 
 void Aseprite::parse(Stream& stream)
 {
