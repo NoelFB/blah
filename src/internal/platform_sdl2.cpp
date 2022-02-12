@@ -437,7 +437,7 @@ void Platform::present()
 
 const char* Platform::get_title()
 {
-	return nullptr;
+	return SDL_GetWindowTitle(g_platform.window);
 }
 
 void Platform::set_title(const char* title)
