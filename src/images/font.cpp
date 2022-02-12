@@ -49,7 +49,7 @@ FontRef Font::create(Stream& stream)
 	if (stbtt_InitFont(fn, buffer.data(), 0) == 0)
 	{
 		Log::error("Unable to parse Font file");
-		return false;
+		return FontRef();
 	}
 
 	// setup
