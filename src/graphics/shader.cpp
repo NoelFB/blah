@@ -1,6 +1,6 @@
 #include <blah/graphics/shader.h>
 #include <blah/app.h>
-#include "../internal/renderer.h"
+#include "../internal/internal.h"
 
 using namespace Blah;
 
@@ -13,8 +13,8 @@ ShaderRef Shader::create(const ShaderData& data)
 
 	ShaderRef shader;
 
-	if (Renderer::instance)
-		shader = Renderer::instance->create_shader(&data);
+	if (App::Internal::renderer)
+		shader = App::Internal::renderer->create_shader(&data);
 	
 	// validate the shader
 	if (shader)

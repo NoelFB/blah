@@ -1,5 +1,5 @@
 #include <blah/graphics/target.h>
-#include "../internal/renderer.h"
+#include "../internal/internal.h"
 
 using namespace Blah;
 
@@ -32,8 +32,8 @@ TargetRef Target::create(int width, int height, const AttachmentFormats& texture
 	BLAH_ASSERT(depth_count <= 1, "Target can only have 1 Depth/Stencil Texture");
 	BLAH_ASSERT(color_count <= Attachments::capacity - 1, "Exceeded maximum Color texture count");
 
-	if (Renderer::instance)
-		return Renderer::instance->create_target(width, height, textures.data(), textures.size());
+	if (App::Internal::renderer)
+		return App::Internal::renderer->create_target(width, height, textures.data(), textures.size());
 
 	return TargetRef();
 }

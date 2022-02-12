@@ -8,105 +8,110 @@ namespace Blah
 {
 	struct Config;
 
-	namespace Platform
+	class Platform
 	{
-		// Initialize the System
-		bool init(const Config& config);
+	public:
+
+		// Initialize the Graphics
+		virtual bool init(const Config& config) = 0;
 
 		// Called after the on_startup callback, but before the update loop begins
-		void ready();
+		virtual void ready() = 0;
 
 		// Called during shutdown
-		void shutdown();
+		virtual void shutdown() = 0;
 
 		// The time, in ticks (microseconds) since the Application was started
-		u64 ticks();
+		virtual u64 ticks() = 0;
 
 		// Called every frame
-		void update(InputState& state);
+		virtual void update(InputState& state) = 0;
 
 		// Sleeps the current thread
-		void sleep(int milliseconds);
+		virtual void sleep(int milliseconds) = 0;
 
 		// Called to present the window contents
-		void present();
+		virtual void present() = 0;
 
 		// Gets the Application Window Title in UTF-8
-		const char* get_title();
+		virtual const char* get_title() = 0;
 
 		// Sets the Application Window Title in UTF-8
-		void set_title(const char* title);
+		virtual void set_title(const char* title) = 0;
 
 		// Gets the Application Window Position, in Screen Coordinates
-		void get_position(int* x, int* y);
+		virtual void get_position(int* x, int* y) = 0;
 
 		// Sets the Application Window Position, in Screen Coordinates
-		void set_position(int x, int y);
+		virtual void set_position(int x, int y) = 0;
 		
 		// Gets whether the Window has focus
-		bool get_focused();
+		virtual bool get_focused() = 0;
 
 		// Sets the Window Fullscreen if enabled is not 0
-		void set_fullscreen(bool enabled);
+		virtual void set_fullscreen(bool enabled) = 0;
 
 		// Gets the Application Window Size, in Screen Coordinates
-		void get_size(int* width, int* height);
+		virtual void get_size(int* width, int* height) = 0;
 
 		// Sets the Application Window Size, in Screen Coordinates
-		void set_size(int width, int height);
+		virtual void set_size(int width, int height) = 0;
 
 		// Gets the Application Window Drawing Size, in Pixels. This may differ from the Window Size on hi-dpi displays.
-		void get_draw_size(int* width, int* height);
+		virtual void get_draw_size(int* width, int* height) = 0;
 
 		// Gets the Desktop Content Scale. Gui should be scaled by this value
-		float get_content_scale();
+		virtual float get_content_scale() = 0;
 
 		// Returns the absoluate path to the directory that the application was started from
-		const char* app_path();
+		virtual const char* app_path() = 0;
 
 		// Returns the absolute path to the user directory where save data and settings should be stored
-		const char* user_path();
+		virtual const char* user_path() = 0;
 
 		// Opens a file and sets the handle, or returns an empty handle if it fails
-		FileRef file_open(const char* path, FileMode mode);
+		virtual FileRef file_open(const char* path, FileMode mode) = 0;
 
 		// Returns true if a file with the given path exists
-		bool file_exists(const char* path);
+		virtual bool file_exists(const char* path) = 0;
 
 		// Returns true if a file with the given path was deleted
-		bool file_delete(const char* path);
+		virtual bool file_delete(const char* path) = 0;
 
 		// Returns true if a directory with the given path was successfully created
-		bool dir_create(const char* path);
+		virtual bool dir_create(const char* path) = 0;
 
 		// Returns true if a directory with the given path exists
-		bool dir_exists(const char* path);
+		virtual bool dir_exists(const char* path) = 0;
 
 		// Returns true if a directory with the given path was deleted
-		bool dir_delete(const char* path);
+		virtual bool dir_delete(const char* path) = 0;
 
 		// enumerates a directory and appends each file to the given list
-		void dir_enumerate(Vector<FilePath>& list, const char* path, bool recursive);
+		virtual void dir_enumerate(Vector<FilePath>& list, const char* path, bool recursive) = 0;
 
 		// opens a directory in the OS file explorer / finder
-		void dir_explore(const char* path);
+		virtual void dir_explore(const char* path) = 0;
 
 		// sets the contents of the clipboard
-		void set_clipboard(const char* text);
+		virtual void set_clipboard(const char* text) = 0;
 
 		// gets the contents of the clipboard into the given string
-		const char* get_clipboard();
+		virtual const char* get_clipboard() = 0;
 
 		// Tries to open a URL in a web browser
-		void open_url(const char* url);
+		virtual void open_url(const char* url) = 0;
 
 		// OpenGL Methods
-		void* gl_get_func(const char* name);
-		void* gl_context_create();
-		void gl_context_make_current(void* context);
-		void gl_context_destroy(void* context);
+		virtual void* gl_get_func(const char* name) = 0;
+		virtual void* gl_context_create() = 0;
+		virtual void gl_context_make_current(void* context) = 0;
+		virtual void gl_context_destroy(void* context) = 0;
 
 		// D3D11 Methods
-		void* d3d11_get_hwnd();
-	}
+		virtual void* d3d11_get_hwnd() = 0;
+
+		// Instantiates the Platform object
+		static Platform* try_make_platform(const Config& config);
+	};
 }

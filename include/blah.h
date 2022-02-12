@@ -1,8 +1,8 @@
 #pragma once
 
+#include "blah/common.h"
 #include "blah/app.h"
 #include "blah/filesystem.h"
-#include "blah/common.h"
 #include "blah/time.h"
 #include "blah/input.h"
 	
@@ -13,7 +13,6 @@
 #include "blah/graphics/batch.h"
 #include "blah/graphics/spritefont.h"
 #include "blah/graphics/subtexture.h"
-
 #include "blah/graphics/blend.h"
 #include "blah/graphics/material.h"
 #include "blah/graphics/mesh.h"

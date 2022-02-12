@@ -19,7 +19,7 @@ namespace Blah
 	};
 
 	// Renderer Information
-	struct RendererFeatures
+	struct RendererInfo
 	{
 		// The type of Renderer being used
 		RendererType type = RendererType::None;
@@ -142,8 +142,8 @@ namespace Blah
 		// Otherwise this function does nothing.
 		void fullscreen(bool enabled);
 
-		// Retrieves the Renderer Features
-		const RendererFeatures& renderer();
+		// Retrieves the Renderer Information
+		const RendererInfo& renderer();
 
 		// Gets the BackBuffer
 		const TargetRef& backbuffer();

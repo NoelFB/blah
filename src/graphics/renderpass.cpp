@@ -1,6 +1,6 @@
 #include <blah/graphics/renderpass.h>
 #include <blah/common.h>
-#include "../internal/renderer.h"
+#include "../internal/internal.h"
 
 using namespace Blah;
 
@@ -28,7 +28,7 @@ void RenderPass::perform()
 	BLAH_ASSERT(material->shader(), "Trying to draw with an invalid Shader");
 	BLAH_ASSERT(mesh, "Trying to draw with an invalid Mesh");
 
-	if (!Renderer::instance)
+	if (!App::Internal::renderer)
 		return;
 
 	// copy call
@@ -90,5 +90,5 @@ void RenderPass::perform()
 		pass.scissor = pass.scissor.overlap_rect(Rectf(0, 0, draw_size.x, draw_size.y));
 
 	// perform render
-	Renderer::instance->render(pass);
+	App::Internal::renderer->render(pass);
 }

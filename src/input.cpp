@@ -3,7 +3,7 @@
 #include <blah/time.h>
 #include <blah/common.h>
 #include <blah/math/calc.h>
-#include "internal/input.h"
+#include "internal/internal.h"
 #include "internal/platform.h"
 #include <blah/graphics/target.h>
 #include <cstring>
@@ -26,7 +26,7 @@ InputState Blah::Input::last_state;
 float Blah::Input::repeat_delay = 0.35f;
 float Blah::Input::repeat_interval = 0.025f;
 
-void Input::init()
+void Input::Internal::init()
 {
 	g_empty_controller.name = "Disconnected";
 	for (int i = 0; i < Input::max_controllers; i++)
@@ -39,7 +39,12 @@ void Input::init()
 	g_sticks.dispose();
 }
 
-void Input::update_state()
+void Input::Internal::shutdown()
+{
+	init();
+}
+
+void Input::Internal::update_state()
 {
 	// cycle states
 	Input::last_state = Input::state;
@@ -75,10 +80,11 @@ void Input::update_state()
 	}
 
 	// get clipboard
-	g_clipboard = Platform::get_clipboard();
+	if (App::Internal::platform)
+		g_clipboard = App::Internal::platform->get_clipboard();
 }
 
-void Input::update_bindings()
+void Input::Internal::update_bindings()
 {
 	for (int i = 0; i < g_buttons.size(); i++)
 	{
@@ -394,7 +400,8 @@ const String& Input::get_clipboard()
 void Input::set_clipboard(const String& text)
 {
 	g_clipboard = text;
-	return Platform::set_clipboard(text);
+	if (App::Internal::platform)
+		App::Internal::platform->set_clipboard(text);
 }
 
 ButtonBindingRef Input::register_binding(const ButtonBinding& binding)

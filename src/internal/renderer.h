@@ -8,19 +8,14 @@
 #include <blah/graphics/material.h>
 #include <blah/math/color.h>
 
-#define BLAH_ASSERT_RENDERER() BLAH_ASSERT(Renderer::instance, "Renderer has not been created")
-
 namespace Blah
 {
 	class Renderer
 	{
 	public:
 
-		// Reference to the current Renderer in use
-		inline static Renderer* instance = nullptr;
-
-		// Renderer Features
-		RendererFeatures features;
+		// Renderer Info
+		RendererInfo info;
 
 		// Default Shader for the Batcher
 		ShaderRef default_batcher_shader;

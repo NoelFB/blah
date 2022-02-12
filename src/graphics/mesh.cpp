@@ -1,5 +1,5 @@
 #include <blah/graphics/mesh.h>
-#include "../internal/renderer.h"
+#include "../internal/internal.h"
 
 using namespace Blah;
 
@@ -7,8 +7,8 @@ MeshRef Mesh::create()
 {
 	BLAH_ASSERT_RENDERER();
 
-	if (Renderer::instance)
-		return Renderer::instance->create_mesh();
+	if (App::Internal::renderer)
+		return App::Internal::renderer->create_mesh();
 
 	return MeshRef();
 }

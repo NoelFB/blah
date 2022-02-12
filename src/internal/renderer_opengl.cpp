@@ -1,6 +1,7 @@
 #ifdef BLAH_RENDERER_OPENGL
 
 #include "renderer.h"
+#include "internal.h"
 #include "platform.h"
 #include <blah/common.h>
 #include <stdio.h>
@@ -339,7 +340,7 @@ typedef void (APIENTRY* DEBUGPROC)(GLenum source,
 	const void* userParam);
 
 // shorthand to our internal state
-#define renderer ((Renderer_OpenGL*)Renderer::instance)
+#define renderer ((Renderer_OpenGL*)App::Internal::renderer)
 
 namespace Blah
 {
@@ -1158,16 +1159,16 @@ namespace Blah
 	bool Renderer_OpenGL::init()
 	{
 		// create gl context
-		context = Platform::gl_context_create();
+		context = App::Internal::platform->gl_context_create();
 		if (context == nullptr)
 		{
 			Log::error("Failed to create OpenGL Context");
 			return false;
 		}
-		Platform::gl_context_make_current(context);
+		App::Internal::platform->gl_context_make_current(context);
 
 		// bind opengl functions
-		#define GL_FUNC(name, ...) gl.name = (Renderer_OpenGL::Bindings::name ## Func)(Platform::gl_get_func("gl" #name));
+		#define GL_FUNC(name, ...) gl.name = (Renderer_OpenGL::Bindings::name ## Func)(App::Internal::platform->gl_get_func("gl" #name));
 		GL_FUNCTIONS
 		#undef GL_FUNC
 
@@ -1198,10 +1199,10 @@ namespace Blah
 		gl.PixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 		// assign info
-		features.type = RendererType::OpenGL;
-		features.instancing = true;
-		features.origin_bottom_left = true;
-		features.max_texture_size = max_texture_size;
+		info.type = RendererType::OpenGL;
+		info.instancing = true;
+		info.origin_bottom_left = true;
+		info.max_texture_size = max_texture_size;
 
 		// create the default batch shader
 		default_batcher_shader = Shader::create(opengl_batch_shader_data);
@@ -1211,7 +1212,7 @@ namespace Blah
 
 	void Renderer_OpenGL::shutdown()
 	{
-		Platform::gl_context_destroy(context);
+		App::Internal::platform->gl_context_destroy(context);
 		context = nullptr;
 	}
 

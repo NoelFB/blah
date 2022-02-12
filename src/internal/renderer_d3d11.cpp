@@ -4,6 +4,7 @@
 // Note the D3D11 Implementation is still a work-in-progress
 
 #include "renderer.h"
+#include "internal.h"
 #include "platform.h"
 #include <blah/common.h>
 #include <cstdio>
@@ -16,7 +17,7 @@
 #include <d3dcompiler.h>
 
 // shorthand to our internal state
-#define renderer ((Renderer_D3D11*)Renderer::instance)
+#define renderer ((Renderer_D3D11*)App::Internal::renderer)
 
 namespace Blah
 {
@@ -773,7 +774,7 @@ namespace Blah
 		desc.SampleDesc.Quality = 0;
 		desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		desc.BufferCount = 1;
-		desc.OutputWindow = (HWND)Platform::d3d11_get_hwnd();
+		desc.OutputWindow = (HWND)App::Internal::platform->d3d11_get_hwnd();
 		desc.Windowed = true;
 
 		// Creation Flags
@@ -815,10 +816,10 @@ namespace Blah
 		// create a depth backbuffer
 
 		// Store Features
-		features.type = RendererType::D3D11;
-		features.instancing = true;
-		features.max_texture_size = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
-		features.origin_bottom_left = false;
+		info.type = RendererType::D3D11;
+		info.instancing = true;
+		info.max_texture_size = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+		info.origin_bottom_left = false;
 
 		// Print Driver Info
 		{

@@ -1,5 +1,5 @@
 #include <blah/time.h>
-#include "internal/platform.h"
+#include "internal/internal.h"
 
 using namespace Blah;
 
@@ -12,7 +12,9 @@ float Time::pause_timer = 0;
 
 u64 Time::get_ticks()
 {
-	return Platform::ticks();
+	if (App::Internal::platform)
+		return App::Internal::platform->ticks();
+	return 0;
 }
 
 void Time::pause_for(float duration)
@@ -66,7 +68,7 @@ Stopwatch::Stopwatch()
 
 void Stopwatch::reset()
 {
-	start_time = Platform::ticks();
+	start_time = Time::get_ticks();
 }
 
 u64 Stopwatch::milliseconds() const
@@ -76,5 +78,5 @@ u64 Stopwatch::milliseconds() const
 
 u64 Stopwatch::microseconds() const
 {
-	return Platform::ticks() - start_time;
+	return Time::get_ticks() - start_time;
 }
