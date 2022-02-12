@@ -4,7 +4,7 @@
 #include <blah/graphics/shader.h>
 #include <blah/graphics/sampler.h>
 #include <blah/containers/vector.h>
-#include <blah/numerics/spatial.h>
+#include <blah/math/spatial.h>
 
 namespace Blah
 {

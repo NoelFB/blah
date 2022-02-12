@@ -2,7 +2,7 @@
 #include <blah/common.h>
 #include <blah/graphics/texture.h>
 #include <blah/containers/stackvector.h>
-#include <blah/numerics/color.h>
+#include <blah/math/color.h>
 
 namespace Blah
 {

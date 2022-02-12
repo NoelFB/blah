@@ -2,7 +2,7 @@
 #include <blah/app.h>
 #include <blah/time.h>
 #include <blah/common.h>
-#include <blah/numerics/calc.h>
+#include <blah/math/calc.h>
 #include "internal/input.h"
 #include "internal/platform.h"
 #include <blah/graphics/target.h>

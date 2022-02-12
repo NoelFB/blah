@@ -30,9 +30,6 @@ add_library(blah
 	src/images/image.cpp
 	src/images/packer.cpp
 
-	src/numerics/calc.cpp
-	src/numerics/color.cpp
-
 	src/streams/bufferstream.cpp
 	src/streams/filestream.cpp
 	src/streams/memorystream.cpp

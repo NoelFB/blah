@@ -1,7 +1,7 @@
 #pragma once
 
-// In-Place constructor new, used by Vector/StackVector
-#include <new>
+#include <new>     // for in-place constructors, for Vector/StackVector
+#include <utility> // for std::move
 
 // Asserts
 #if defined(DEBUG) || defined(_DEBUG)
@@ -27,6 +27,7 @@ namespace Blah
 	using u64 = uint64_t;
 	using f32 = float;
 	using f64 = double;
+	using size_t = std::size_t;
 }
 
 // Logging

@@ -1,6 +1,6 @@
 #pragma once
 #include <blah/graphics/texture.h>
-#include <blah/numerics/spatial.h>
+#include <blah/math/spatial.h>
 
 namespace Blah
 {

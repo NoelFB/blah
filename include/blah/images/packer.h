@@ -1,7 +1,7 @@
 #pragma once
 #include <blah/images/image.h>
-#include <blah/numerics/color.h>
-#include <blah/numerics/spatial.h>
+#include <blah/math/color.h>
+#include <blah/math/spatial.h>
 #include <blah/containers/str.h>
 #include <blah/containers/vector.h>
 #include <blah/streams/bufferstream.h>

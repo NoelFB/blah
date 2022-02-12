@@ -1,5 +1,5 @@
 #pragma once
-#include <blah/numerics/color.h>
+#include <blah/math/color.h>
 #include <blah/images/image.h>
 #include <blah/containers/str.h>
 #include <blah/streams/stream.h>

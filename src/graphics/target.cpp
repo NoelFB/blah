@@ -5,7 +5,9 @@ using namespace Blah;
 
 TargetRef Target::create(int width, int height)
 {
-	return create(width, height, { TextureFormat::RGBA });
+	AttachmentFormats formats;
+	formats.push_back(TextureFormat::RGBA);
+	return create(width, height, formats);
 }
 
 TargetRef Target::create(int width, int height, const AttachmentFormats& textures)

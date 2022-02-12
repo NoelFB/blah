@@ -1,7 +1,7 @@
 #pragma once
 #include <blah/common.h>
 #include <blah/containers/str.h>
-#include <blah/numerics/calc.h>
+#include <blah/math/calc.h>
 #include <string.h>
 
 namespace Blah

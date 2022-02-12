@@ -1,7 +1,7 @@
 #pragma once
 #include <blah/common.h>
 #include <blah/containers/str.h>
-#include <blah/numerics/spatial.h>
+#include <blah/math/spatial.h>
 
 #define BLAH_HEX_VALUE(n) ((n >= '0' && n <= '9') ? (n - '0') : ((n >= 'A' && n <= 'F') ? (10 + n - 'A') : ((n >= 'a' && n <= 'f') ? (10 + n - 'a') : 0)))
 
@@ -92,10 +92,36 @@ namespace Blah
 		}
 
 		// Returns an RGBA hex string of the color
-		String to_hex_rgba() const;
+		String to_hex_rgba() const
+		{
+			static const char* hex = "0123456789ABCDEF";
+
+			String str = "00000000";
+			str[0] = hex[(r & 0xF0) >> 4];
+			str[1] = hex[(r & 0x0F) >> 0];
+			str[2] = hex[(g & 0xF0) >> 4];
+			str[3] = hex[(g & 0x0F) >> 0];
+			str[4] = hex[(b & 0xF0) >> 4];
+			str[5] = hex[(b & 0x0F) >> 0];
+			str[6] = hex[(a & 0xF0) >> 4];
+			str[7] = hex[(a & 0x0F) >> 0];
+			return str;
+		}
 
 		// Returns an RGB hex string of the color
-		String to_hex_rgb() const;
+		String Color::to_hex_rgb() const
+		{
+			static const char* hex = "0123456789ABCDEF";
+
+			String str = "000000";
+			str[0] = hex[(r & 0xF0) >> 4];
+			str[1] = hex[(r & 0x0F) >> 0];
+			str[2] = hex[(g & 0xF0) >> 4];
+			str[3] = hex[(g & 0x0F) >> 0];
+			str[4] = hex[(b & 0xF0) >> 4];
+			str[5] = hex[(b & 0x0F) >> 0];
+			return str;
+		}
 
 		// Converts the Color to a Vec3 (RGB)
 		constexpr Vec3f to_vec3() const
@@ -206,6 +232,16 @@ namespace Blah
 		static const Color purple;
 		static const Color teal;
 	};
+
+	inline const Color Color::transparent = Color(0, 0, 0, 0);
+	inline const Color Color::white = Color(255, 255, 255, 255);
+	inline const Color Color::black = Color(0, 0, 0, 255);
+	inline const Color Color::red = Color(255, 0, 0, 255);
+	inline const Color Color::green = Color(0, 255, 0, 255);
+	inline const Color Color::blue = Color(0, 0, 255, 255);
+	inline const Color Color::yellow = Color(255, 255, 0, 255);
+	inline const Color Color::purple = Color(255, 0, 255, 255);
+	inline const Color Color::teal = Color(0, 255, 255, 255);
 }
 
 #undef BLAH_HEX_VALUE

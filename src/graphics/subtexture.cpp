@@ -1,5 +1,5 @@
 #include <blah/graphics/subtexture.h>
-#include <blah/numerics/calc.h>
+#include <blah/math/calc.h>
 
 using namespace Blah;
 

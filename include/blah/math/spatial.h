@@ -1,6 +1,6 @@
 #pragma once
 #include <blah/common.h>
-#include <cmath>
+#include <blah/math/calc.h>
 
 namespace Blah
 {
@@ -440,7 +440,7 @@ namespace Blah
 
 	template<class T>
 	constexpr bool Vec2<T>::operator ==(const Vec2& rhs) const {
-		return std::abs(x - rhs.x) < epsilon && std::abs(y - rhs.y) < epsilon;
+		return Calc::abs(x - rhs.x) < epsilon && Calc::abs(y - rhs.y) < epsilon;
 	}
 
 	template<class T>
@@ -450,12 +450,12 @@ namespace Blah
 
 	template<class T>
 	constexpr Vec2<T> Vec2<T>::abs() const {
-		return Vec2(std::abs(x), std::abs(y));
+		return Vec2(Calc::abs(x), Calc::abs(y));
 	}
 
 	template<class T>
 	Vec2<T> Vec2<T>::normal() const {
-		auto len = std::sqrt(x * x + y * y);
+		auto len = Calc::sqrt(x * x + y * y);
 		if (len <= 0)
 			return Vec2<T>(0, 0);
 		return Vec2(x / len, y / len);
@@ -473,7 +473,7 @@ namespace Blah
 
 	template<class T>
 	T Vec2<T>::length() const {
-		return std::sqrt(x * x + y * y);
+		return static_cast<T>(Calc::sqrt(static_cast<f32>(x * x + y * y)));
 	}
 
 	template<class T>
@@ -483,7 +483,7 @@ namespace Blah
 
 	template<class T>
 	T Vec2<T>::angle() const {
-		return std::atan2(y, x);
+		return Calc::atan2(y, x);
 	}
 
 	template<class T>
@@ -508,8 +508,8 @@ namespace Blah
 	template<class T>
 	Vec2<T> Vec2<T>::from_angle(T radians, T length) {
 		return Vec2(
-			std::cos(radians) * length,
-			std::sin(radians) * length);
+			Calc::cos(radians) * length,
+			Calc::sin(radians) * length);
 	}
 
 	template<class T>
@@ -549,12 +549,12 @@ namespace Blah
 
 	template<class T>
 	constexpr Vec2<T> Vec2<T>::min(const Vec2& a, const Vec2& b) {
-		return Vec2(std::fmin(a.x, b.x), std::fmin(a.y, b.y));
+		return Vec2(Calc::min(a.x, b.x), Calc::min(a.y, b.y));
 	}
 
 	template<class T>
 	constexpr Vec2<T> Vec2<T>::max(const Vec2& a, const Vec2& b) {
-		return Vec2(std::fmax(a.x, b.x), std::fmax(a.y, b.y));
+		return Vec2(Calc::max(a.x, b.x), Calc::max(a.y, b.y));
 	}
 
 	template<class T>
@@ -583,7 +583,7 @@ namespace Blah
 
 	template<class T>
 	T Vec3<T>::length() const {
-		return std::sqrt(x * x + y * y + z * z);
+		return Calc::sqrt(x * x + y * y + z * z);
 	}
 
 	template<class T>
@@ -663,7 +663,7 @@ namespace Blah
 
 	template<class T>
 	constexpr bool Rect<T>::operator==(const Rect& rhs) const {
-		return std::abs(x - rhs.x) < epsilon && std::abs(y - rhs.y) < epsilon && std::abs(w - rhs.w) < epsilon && std::abs(h - rhs.h) < epsilon;
+		return Calc::abs(x - rhs.x) < epsilon && Calc::abs(y - rhs.y) < epsilon && Calc::abs(w - rhs.w) < epsilon && Calc::abs(h - rhs.h) < epsilon;
 	}
 
 	template<class T>
@@ -730,14 +730,14 @@ namespace Blah
 
 		if (x + w >= against.x && x < against.x + against.w)
 		{
-			result.x = std::fmax(x, against.x);
-			result.w = std::fmin(x + w, against.x + against.w) - result.x;
+			result.x = Calc::max(x, against.x);
+			result.w = Calc::min(x + w, against.x + against.w) - result.x;
 		}
 
 		if (y + h >= against.y && y < against.y + against.h)
 		{
-			result.y = std::fmax(y, against.y);
-			result.h = std::fmin(y + h, against.y + against.h) - result.y;
+			result.y = Calc::max(y, against.y);
+			result.h = Calc::min(y + h, against.y + against.h) - result.y;
 		}
 
 		return result;
@@ -1008,7 +1008,7 @@ namespace Blah
 
 	template<class T>
 	T Mat3x2<T>::scaling_factor() const {
-		return std::sqrt(m11 * m11 + m12 * m12);
+		return Calc::sqrt(m11 * m11 + m12 * m12);
 	}
 
 	template<class T>
@@ -1083,8 +1083,8 @@ namespace Blah
 
 	template<class T>
 	Mat3x2<T> Mat3x2<T>::create_rotation(T radians) {
-		auto c = std::cos(radians);
-		auto s = std::sin(radians);
+		auto c = Calc::cos(radians);
+		auto s = Calc::sin(radians);
 		return Mat3x2<T>(c, s, -s, c, 0, 0);
 	}
 
@@ -1158,12 +1158,12 @@ namespace Blah
 	template<class T>
 	constexpr bool Mat3x2<T>::operator==(const Mat3x2& rhs) {
 		return 
-			std::abs(m11 - rhs.m11) < epsilon &&
-			std::abs(m12 - rhs.m12) < epsilon &&
-			std::abs(m21 - rhs.m21) < epsilon &&
-			std::abs(m22 - rhs.m22) < epsilon &&
-			std::abs(m31 - rhs.m31) < epsilon &&
-			std::abs(m32 - rhs.m32) < epsilon;
+			Calc::abs(m11 - rhs.m11) < epsilon &&
+			Calc::abs(m12 - rhs.m12) < epsilon &&
+			Calc::abs(m21 - rhs.m21) < epsilon &&
+			Calc::abs(m22 - rhs.m22) < epsilon &&
+			Calc::abs(m31 - rhs.m31) < epsilon &&
+			Calc::abs(m32 - rhs.m32) < epsilon;
 	}
 
 	template<class T>
@@ -1222,7 +1222,7 @@ namespace Blah
 
 	template<class T>
 	Mat4x4<T> Mat4x4<T>::create_perspective(T field_of_view, T ratio, T z_near_plane, T z_far_plane) {
-		auto scale_x = 1 / std::tan(field_of_view * 0.5);
+		auto scale_x = 1 / Calc::tan(field_of_view * 0.5);
 		auto scale_y = scale_x / ratio;
 
 		Mat4x4 result;

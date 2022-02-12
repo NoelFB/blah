@@ -6,7 +6,7 @@
 #include <blah/graphics/shader.h>
 #include <blah/graphics/mesh.h>
 #include <blah/graphics/material.h>
-#include <blah/numerics/color.h>
+#include <blah/math/color.h>
 
 #define BLAH_ASSERT_RENDERER() BLAH_ASSERT(Renderer::instance, "Renderer has not been created")
 

@@ -4,7 +4,7 @@
 #include <blah/graphics/mesh.h>
 #include <blah/graphics/shader.h>
 #include <blah/graphics/material.h>
-#include <blah/numerics/calc.h>
+#include <blah/math/calc.h>
 #include <blah/app.h>
 #include "../internal/renderer.h"
 #include <cmath>
@@ -54,10 +54,10 @@ namespace
 		*_i++ = (u32)m_vertices.size() + 3; \
 		Vertex* _v = m_vertices.expand(4); \
 		if (integerize) { \
-			MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash, std::round); _v++; \
-			MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash, std::round); _v++; \
-			MAKE_VERTEX(_v, m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash, std::round); _v++; \
-			MAKE_VERTEX(_v, m_matrix, px3, py3, tx3, ty3, col3, mult, fill, wash, std::round); \
+			MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash, Calc::floor); _v++; \
+			MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash, Calc::floor); _v++; \
+			MAKE_VERTEX(_v, m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash, Calc::floor); _v++; \
+			MAKE_VERTEX(_v, m_matrix, px3, py3, tx3, ty3, col3, mult, fill, wash, Calc::floor); \
 		} else { \
 			MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash, float); _v++; \
 			MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash, float); _v++; \
@@ -75,9 +75,9 @@ namespace
 		*_i++ = (u32)m_vertices.size() + 2; \
 		Vertex* _v = m_vertices.expand(3); \
 		if (integerize) { \
-			MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash, std::floor); _v++; \
-			MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash, std::floor); _v++; \
-			MAKE_VERTEX(_v, m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash, std::floor); \
+			MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash, Calc::floor); _v++; \
+			MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash, Calc::floor); _v++; \
+			MAKE_VERTEX(_v, m_matrix, px2, py2, tx2, ty2, col2, mult, fill, wash, Calc::floor); \
 		} else { \
 			MAKE_VERTEX(_v, m_matrix, px0, py0, tx0, ty0, col0, mult, fill, wash, float); _v++; \
 			MAKE_VERTEX(_v, m_matrix, px1, py1, tx1, ty1, col1, mult, fill, wash, float); _v++; \

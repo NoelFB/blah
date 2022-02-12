@@ -1,6 +1,6 @@
 #pragma once
 #include <blah/common.h>
-#include <blah/numerics/spatial.h>
+#include <blah/math/spatial.h>
 #include <blah/containers/str.h>
 #include <blah/graphics/texture.h>
 #include <blah/graphics/target.h>

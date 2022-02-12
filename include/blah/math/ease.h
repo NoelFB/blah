@@ -1,5 +1,5 @@
 #pragma once
-#include <blah/numerics/calc.h>
+#include <blah/math/calc.h>
 #include <blah/common.h>
 
 namespace Blah
