@@ -10,6 +10,11 @@ double Time::previous_seconds = 0;
 float Time::delta = 0;
 float Time::pause_timer = 0;
 
+u64 Time::get_ticks()
+{
+	return Platform::ticks();
+}
+
 void Time::pause_for(float duration)
 {
 	if (duration >= pause_timer)

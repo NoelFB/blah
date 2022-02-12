@@ -8,10 +8,10 @@ namespace Blah
 		// ticks per second (microseconds, in this case)
 		constexpr u64 ticks_per_second = 1000000;
 
-		// uptime, in ticks
+		// uptime, in ticks, at the start of the current frame
 		extern u64 ticks;
 
-		// uptime, in seconds
+		// uptime, in seconds, at the start of the current frame
 		extern double seconds;
 
 		// delta time from last frame
@@ -25,6 +25,9 @@ namespace Blah
 
 		// time the application should pause for
 		extern float pause_timer;
+
+		// uptime, in ticks. polls the Platform for an immediate value, unlike the cached `Time::ticks` value
+		u64 get_ticks();
 
 		// pauses the entire application for the given time
 		void pause_for(float duration);
