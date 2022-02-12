@@ -27,7 +27,7 @@ namespace Blah
 			void init();
 
 			// Steps the input state
-			void update_state();
+			void step_state();
 
 			// Updates bindings
 			void update_bindings();

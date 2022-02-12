@@ -23,17 +23,23 @@ Renderer* App::Internal::renderer = nullptr;
 
 namespace
 {
-	// A dummy Frame Buffer that represents the Back Buffer
-	// it doesn't actually contain any textures or details.
+	// Global App State
+	Config     app_config;
+	bool       app_is_running = false;
+	bool       app_is_exiting = false;
+	u64        app_time_last;
+	u64        app_time_accumulator = 0;
+	TargetRef  app_backbuffer;
+
+	// A dummy Target that represents the Back Buffer.
+	// It doesn't contain any data, rather it forwards calls along to the actual BackBuffer.
 	class BackBuffer final : public Target
 	{
 	public:
 		Attachments empty_textures;
 		Attachments& textures() override { BLAH_ASSERT(false, "Backbuffer doesn't have any textures"); return empty_textures; }
 		const Attachments& textures() const override { BLAH_ASSERT(false, "Backbuffer doesn't have any textures"); return empty_textures; }
-		int width() const override {
-			int w, h; App::Internal::platform->get_draw_size(&w, &h); return w;
-		}
+		int width() const override { int w, h; App::Internal::platform->get_draw_size(&w, &h); return w; }
 		int height() const override { int w, h; App::Internal::platform->get_draw_size(&w, &h); return h; }
 		void clear(Color color, float depth, u8 stencil, ClearMask mask) override
 		{
@@ -42,14 +48,6 @@ namespace
 				App::Internal::renderer->clear_backbuffer(color, depth, stencil, mask);
 		}
 	};
-
-	// Global App State
-	Config app_config;
-	bool app_is_running = false;
-	bool app_is_exiting = false;
-	u64 app_time_last;
-	u64 app_time_accumulator = 0;
-	TargetRef app_backbuffer;
 }
 
 bool App::run(const Config* c)
@@ -86,48 +84,49 @@ bool App::run(const Config* c)
 	app_backbuffer = TargetRef(new BackBuffer());
 
 	// initialize the system
-	Internal::platform = Platform::try_make_platform(app_config);
-	if (!Internal::platform)
 	{
-		Log::error("Failed to create Platform module");
-		App::Internal::shutdown();
-		return false;
-	}
+		Internal::platform = Platform::try_make_platform(app_config);
+		if (!Internal::platform)
+		{
+			Log::error("Failed to create Platform module");
+			App::Internal::shutdown();
+			return false;
+		}
 
-	if (!Internal::platform->init(app_config))
-	{
-		Log::error("Failed to initialize Platform module");
-		App::Internal::shutdown();
-		return false;
+		if (!Internal::platform->init(app_config))
+		{
+			Log::error("Failed to initialize Platform module");
+			App::Internal::shutdown();
+			return false;
+		}
 	}
 
 	// initialize graphics
-	Internal::renderer = Renderer::try_make_renderer(app_config.renderer_type);
-	if (Internal::renderer == nullptr)
 	{
-		Log::error("Renderer module was not found");
-		App::Internal::shutdown();
-		return false;
+		Internal::renderer = Renderer::try_make_renderer(app_config.renderer_type);
+		if (Internal::renderer == nullptr)
+		{
+			Log::error("Renderer module was not found");
+			App::Internal::shutdown();
+			return false;
+		}
+
+		if (!Internal::renderer->init())
+		{
+			Log::error("Failed to initialize Renderer module");
+			App::Internal::shutdown();
+			return false;
+		}
 	}
 
-	if (!Internal::renderer->init())
-	{
-		Log::error("Failed to initialize Renderer module");
-		App::Internal::shutdown();
-		return false;
-	}
-
-	// input
+	// input + poll the platform once
 	Input::Internal::init();
-
-	// prepare by updating input & platform once
-	Input::Internal::update_state();
+	Input::Internal::step_state();
 	Internal::platform->update(Input::state);
 
 	// startup
 	if (app_config.on_startup != nullptr)
 		app_config.on_startup();
-
 	app_time_last = Internal::platform->ticks();
 	app_time_accumulator = 0;
 
@@ -135,8 +134,6 @@ bool App::run(const Config* c)
 	Internal::platform->ready();
 
 	// Begin main loop
-	// Emscripten requires the main loop be separated into its own call
-
 #ifdef __EMSCRIPTEN__
 	emscripten_set_main_loop(App::Internal::iterate, 0, 1);
 #else
@@ -147,7 +144,6 @@ bool App::run(const Config* c)
 	// shutdown
 	if (app_config.on_shutdown != nullptr)
 		app_config.on_shutdown();
-
 	App::Internal::shutdown();
 	return true;
 }
@@ -202,7 +198,7 @@ void App::Internal::iterate()
 			Time::previous_seconds = Time::seconds;
 			Time::seconds += Time::delta;
 
-			Input::Internal::update_state();
+			Input::Internal::step_state();
 			platform->update(Input::state);
 			Input::Internal::update_bindings();
 			renderer->update();

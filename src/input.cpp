@@ -44,7 +44,7 @@ void Input::Internal::shutdown()
 	init();
 }
 
-void Input::Internal::update_state()
+void Input::Internal::step_state()
 {
 	// cycle states
 	Input::last_state = Input::state;
