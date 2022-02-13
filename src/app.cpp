@@ -147,6 +147,11 @@ bool App::run(const Config* c)
 	return true;
 }
 
+bool App::is_running()
+{
+	return app_is_running;
+}
+
 void App::Internal::iterate()
 {
 	// update at a fixed timerate

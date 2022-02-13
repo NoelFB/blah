@@ -66,6 +66,9 @@ namespace Blah
 		// Runs the application
 		bool run(const Config* config);
 
+		// Checks if the Application is running yet
+		bool is_running();
+
 		// Exits the application.
 		// This only signals for the application to close, it will not stop
 		// until the current update and render calls are finished.
