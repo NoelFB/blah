@@ -75,10 +75,10 @@ namespace Blah
 			}
 		}
 
-		constexpr bool is_big_endian() { return (*((short*)"AB") == 0x4243); }
-		constexpr bool is_little_endian() { return (*((short*)"AB") != 0x4243); }
+		inline bool is_big_endian() { return (*((short*)"AB") == 0x4243); }
+		inline bool is_little_endian() { return (*((short*)"AB") != 0x4243); }
 
-		constexpr bool is_endian(const Endian& endian)
+		inline bool is_endian(const Endian& endian)
 		{
 			return
 				(endian == Endian::Little && is_little_endian()) ||
