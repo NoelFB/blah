@@ -115,9 +115,8 @@ namespace Blah
 	{
 		// Normal, pre-multiplied, Blend Mode
 		static const BlendMode Normal;
-
-		// Subtractive Blend Mode
 		static const BlendMode Subtract;
+		static const BlendMode Additive;
 
 		BlendOp color_op;
 		BlendFactor color_src;

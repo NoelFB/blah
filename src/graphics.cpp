@@ -25,6 +25,18 @@ const BlendMode BlendMode::Subtract = BlendMode(
 	0xffffffff
 );
 
+const BlendMode BlendMode::Additive = BlendMode(
+	BlendOp::Add,
+	BlendFactor::SrcAlpha,
+	BlendFactor::One,
+	BlendOp::Add,
+	BlendFactor::SrcAlpha,
+	BlendFactor::One,
+	BlendMask::RGBA,
+	0xffffffff
+);
+
+
 VertexFormat::VertexFormat(const StackVector<VertexAttribute, 16>& attr, int str)
 {
 	attributes = attr;

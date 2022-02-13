@@ -16,7 +16,7 @@ namespace Blah
 		Normal,
 
 		// Ignores the texture color but still uses transparency, essentially
-		// drawing the "shape" of the texture a solid color
+		// drawing the "shape" of the texture as a solid color
 		Wash
 	};
 
