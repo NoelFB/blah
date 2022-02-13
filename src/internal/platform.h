@@ -12,6 +12,8 @@ namespace Blah
 	{
 	public:
 
+		virtual ~Platform() = default;
+
 		// Initialize the Graphics
 		virtual bool init(const Config& config) = 0;
 
