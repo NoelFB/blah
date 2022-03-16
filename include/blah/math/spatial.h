@@ -204,6 +204,7 @@ namespace Blah
 		constexpr Rect scale(T s) const;
 		constexpr Rect scale(T sx, T sy) const;
 		constexpr Rect inflate(T amount) const;
+		constexpr Rect inflate(T amount_x, T amount_y) const;
 
 		// Rect Sectors:
 		//		0101  0100  0110
@@ -792,6 +793,11 @@ namespace Blah
 	template<class T>
 	constexpr Rect<T> Rect<T>::inflate(T amount) const {
 		return Rect(x - amount, y - amount, w + amount * 2, h + amount * 2);
+	}
+
+	template<class T>
+	constexpr Rect<T> Rect<T>::inflate(T amount_x, T amount_y) const {
+		return Rect(x - amount_x, y - amount_y, w + amount_x * 2, h + amount_y * 2);
 	}
 
 	template<class T>
