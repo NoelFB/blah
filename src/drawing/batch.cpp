@@ -228,7 +228,7 @@ void Batch::push_color_mode(ColorMode mode)
 	m_tex_wash = (m_color_mode == ColorMode::Wash ? 255 : 0);
 }
 
-ColorMode Batch::pop_color_mode()
+Batch::ColorMode Batch::pop_color_mode()
 {
 	ColorMode was = m_color_mode;
 	m_color_mode = m_color_mode_stack.pop();
@@ -237,7 +237,7 @@ ColorMode Batch::pop_color_mode()
 	return was;
 }
 
-ColorMode Batch::peek_color_mode() const
+Batch::ColorMode Batch::peek_color_mode() const
 {
 	return m_color_mode;
 }
@@ -404,8 +404,22 @@ void Batch::line(const Vec2f& from, const Vec2f& to, float t, Color fromColor, C
 	if (from.x == to.x && from.y == to.y)
 		return;
 
-	Vec2f normal = (to - from).normal();
-	Vec2f perp = Vec2f(normal.y, -normal.x);
+	Vec2f perp;
+
+	if (from.x == to.x)
+	{
+		perp = Vec2f::unit_x;
+	}
+	else if (from.y == to.y)
+	{
+		perp = Vec2f::unit_y;
+	}
+	else
+	{
+		Vec2f normal = (to - from).normal();
+		perp = Vec2f(normal.y, -normal.x);
+	}
+	
 	Vec2f pos0 = from + perp * t * 0.5f;
 	Vec2f pos1 = to + perp * t * 0.5f;
 	Vec2f pos2 = to - perp * t * 0.5f;
@@ -938,57 +952,40 @@ void Batch::tex(const Subtexture& sub, const Rectf& clip, const Vec2f& pos, cons
 
 void Batch::str(const SpriteFont& font, const String& text, const Vec2f& pos, Color color)
 {
-	str(font, text, pos, TextAlign::TopLeft, font.size, color);
+	str(font, text, pos, Vec2f::zero, font.size, color);
 }
 
-void Batch::str(const SpriteFont& font, const String& text, const Vec2f& pos, TextAlign align, float size, Color color)
+void Batch::str(const SpriteFont& font, const String& text, const Vec2f& pos, const Vec2f& justify, float size, Color color)
 {
 	push_matrix(
 		Mat3x2f::create_scale(size / font.size) *
 		Mat3x2f::create_translation(pos)
 	);
 
-	Vec2f offset;
-
-	if ((align & TextAlign::Left) == TextAlign::Left)
-		offset.x = 0;
-	else if ((align & TextAlign::Right) == TextAlign::Right)
-		offset.x -= font.width_of_line(text);
-	else
-		offset.x -= font.width_of_line(text) * 0.5f;
-
-	if ((align & TextAlign::Top) == TextAlign::Top)
-		offset.y = font.ascent + font.descent;
-	else if ((align & TextAlign::Bottom) == TextAlign::Bottom)
-		offset.y = font.height() - font.height_of(text);
-	else
-		offset.y = (font.ascent + font.descent + font.height() - font.height_of(text)) * 0.5f;
+	Vec2f offset = Vec2f(0, font.ascent + font.descent);
+	if (justify.x != 0)
+		offset.x -= font.width_of_line(text) * justify.x;
+	if (justify.y != 0)
+		offset.y -= font.height_of(text) * justify.y;
 
 	u32 last = 0;
-	for (int i = 0, l = text.length(); i < l; i++)
+	for (int i = 0, l = text.length(); i < l; i += text.utf8_length(i))
 	{
-		if (text[i] == '\n')
+		u32 next = text.utf8_at(i);
+
+		if (next == '\n')
 		{
-			// increment y
+			offset.x = 0;
 			offset.y += font.line_height();
 
-			// re-align X for this line
-			if ((align & TextAlign::Left) == TextAlign::Left)
-				offset.x = 0;
-			else if ((align & TextAlign::Right) == TextAlign::Right)
-				offset.x = -font.width_of_line(text, i + 1);
-			else
-				offset.x = -font.width_of_line(text, i + 1) * 0.5f;
+			if (justify.x != 0)
+				offset.x -= font.width_of_line(text, i + 1) * justify.x;
 
 			last = 0;
 			continue;
 		}
 
-		// get the character
-		u32 next = text.utf8_at(i);
 		const auto& ch = font[next];
-
-		// draw it, if the subtexture exists
 		if (ch.subtexture.texture)
 		{
 			Vec2f at = offset + ch.offset;
@@ -999,14 +996,7 @@ void Batch::str(const SpriteFont& font, const String& text, const Vec2f& pos, Te
 			tex(ch.subtexture, at, color);
 		}
 
-		// move forward
 		offset.x += ch.advance;
-
-		// increment past current character
-		// (minus 1 since the for loop iterator increments as well)
-		i += text.utf8_length(i) - 1;
-		
-		// keep last codepoint for next char for kerning
 		last = next;
 	}
 

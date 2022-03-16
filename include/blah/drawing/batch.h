@@ -9,38 +9,22 @@
 
 namespace Blah
 {
-	// Spritebatcher Color Mode
-	enum class ColorMode
-	{
-		// Draws textures and shapes normally
-		Normal,
-
-		// Ignores the texture color but still uses transparency, essentially
-		// drawing the "shape" of the texture as a solid color
-		Wash
-	};
-
-	enum class TextAlign : char
-	{
-		Center = 0,
-		Left = 1 << 1,
-		Right = 1 << 2,
-		Top = 1 << 3,
-		Bottom = 1 << 4,
-
-		TopLeft = Top | Left,
-		TopRight = Top | Right,
-		BottomLeft = Bottom | Left,
-		BottomRight = Bottom | Right
-	};
-
-	inline TextAlign operator|(TextAlign lhs, TextAlign rhs) { return static_cast<TextAlign>(static_cast<char>(lhs) | static_cast<char>(rhs)); }
-	inline TextAlign operator&(TextAlign lhs, TextAlign rhs) { return static_cast<TextAlign>(static_cast<char>(lhs) & static_cast<char>(rhs)); }
 
 	// A 2D sprite batcher, used for drawing shapes and textures
 	class Batch
 	{
 	public:
+
+		// Spritebatcher Color Mode
+		enum class ColorMode
+		{
+			// Draws textures and shapes normally
+			Normal,
+
+			// Ignores the texture color but still uses transparency, essentially
+			// drawing the "shape" of the texture as a solid color
+			Wash
+		};
 
 		// The name of the default uniforms to set
 		String texture_uniform = "u_texture";
@@ -177,7 +161,7 @@ namespace Blah
 		void tex(const Subtexture& subtexture, const Rectf& clip, const Vec2f& pos, const Vec2f& origin, const Vec2f& scale, float rotation, Color color);
 
 		void str(const SpriteFont& font, const String& text, const Vec2f& pos, Color color);
-		void str(const SpriteFont& font, const String& text, const Vec2f& pos, TextAlign align, float size, Color color);
+		void str(const SpriteFont& font, const String& text, const Vec2f& pos, const Vec2f& justify, float size, Color color);
 
 	private:
 
