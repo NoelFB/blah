@@ -837,7 +837,7 @@ namespace Blah
 				return;
 			}
 
-			GLchar log[1024];
+			GLchar log[1024] = { 0 };
 			GLsizei log_length = 0;
 
 			GLuint vertex_shader = renderer->gl.CreateShader(GL_VERTEX_SHADER);
@@ -901,7 +901,7 @@ namespace Blah
 					GLsizei length;
 					GLsizei size;
 					GLenum type;
-					GLchar name[max_name_length + 1];
+					GLchar name[max_name_length + 1] = { 0 };
 
 					renderer->gl.GetActiveUniform(id, i, max_name_length, &length, &size, &type, name);
 					name[length] = '\0';
