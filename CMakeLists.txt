@@ -44,6 +44,7 @@ endif()
 option(BLAH_NO_FUNCTIONAL "Don't use std::function" OFF)
 option(BLAH_NO_SHARED_PTR "Don't use std::shared_ptr for Resources" OFF)
 
+# tracks which libraries we need to link, depends on Options above
 set(LIBS "")
 
 # use the OpenGL Renderer Backend
@@ -93,3 +94,7 @@ elseif (BLAH_PLATFORM_WIN32)
 endif()
 
 target_link_libraries(blah PRIVATE ${LIBS})
+
+# toggle options
+if (BLAH_NO_FUNCTIONAL) add_compile_definitions(BLAH_NO_FUNCTIONAL) endif()
+if (BLAH_NO_SHARED_PTR) add_compile_definitions(BLAH_NO_SHARED_PTR) endif()
