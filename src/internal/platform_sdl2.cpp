@@ -78,6 +78,7 @@ namespace Blah
 		SDL_GameController* gamepads[Input::max_controllers];
 		char* base_path_value = nullptr;
 		char* user_path_value = nullptr;
+		char* clipboard_text = nullptr;
 		bool displayed = false;
 
 		SDL2_Platform();
@@ -242,6 +243,9 @@ void SDL2_Platform::shutdown()
 
 	if (user_path_value != nullptr)
 		SDL_free(user_path_value);
+
+	if (clipboard_text != nullptr)
+		SDL_free(clipboard_text);
 
 	SDL_Quit();
 }
@@ -669,7 +673,12 @@ void SDL2_Platform::set_clipboard(const char* text)
 
 const char* SDL2_Platform::get_clipboard()
 {
-	return SDL_GetClipboardText();
+	// free previous clipboard text
+	if (clipboard_text != nullptr)
+		SDL_free(clipboard_text);
+
+	clipboard_text = SDL_GetClipboardText();
+	return clipboard_text;
 }
 
 void* SDL2_Platform::gl_get_func(const char* name)
