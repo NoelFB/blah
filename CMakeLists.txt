@@ -96,5 +96,9 @@ endif()
 target_link_libraries(blah PRIVATE ${LIBS})
 
 # toggle options
-if (BLAH_NO_FUNCTIONAL) add_compile_definitions(BLAH_NO_FUNCTIONAL) endif()
-if (BLAH_NO_SHARED_PTR) add_compile_definitions(BLAH_NO_SHARED_PTR) endif()
+if (BLAH_NO_FUNCTIONAL)
+	add_compile_definitions(BLAH_NO_FUNCTIONAL)
+endif()
+if (BLAH_NO_SHARED_PTR)
+	add_compile_definitions(BLAH_NO_SHARED_PTR)
+endif()
