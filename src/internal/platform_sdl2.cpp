@@ -545,21 +545,25 @@ float SDL2_Platform::get_content_scale()
 	return 2.0f;
 #endif
 
-#if _WIN32
-	float hidpiRes = 96;
-#else
-	float hidpiRes = 72;
-#endif
+	// TODO:
+	// is there a way to get this value properly? My Windows & Linux PC's both seem to thing 96 is correct
+	const float hidpi_res = 96;
 
 	int index = SDL_GetWindowDisplayIndex(window);
 	if (index < 0)
+	{
 		Log::error(SDL_GetError());
+		return 1.0f;
+	}
 
 	float ddpi, x, y;
 	if (SDL_GetDisplayDPI(index, &ddpi, &x, &y) != 0)
+	{
 		Log::error(SDL_GetError());
+		return 1.0f;
+	}
 
-	return (ddpi / hidpiRes);
+	return (ddpi / hidpi_res);
 }
 
 const char* SDL2_Platform::app_path()
