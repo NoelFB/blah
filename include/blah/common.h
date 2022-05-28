@@ -7,8 +7,10 @@
 #if defined(DEBUG) || defined(_DEBUG)
 #	include <stdlib.h>     // for abort
 #	define BLAH_ASSERT(condition, msg) do { if (!(condition)) { Blah::Log::error("%s\n\tin %s:%d", (msg), __FILE__, __LINE__); abort(); } } while(0)
+#	define BLAH_ASSERT_FMT(condition, msg, ...) do { if (!(condition)) { Blah::Log::error(msg "\n\tin %s:%d", __VA_ARGS__, __FILE__, __LINE__); abort(); } } while(0)
 #else
 #	define BLAH_ASSERT(condition, msg) do { if (!(condition)) { Blah::Log::error("%s\n\tin %s:%d", (msg), __FILE__, __LINE__); } } while(0)
+#	define BLAH_ASSERT_FMT(condition, msg, ...) do { if (!(condition)) { Blah::Log::error(msg "\n\tin %s:%d", __VA_ARGS__, __FILE__, __LINE__); } } while(0)
 #endif
 
 // Numeric Types
