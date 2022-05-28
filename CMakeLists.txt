@@ -70,20 +70,24 @@ if (BLAH_PLATFORM_SDL2)
 
 	# Pull SDL2 from its Github repo
 	else()
-		include(FetchContent)
-		set(FETCHCONTENT_QUIET FALSE)
+		if (NOT DEFINED BLAH_SDL2_LIBS)
+			include(FetchContent)
+			set(FETCHCONTENT_QUIET FALSE)
 
-		FetchContent_Declare(
-			SDL2
-			GIT_REPOSITORY https://github.com/libsdl-org/SDL
-			GIT_TAG release-2.0.20 # grab latest stable release
-			GIT_PROGRESS TRUE
-		)
-		FetchContent_MakeAvailable(SDL2)
+			FetchContent_Declare(
+				SDL2
+				GIT_REPOSITORY https://github.com/libsdl-org/SDL
+				GIT_TAG release-2.0.20 # grab latest stable release
+				GIT_PROGRESS TRUE
+			)
+			FetchContent_MakeAvailable(SDL2)
+			set(BLAH_SDL2_LIBS SDL2main SDL2-static)
+			set(BLAH_SDL2_INCLUDE ${sdl2_SOURCE_DIRS}/include)
+		endif()
 
 		# statically link SDL2 since we're building it ourselves
-		set(LIBS ${LIBS} SDL2main SDL2-static)
-		target_include_directories(blah PRIVATE ${sdl2_SOURCE_DIRS}/include)
+		set(LIBS ${LIBS} ${BLAH_SDL2_LIBS})
+		target_include_directories(blah PRIVATE ${BLAH_SDL2_INCLUDE})
 	endif()
 
 # use the Win32 Platform Backend
