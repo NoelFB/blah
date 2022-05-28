@@ -256,15 +256,15 @@ Material::Material(const ShaderRef& shader)
 
 		if (uniform.type == UniformType::Texture2D)
 		{
-			for (int i = 0; i < uniform.array_length; i++)
-				m_textures.push_back(TextureRef());
+			if (m_textures.size() < uniform.register_index + uniform.array_length)
+				m_textures.resize(uniform.register_index + uniform.array_length);
 			continue;
 		}
 
 		if (uniform.type == UniformType::Sampler2D)
 		{
-			for (int i = 0; i < uniform.array_length; i++)
-				m_samplers.push_back(TextureSampler());
+			if (m_samplers.size() < uniform.register_index + uniform.array_length)
+				m_samplers.resize(uniform.register_index + uniform.array_length);
 			continue;
 		}
 
@@ -302,7 +302,6 @@ void Material::set_texture(const char* name, const TextureRef& texture, int inde
 {
 	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 
-	int offset = 0;
 	for (auto& uniform : m_shader->uniforms())
 	{
 		if (uniform.type != UniformType::Texture2D)
@@ -310,92 +309,60 @@ void Material::set_texture(const char* name, const TextureRef& texture, int inde
 
 		if (strcmp(uniform.name, name) == 0)
 		{
-			m_textures[offset + index] = texture;
-			return;
-		}
-
-		offset += uniform.array_length;
-		if (offset + index >= m_textures.size())
+			if (uniform.register_index + index < m_textures.size())
+			{
+				m_textures[uniform.register_index + index] = texture;
+				return;
+			}
 			break;
+		}
 	}
 
 	Log::warn("No Texture Uniform '%s' at index [%i] exists", name, index);
 }
 
-void Material::set_texture(int slot, const TextureRef& texture, int index)
+void Material::set_texture(int register_index, const TextureRef& texture)
 {
 	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 
-	int s = 0;
-	int offset = 0;
-	for (auto& uniform : m_shader->uniforms())
+	if (register_index >= m_textures.size())
 	{
-		if (uniform.type != UniformType::Texture2D)
-			continue;
-
-		if (s == slot)
-		{
-			if (index > uniform.array_length)
-				break;
-
-			m_textures[offset + index] = texture;
-			break;
-		}
-
-		offset += uniform.array_length;
-		s++;
+		Log::warn("Texture Register index [%i] is out of bounds", register_index);
+		return;
 	}
+
+	m_textures[register_index] = texture;
 }
 
 TextureRef Material::get_texture(const char* name, int index) const
 {
 	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 
-	int offset = 0;
 	for (auto& uniform : m_shader->uniforms())
 	{
 		if (uniform.type != UniformType::Texture2D)
 			continue;
 
 		if (strcmp(uniform.name, name) == 0)
-			return m_textures[offset + index];
-
-		offset += uniform.array_length;
-		if (offset + index >= m_textures.size())
+		{
+			if (uniform.register_index + index < m_textures.size())
+				return m_textures[uniform.register_index + index];
 			break;
+		}
 	}
 
 	Log::warn("No Texture Uniform '%s' at index [%i] exists", name, index);
 	return TextureRef();
 }
 
-TextureRef Material::get_texture(int slot, int index) const
+TextureRef Material::get_texture(int register_index) const
 {
 	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 
-	int s = 0;
-	int offset = 0;
-	for (auto& uniform : m_shader->uniforms())
-	{
-		if (uniform.type != UniformType::Texture2D)
-			continue;
+	if (register_index < m_textures.size())
+		return m_textures[register_index];
 
-		if (s == slot)
-		{
-			if (index > uniform.array_length)
-				break;
-
-			return m_textures[offset + index];
-		}
-
-		offset += uniform.array_length;
-		if (offset + index >= m_textures.size())
-			break;
-
-		s++;
-	}
-
-	Log::warn("No Texture Uniform ['%i'] at index [%i] exists", slot, index);
+	Log::warn("No Texture Uniform at register index [%i]", register_index);
 	return TextureRef();
 }
 
@@ -403,7 +370,6 @@ void Material::set_sampler(const char* name, const TextureSampler& sampler, int 
 {
 	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 
-	int offset = 0;
 	for (auto& uniform : m_shader->uniforms())
 	{
 		if (uniform.type != UniformType::Sampler2D)
@@ -411,92 +377,60 @@ void Material::set_sampler(const char* name, const TextureSampler& sampler, int 
 
 		if (strcmp(uniform.name, name) == 0)
 		{
-			m_samplers[offset + index] = sampler;
-			return;
-		}
-
-		offset += uniform.array_length;
-		if (offset + index >= m_samplers.size())
+			if (uniform.register_index + index < m_samplers.size())
+			{
+				m_samplers[uniform.register_index + index] = sampler;
+				return;
+			}
 			break;
+		}
 	}
 
-	Log::warn("No Sampler Uniform '%s' at index [%i] exists", name, index);
+	Log::warn("No Texture Sampler Uniform '%s' at index [%i] exists", name, index);
 }
 
-void Material::set_sampler(int slot, const TextureSampler& sampler, int index)
+void Material::set_sampler(int register_index, const TextureSampler& sampler)
 {
 	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 
-	int s = 0;
-	int offset = 0;
-	for (auto& uniform : m_shader->uniforms())
+	if (register_index >= m_samplers.size())
 	{
-		if (uniform.type != UniformType::Sampler2D)
-			continue;
-
-		if (s == slot)
-		{
-			if (index > uniform.array_length)
-				break;
-
-			m_samplers[offset + index] = sampler;
-			break;
-		}
-
-		offset += uniform.array_length;
-		s++;
+		Log::warn("Texture Sampler Register index [%i] is out of bounds", register_index);
+		return;
 	}
+
+	m_samplers[register_index] = sampler;
 }
 
 TextureSampler Material::get_sampler(const char* name, int index) const
 {
 	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 
-	int offset = 0;
 	for (auto& uniform : m_shader->uniforms())
 	{
 		if (uniform.type != UniformType::Sampler2D)
 			continue;
 
 		if (strcmp(uniform.name, name) == 0)
-			return m_samplers[offset + index];
-
-		offset += uniform.array_length;
-		if (offset + index >= m_samplers.size())
+		{
+			if (uniform.register_index + index < m_samplers.size())
+				return m_samplers[uniform.register_index + index];
 			break;
+		}
 	}
 
-	Log::warn("No Sampler Uniform '%s' at index [%i] exists", name, index);
+	Log::warn("No Texture Sampler Uniform '%s' at index [%i] exists", name, index);
 	return TextureSampler();
 }
 
-TextureSampler Material::get_sampler(int slot, int index) const
+TextureSampler Material::get_sampler(int register_index) const
 {
 	BLAH_ASSERT(m_shader, "Material Shader is invalid");
 
-	int s = 0;
-	int offset = 0;
-	for (auto& uniform : m_shader->uniforms())
-	{
-		if (uniform.type != UniformType::Sampler2D)
-			continue;
+	if (register_index < m_samplers.size())
+		return m_samplers[register_index];
 
-		if (s == slot)
-		{
-			if (index > uniform.array_length)
-				break;
-
-			return m_samplers[offset + index];
-		}
-
-		offset += uniform.array_length;
-		if (offset + index >= m_samplers.size())
-			break;
-
-		s++;
-	}
-
-	Log::warn("No Sampler Uniform ['%i'] at index [%i] exists", slot, index);
+	Log::warn("No Texture Sampler Uniform at register index [%i]", register_index);
 	return TextureSampler();
 }
 

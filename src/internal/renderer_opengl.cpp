@@ -894,6 +894,7 @@ namespace Blah
 				const int max_name_length = 256;
 
 				GLint active_uniforms = 0;
+				GLint sampler_uniforms = 0;
 				renderer->gl.GetProgramiv(id, GL_ACTIVE_UNIFORMS, &active_uniforms);
 
 				for (int i = 0; i < active_uniforms; i++)
@@ -921,6 +922,7 @@ namespace Blah
 					{
 						UniformInfo tex_uniform;
 						tex_uniform.name = name;
+						tex_uniform.register_index = sampler_uniforms;
 						tex_uniform.buffer_index = 0;
 						tex_uniform.array_length = size;
 						tex_uniform.type = UniformType::Texture2D;
@@ -930,18 +932,22 @@ namespace Blah
 
 						UniformInfo sampler_uniform;
 						sampler_uniform.name = String(name).append("_sampler");
+						sampler_uniform.register_index = sampler_uniforms;
 						sampler_uniform.buffer_index = 0;
 						sampler_uniform.array_length = size;
 						sampler_uniform.type = UniformType::Sampler2D;
 						sampler_uniform.shader = ShaderType::Fragment;
 						uniform_locations.push_back(renderer->gl.GetUniformLocation(id, name));
 						m_uniforms.push_back(sampler_uniform);
+
+						sampler_uniforms += size;
 					}
 					else
 					{
 						UniformInfo uniform;
 						uniform.name = name;
 						uniform.type = UniformType::None;
+						uniform.register_index = 0;
 						uniform.buffer_index = 0;
 						uniform.array_length = size;
 						uniform_locations.push_back(renderer->gl.GetUniformLocation(id, name));
@@ -1297,7 +1303,6 @@ namespace Blah
 			renderer->gl.UseProgram(shader->gl_id());
 
 			int texture_slot = 0;
-			int gl_texture_slot = 0;
 			GLint texture_ids[64];
 			auto& uniforms = shader->uniforms();
 			auto data = pass.material->data();
@@ -1316,10 +1321,10 @@ namespace Blah
 				{
 					for (int n = 0; n < uniform.array_length; n++)
 					{
-						auto tex = pass.material->get_texture(texture_slot, n);
-						auto sampler = pass.material->get_sampler(texture_slot, n);
+						auto tex = pass.material->get_texture(texture_slot);
+						auto sampler = pass.material->get_sampler(texture_slot);
 
-						renderer->gl.ActiveTexture(GL_TEXTURE0 + gl_texture_slot);
+						renderer->gl.ActiveTexture(GL_TEXTURE0 + texture_slot);
 
 						if (!tex)
 						{
@@ -1332,12 +1337,11 @@ namespace Blah
 							renderer->gl.BindTexture(GL_TEXTURE_2D, gl_tex->gl_id());
 						}
 
-						texture_ids[n] = gl_texture_slot;
-						gl_texture_slot++;
+						texture_ids[n] = texture_slot;
+						texture_slot++;
 					}
 
 					renderer->gl.Uniform1iv(location, (GLint)uniform.array_length, &texture_ids[0]);
-					texture_slot++;
 					continue;
 				}
 

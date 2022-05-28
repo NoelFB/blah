@@ -1204,6 +1204,7 @@ namespace Blah
 				auto uniform = append_uniforms_to.expand();
 				uniform->name = desc.Name;
 				uniform->shader = shader_type;
+				uniform->register_index = desc.BindPoint;
 				uniform->buffer_index = 0;
 				uniform->array_length = max(1, desc.BindCount);
 				uniform->type = UniformType::Texture2D;
@@ -1213,6 +1214,7 @@ namespace Blah
 				auto uniform = append_uniforms_to.expand();
 				uniform->name = desc.Name;
 				uniform->shader = shader_type;
+				uniform->register_index = desc.BindPoint;
 				uniform->buffer_index = 0;
 				uniform->array_length = max(1, desc.BindCount);
 				uniform->type = UniformType::Sampler2D;
@@ -1254,6 +1256,7 @@ namespace Blah
 				auto uniform = append_uniforms_to.expand();
 				uniform->name = var_desc.Name;
 				uniform->shader = shader_type;
+				uniform->register_index = 0;
 				uniform->buffer_index = i;
 				uniform->array_length = max(1, type_desc.Elements);
 				uniform->type = UniformType::None;

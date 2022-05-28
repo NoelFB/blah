@@ -257,12 +257,15 @@ namespace Blah
 		// The Shader type the Uniform is a part of
 		ShaderType shader;
 
+		// Texture / Sampler register index, which shaders can manually assign
+		int register_index = 0;
+
 		// Some rendering APIs have uniform buffers. The `buffer_index`
 		// specifies which buffer the uniform belongs to
-		int buffer_index;
+		int buffer_index = 0;
 
 		// Array length of the Uniform (ex. a vec2[4] would be 4)
-		int array_length;
+		int array_length = 0;
 	};
 
 	// Supported Vertex value types
@@ -550,25 +553,25 @@ namespace Blah
 		void set_texture(const char* name, const TextureRef& texture, int array_index = 0);
 
 		// Sets the texture
-		void set_texture(int slot, const TextureRef& texture, int array_index = 0);
+		void set_texture(int register_index, const TextureRef& texture);
 
 		// Gets the texture, or an empty reference if invalid
 		TextureRef get_texture(const char* name, int array_index = 0) const;
 
 		// Gets the texture, or an empty reference if invalid
-		TextureRef get_texture(int slot, int array_index = 0) const;
+		TextureRef get_texture(int register_index) const;
 
 		// Sets the sampler
 		void set_sampler(const char* name, const TextureSampler& sampler, int array_index = 0);
 
 		// Sets the sampler
-		void set_sampler(int slot, const TextureSampler& sampler, int array_index = 0);
+		void set_sampler(int register_index, const TextureSampler& sampler);
 
 		// Gets the sampler
 		TextureSampler get_sampler(const char* name, int array_index = 0) const;
 
 		// Gets the sampler
-		TextureSampler get_sampler(int slot, int array_index = 0) const;
+		TextureSampler get_sampler(int register_index) const;
 
 		// Sets the value. `length` is the total number of floats to set
 		// For example if the uniform is a float2[4], a total of 8 float values
