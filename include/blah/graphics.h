@@ -113,8 +113,10 @@ namespace Blah
 	// BlendMode using for rendering
 	struct BlendMode
 	{
-		// Normal, pre-multiplied, Blend Mode
+		// Normal is Premultipled Alpha
+		// TODO: potentially rename normal to match that it is for Premultiplied Alpha?
 		static const BlendMode Normal;
+		static const BlendMode NonPremultiplied;
 		static const BlendMode Subtract;
 		static const BlendMode Additive;
 

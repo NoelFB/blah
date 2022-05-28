@@ -14,6 +14,17 @@ const BlendMode BlendMode::Normal = BlendMode(
 	0xffffffff
 );
 
+const BlendMode BlendMode::NonPremultiplied = BlendMode(
+	BlendOp::Add,
+	BlendFactor::SrcAlpha,
+	BlendFactor::OneMinusSrcAlpha,
+	BlendOp::Add,
+	BlendFactor::SrcAlpha,
+	BlendFactor::OneMinusSrcAlpha,
+	BlendMask::RGBA,
+	0xffffffff
+);
+
 const BlendMode BlendMode::Subtract = BlendMode(
 	BlendOp::ReverseSubtract,
 	BlendFactor::One,
