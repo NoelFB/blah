@@ -194,7 +194,7 @@ size_t Win32File::read(void* buffer, size_t length)
 			to_read = (DWORD)(length - read);
 
 		DWORD moved = 0;
-		if (ReadFile(m_handle, buffer + read, to_read, &moved, NULL))
+		if (ReadFile(m_handle, (char *)buffer + read, to_read, &moved, NULL))
 			read += moved;
 
 		if (moved < to_read)
@@ -217,7 +217,7 @@ size_t Win32File::write(const void* buffer, size_t length)
 			to_write = (DWORD)(length - written);
 
 		DWORD moved = 0;
-		if (WriteFile(m_handle, buffer + written, to_write, &moved, NULL))
+		if (WriteFile(m_handle, (char *)buffer + written, to_write, &moved, NULL))
 			written += moved;
 
 		if (moved < to_write)
