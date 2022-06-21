@@ -1326,6 +1326,14 @@ namespace Blah
 
 				if (it.buffer_index == i && ((int)it.shader & (int)type) != 0)
 				{
+					// HLSL uniforms can not pass 16-byte (4-float) boundaries, therefore potentially add padding to the buffer so we align to 16 bytes
+					// For example, if we have filled in 6 floats, our remaining space will be 2. If the next value is larger than 2 floats, we will
+					// need to move to the next 16-byte (4-float) boundary (in this case 2 floats to begin at 8 floats).
+					// see: https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-packing-rules
+					int remaining = 4 - values[i].size() % 4;
+					if (remaining != 4 && remaining + length > 4)
+						values[i].expand(remaining);
+					
 					auto start = values[i].expand(length);
 					memcpy(start, data, sizeof(float) * length);
 				}
