@@ -240,6 +240,7 @@ namespace Blah
 	inline const Color Color::green       = Color(  0, 255,   0);
 	inline const Color Color::blue        = Color(  0,   0, 255);
 	inline const Color Color::yellow      = Color(255, 255,   0);
+	inline const Color Color::orange      = Color(255, 165,   0);
 	inline const Color Color::purple      = Color(255,   0, 255);
 	inline const Color Color::teal        = Color(  0, 255, 255);
 }
