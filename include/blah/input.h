@@ -615,6 +615,9 @@ namespace Blah
 		// updates the Binding
 		void update();
 
+		// checks if the axis was pressed this frame (ie. went from 0 to -1 or 1)
+		bool pressed() const { return negative.pressed() || positive.pressed(); }
+
 		// consumes the press buffer
 		void consume_press();
 
@@ -676,6 +679,9 @@ namespace Blah
 
 		// Updates the Binding
 		void update();
+
+		// checks if the stick was pressed this frame
+		bool pressed() const { return x.pressed() || y.pressed(); }
 
 		// Consumes the Press Buffer
 		void consume_press();
