@@ -141,7 +141,11 @@ bool SDL2_Platform::init(const Config& config)
 
 	// TODO:
 	// control this via some kind of config flag
+#ifndef __EMSCRIPTEN__
+	// Note: Emscripten gets a Stack Overflow if this is assigned to Verbose, even when
+	// increasing the node stack size to +8mb. Some kind of SDL2 problem?
 	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+#endif
 	SDL_LogSetOutputFunction(blah_sdl_log, nullptr);
 
 	// Get SDL version
@@ -164,6 +168,7 @@ bool SDL2_Platform::init(const Config& config)
 		flags |= SDL_WINDOW_OPENGL;
 
 #ifdef __EMSCRIPTEN__
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 #else
@@ -731,3 +736,4 @@ Platform* Platform::try_make_platform(const Config& config)
 }
 
 #endif // BLAH_PLATFORM_SDL2
+

@@ -793,21 +793,32 @@ namespace Blah
 
 		virtual void clear(Color color, float depth, u8 stencil, ClearMask mask) override
 		{
+			renderer->gl.BindFramebuffer(GL_FRAMEBUFFER, m_id);
+			renderer->gl.Disable(GL_SCISSOR_TEST);
+
 			int clear = 0;
 
 			if (((int)mask & (int)ClearMask::Color) == (int)ClearMask::Color)
+			{
 				clear |= GL_COLOR_BUFFER_BIT;
+				renderer->gl.ColorMask(true, true, true, true);
+				renderer->gl.ClearColor(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
+			}
+			
 			if (((int)mask & (int)ClearMask::Depth) == (int)ClearMask::Depth)
+			{
 				clear |= GL_DEPTH_BUFFER_BIT;
-			if (((int)mask & (int)ClearMask::Stencil) == (int)ClearMask::Stencil)
-				clear |= GL_STENCIL_BUFFER_BIT;
+				if (renderer->gl.ClearDepth)
+					renderer->gl.ClearDepth(depth);
+			}
 
-			renderer->gl.BindFramebuffer(GL_FRAMEBUFFER, m_id);
-			renderer->gl.Disable(GL_SCISSOR_TEST);
-			renderer->gl.ColorMask(true, true, true, true);
-			renderer->gl.ClearColor(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
-			renderer->gl.ClearDepth(depth);
-			renderer->gl.ClearStencil(stencil);
+			if (((int)mask & (int)ClearMask::Stencil) == (int)ClearMask::Stencil)
+			{
+				clear |= GL_STENCIL_BUFFER_BIT;
+				if (renderer->gl.ClearStencil)
+					renderer->gl.ClearStencil(stencil);
+			}
+
 			renderer->gl.Clear(clear);
 		}
 	};
@@ -1535,22 +1546,33 @@ namespace Blah
 
 	void Renderer_OpenGL::clear_backbuffer(Color color, float depth, u8 stencil, ClearMask mask)
 	{
-		int clear = 0;
+			renderer->gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
+			renderer->gl.Disable(GL_SCISSOR_TEST);
 
-		if (((int)mask & (int)ClearMask::Color) == (int)ClearMask::Color)
-			clear |= GL_COLOR_BUFFER_BIT;
-		if (((int)mask & (int)ClearMask::Depth) == (int)ClearMask::Depth)
-			clear |= GL_DEPTH_BUFFER_BIT;
-		if (((int)mask & (int)ClearMask::Stencil) == (int)ClearMask::Stencil)
-			clear |= GL_STENCIL_BUFFER_BIT;
+			int clear = 0;
 
-		renderer->gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
-		renderer->gl.Disable(GL_SCISSOR_TEST);
-		renderer->gl.ColorMask(true, true, true, true);
-		renderer->gl.ClearColor(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
-		renderer->gl.ClearDepth(depth);
-		renderer->gl.ClearStencil(stencil);
-		renderer->gl.Clear(clear);
+			if (((int)mask & (int)ClearMask::Color) == (int)ClearMask::Color)
+			{
+				clear |= GL_COLOR_BUFFER_BIT;
+				renderer->gl.ColorMask(true, true, true, true);
+				renderer->gl.ClearColor(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
+			}
+			
+			if (((int)mask & (int)ClearMask::Depth) == (int)ClearMask::Depth)
+			{
+				clear |= GL_DEPTH_BUFFER_BIT;
+				if (renderer->gl.ClearDepth)
+					renderer->gl.ClearDepth(depth);
+			}
+
+			if (((int)mask & (int)ClearMask::Stencil) == (int)ClearMask::Stencil)
+			{
+				clear |= GL_STENCIL_BUFFER_BIT;
+				if (renderer->gl.ClearStencil)
+					renderer->gl.ClearStencil(stencil);
+			}
+
+			renderer->gl.Clear(clear);
 	}
 }
 
@@ -1568,4 +1590,5 @@ Blah::Renderer* Blah::Renderer::try_make_opengl()
 }
 
 #endif
+
 

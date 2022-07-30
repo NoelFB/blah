@@ -65,8 +65,9 @@ if (BLAH_PLATFORM_SDL2)
 
 	# Emscripten can import SDL2 directly
 	if (EMSCRIPTEN)
-
+		
 		set_target_properties(blah PROPERTIES COMPILE_FLAGS "-s USE_SDL=2")
+		target_link_libraries(blah "-s USE_SDL=2 -s USE_WEBGL2=1")
 
 	# Pull SDL2 from its Github repo
 	else()
@@ -106,3 +107,4 @@ endif()
 if (BLAH_NO_SHARED_PTR)
 	add_compile_definitions(BLAH_NO_SHARED_PTR)
 endif()
+
