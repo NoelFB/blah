@@ -30,6 +30,16 @@ namespace
 	u64        app_time_accumulator = 0;
 	TargetRef  app_backbuffer;
 
+	void get_drawable_size(int* w, int* h)
+	{
+		// Some renderer implementations might return their own size
+		if (App::Internal::renderer->get_draw_size(w, h))
+			return;
+
+		// otherwise fallback to the platform size
+		App::Internal::platform->get_draw_size(w, h);
+	}
+
 	// A dummy Target that represents the Back Buffer.
 	// It doesn't contain any data, rather it forwards calls along to the actual BackBuffer.
 	class BackBuffer final : public Target
@@ -38,8 +48,8 @@ namespace
 		Attachments empty_textures;
 		Attachments& textures() override { BLAH_ASSERT(false, "Backbuffer doesn't have any textures"); return empty_textures; }
 		const Attachments& textures() const override { BLAH_ASSERT(false, "Backbuffer doesn't have any textures"); return empty_textures; }
-		int width() const override { int w, h; App::Internal::platform->get_draw_size(&w, &h); return w; }
-		int height() const override { int w, h; App::Internal::platform->get_draw_size(&w, &h); return h; }
+		int width() const override { int w, h; get_drawable_size(&w, &h); return w; }
+		int height() const override { int w, h; get_drawable_size(&w, &h); return h; }
 		void clear(Color color, float depth, u8 stencil, ClearMask mask) override
 		{
 			BLAH_ASSERT_RENDERER();

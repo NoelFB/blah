@@ -2,6 +2,7 @@
 
 #include "platform.h"
 #include "renderer.h"
+#include "internal.h"
 #include <blah/input.h>
 #include <blah/app.h>
 #include <blah/filesystem.h>
@@ -17,7 +18,6 @@
 #if _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>    // for the following includes
-#include <winuser.h>	// for SetProcessDPIAware
 #include <shellapi.h>	// for ShellExecute for dir_explore
 #include <SDL_syswm.h>  // for SDL_SysWMinfo for D3D11
 #endif
@@ -133,12 +133,6 @@ SDL2_Platform::SDL2_Platform()
 
 bool SDL2_Platform::init(const Config& config)
 {
-	// Required to call this for Windows
-	// I'm not sure why SDL2 doesn't do this on Windows automatically?
-#if _WIN32
-	SetProcessDPIAware();
-#endif
-
 	// TODO:
 	// control this via some kind of config flag
 #ifndef __EMSCRIPTEN__
@@ -152,6 +146,10 @@ bool SDL2_Platform::init(const Config& config)
 	SDL_version version;
 	SDL_GetVersion(&version);
 	Log::info("SDL v%i.%i.%i", version.major, version.minor, version.patch);
+
+	// Make us DPI aware on Windows
+	SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
+	SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "1"); 
 
 	// initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) != 0)
@@ -168,7 +166,6 @@ bool SDL2_Platform::init(const Config& config)
 		flags |= SDL_WINDOW_OPENGL;
 
 #ifdef __EMSCRIPTEN__
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 #else
@@ -194,29 +191,6 @@ bool SDL2_Platform::init(const Config& config)
 		Log::error("Failed to create a Window");
 		return false;
 	}
-
-	// Scale Window to monitor for High DPI displays
-	// Other platforms do this automatically ... Windows we need to explitely do so
-#if _WIN32
-	{
-		// find the display index
-		int display = SDL_GetWindowDisplayIndex(window);
-		float ddpi, hdpi, vdpi;
-		if (SDL_GetDisplayDPI(display, &ddpi, &hdpi, &vdpi) == 0)
-		{
-			// scale the window up basesd on the display DPI
-			float hidpiRes = 96;
-			float dpi = (ddpi / hidpiRes);
-			if (dpi != 1)
-			{
-				SDL_DisplayMode mode;
-				SDL_GetDesktopDisplayMode(display, &mode);
-				SDL_SetWindowPosition(window, (int)(mode.w - config.width * dpi) / 2, (int)(mode.h - config.height * dpi) / 2);
-				SDL_SetWindowSize(window, (int)(config.width * dpi), (int)(config.height * dpi));
-			}
-		}
-	}
-#endif
 
 	// set window properties
 	SDL_SetWindowResizable(window, SDL_TRUE);
@@ -531,13 +505,15 @@ void SDL2_Platform::set_size(int width, int height)
 
 void SDL2_Platform::get_draw_size(int* width, int* height)
 {
-	if (App::renderer().type == RendererType::OpenGL)
+	switch (App::renderer().type)
 	{
+	case RendererType::OpenGL:
 		SDL_GL_GetDrawableSize(window, width, height);
-	}
-	else
-	{
+		break;
+	case RendererType::None:
+	case RendererType::D3D11:
 		SDL_GetWindowSize(window, width, height);
+		break;
 	}
 }
 
@@ -736,4 +712,3 @@ Platform* Platform::try_make_platform(const Config& config)
 }
 
 #endif // BLAH_PLATFORM_SDL2
-

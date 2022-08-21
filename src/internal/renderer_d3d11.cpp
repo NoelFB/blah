@@ -91,7 +91,8 @@ namespace Blah
 		ID3D11DepthStencilView* backbuffer_depth_view = nullptr;
 
 		// last backbuffer size
-		Point last_size;
+		Point drawable_size;
+		Point last_window_size;
 
 		struct StoredInputLayout
 		{
@@ -136,6 +137,7 @@ namespace Blah
 		void update() override;
 		void before_render() override;
 		void after_render() override;
+		bool get_draw_size(int* w, int* h) override;
 		void render(const DrawCall& pass) override;
 		void clear_backbuffer(Color color, float depth, u8 stencil, ClearMask mask) override;
 		TextureRef create_texture(int width, int height, TextureFormat format) override;
@@ -763,7 +765,7 @@ namespace Blah
 
 	bool Renderer_D3D11::init()
 	{
-		last_size = Point(App::backbuffer()->width(), App::backbuffer()->height());
+		last_window_size = App::get_size();
 
 		// Define Swap Chain
 		DXGI_SWAP_CHAIN_DESC desc = {};
@@ -808,6 +810,10 @@ namespace Blah
 		swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&frame_buffer);
 		if (frame_buffer)
 		{
+			D3D11_TEXTURE2D_DESC desc;
+			frame_buffer->GetDesc(&desc);
+			drawable_size = Point(desc.Width, desc.Height);
+
 			device->CreateRenderTargetView(frame_buffer, nullptr, &backbuffer_view);
 			frame_buffer->Release();
 		}
@@ -886,28 +892,42 @@ namespace Blah
 	{
 		HRESULT hr;
 
-		auto next_size = Point(App::backbuffer()->width(), App::backbuffer()->height());
-		if (last_size != next_size)
+		auto next_window_size = App::get_size();
+		if (last_window_size != next_window_size)
 		{
+			last_window_size = next_window_size;
+
 			// release old buffer
 			if (backbuffer_view)
 				backbuffer_view->Release();
 
 			// perform resize
-			hr = swap_chain->ResizeBuffers(0, next_size.x, next_size.y, DXGI_FORMAT_B8G8R8A8_UNORM, 0);
+			hr = swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_B8G8R8A8_UNORM, 0);
 			BLAH_ASSERT(SUCCEEDED(hr), "Failed to update Backbuffer on Resize");
-			last_size = next_size;
 
 			// get the new buffer
 			ID3D11Texture2D* frame_buffer = nullptr;
 			hr = swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&frame_buffer);
 			if (SUCCEEDED(hr) && frame_buffer)
 			{
+				// get backbuffer drawable size
+				D3D11_TEXTURE2D_DESC desc;
+				frame_buffer->GetDesc(&desc);
+				drawable_size = Point(desc.Width, desc.Height);
+
+				// create view
 				hr = device->CreateRenderTargetView(frame_buffer, nullptr, &backbuffer_view);
 				BLAH_ASSERT(SUCCEEDED(hr), "Failed to update Backbuffer on Resize");
 				frame_buffer->Release();
 			}
 		}
+	}
+
+	bool Renderer_D3D11::get_draw_size(int* w, int* h)
+	{
+		*w = drawable_size.x;
+		*h = drawable_size.y;
+		return true;
 	}
 
 	void Renderer_D3D11::after_render()

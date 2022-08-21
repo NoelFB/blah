@@ -32,6 +32,10 @@ namespace Blah
 		// Called after renderings ends
 		virtual void after_render() = 0;
 
+		// Optional implementation to get the drawable backbuffer size in pixels.
+		// Not all implementations will use this so it can be up to the Platform.
+		virtual bool get_draw_size(int* w, int* h) { return false; }
+
 		// Performs a draw call
 		virtual void render(const DrawCall& pass) = 0;
 
