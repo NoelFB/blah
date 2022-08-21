@@ -3,22 +3,42 @@
 #include <new>     // for in-place constructors, for Vector/StackVector
 #include <utility> // for std::move
 
-// Asserts
-#if defined(DEBUG) || defined(_DEBUG)
-#	include <stdlib.h>     // for abort
-#	define BLAH_ASSERT(condition, msg) do { if (!(condition)) { Blah::Log::error("%s\n\tin %s:%d", (msg), __FILE__, __LINE__); abort(); } } while(0)
-#	define BLAH_ASSERT_FMT(condition, msg, ...) do { if (!(condition)) { Blah::Log::error(msg "\n\tin %s:%d", __VA_ARGS__, __FILE__, __LINE__); abort(); } } while(0)
+// Aborts
+#include <stdlib.h>     // for abort
+#ifdef _WIN32
+#define BLAH_ABORT() do { __debugbreak(); ::exit(1); } while(0)
 #else
-#	define BLAH_ASSERT(condition, msg) do { if (!(condition)) { Blah::Log::error("%s\n\tin %s:%d", (msg), __FILE__, __LINE__); } } while(0)
-#	define BLAH_ASSERT_FMT(condition, msg, ...) do { if (!(condition)) { Blah::Log::error(msg "\n\tin %s:%d", __VA_ARGS__, __FILE__, __LINE__); } } while(0)
+#define BLAH_ABORT() ::abort()
 #endif
+
+// Assert Behavior (abort in debug)
+#if defined(DEBUG) || defined(_DEBUG)
+#define BLAH_ASSERT_BEHAVIOR() BLAH_ABORT()
+#else
+#define BLAH_ASSERT_BEHAVIOR()
+#endif
+
+// Asserts
+#define BLAH_ASSERT(condition, msg) \
+	do { \
+		if (!(condition)) { \
+			Blah::Log::error("%s\n\tin %s:%d", (msg), __FILE__, __LINE__); \
+			BLAH_ASSERT_BEHAVIOR(); \
+		} \
+	} while(0)
+#define BLAH_ASSERT_FMT(condition, msg, ...) \
+	do { \
+		if (!(condition)) { \
+			Blah::Log::error(msg "\n\tin %s:%d", __VA_ARGS__, __FILE__, __LINE__); \
+			BLAH_ASSERT_BEHAVIOR(); \
+		} \
+	} while(0)
 
 // Numeric Types
 #include <stdint.h>    // for integer types
 #include <stddef.h>    // for size_t type
 namespace Blah
 {
-	// Numeric Types
 	using i8  = int8_t;
 	using i16 = int16_t;
 	using i32 = int32_t;
