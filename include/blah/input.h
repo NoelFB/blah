@@ -791,13 +791,13 @@ namespace Blah
 		// sets the string contents of the clipboard
 		void set_clipboard(const String& text);
 
-		// registers a new binding
-		ButtonBindingRef register_binding(const ButtonBinding& binding);
+		// registers a new binding and returns a handle to it
+		ButtonBindingRef register_binding(const ButtonBinding& binding_data);
 
-		// registers a new axis binding
-		AxisBindingRef register_binding(const AxisBinding& binding);
+		// registers a new binding and returns a handle to it
+		AxisBindingRef register_binding(const AxisBinding& binding_data);
 
-		// registers a new stick binding
-		StickBindingRef register_binding(const StickBinding& binding);
+		// registers a new binding and returns a handle to it
+		StickBindingRef register_binding(const StickBinding& binding_data);
 	}
 }

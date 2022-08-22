@@ -403,23 +403,23 @@ void Input::set_clipboard(const String& text)
 		App::Internal::platform->set_clipboard(text);
 }
 
-ButtonBindingRef Input::register_binding(const ButtonBinding& binding)
+ButtonBindingRef Input::register_binding(const ButtonBinding& binding_data)
 {
-	auto result = Ref<ButtonBinding>(new ButtonBinding(binding));
+	auto result = Ref<ButtonBinding>(new ButtonBinding(binding_data));
 	g_buttons.push_back(result);
 	return result;
 }
 
-AxisBindingRef Input::register_binding(const AxisBinding& binding)
+AxisBindingRef Input::register_binding(const AxisBinding& binding_data)
 {
-	auto result = Ref<AxisBinding>(new AxisBinding(binding));
+	auto result = Ref<AxisBinding>(new AxisBinding(binding_data));
 	g_axes.push_back(result);
 	return result;
 }
 
-StickBindingRef Input::register_binding(const StickBinding& binding)
+StickBindingRef Input::register_binding(const StickBinding& binding_data)
 {
-	auto result = Ref<StickBinding>(new StickBinding(binding));
+	auto result = Ref<StickBinding>(new StickBinding(binding_data));
 	g_sticks.push_back(result);
 	return result;
 }
