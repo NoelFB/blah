@@ -99,7 +99,7 @@ namespace Blah
 		void get_position(int* x, int* y) override;
 		void set_position(int x, int y) override;
 		bool get_focused() override;
-		void set_fullscreen(bool enabled) override;
+		void set_app_flags(u32 flags) override;
 		void get_size(int* width, int* height) override;
 		void set_size(int width, int height) override;
 		void get_draw_size(int* width, int* height) override;
@@ -474,33 +474,39 @@ bool Win32_Platform::get_focused()
 	return true;
 }
 
-void Win32_Platform::set_fullscreen(bool enabled)
+void Win32_Platform::set_app_flags(u32 flags)
 {
-	if (fullscreen == enabled)
-		return;
-
-	fullscreen = enabled;
-
-	if (fullscreen)
+	// toggle fullscreen
 	{
-		GetWindowRect(hwnd, &windowed_position);
+		bool enabled = (flags & Flags::Fullscreen) != 0;
+		if (fullscreen == enabled)
+			return;
+		fullscreen = enabled;
 
-		int w = GetSystemMetrics(SM_CXSCREEN);
-		int h = GetSystemMetrics(SM_CYSCREEN);
-		SetWindowLongPtr(hwnd, GWL_STYLE, WS_VISIBLE | WS_POPUP);
-		SetWindowPos(hwnd, HWND_TOP, 0, 0, w, h, 0);
-		ShowWindow(hwnd, SW_SHOW);
+		if (fullscreen)
+		{
+			GetWindowRect(hwnd, &windowed_position);
+
+			int w = GetSystemMetrics(SM_CXSCREEN);
+			int h = GetSystemMetrics(SM_CYSCREEN);
+			SetWindowLongPtr(hwnd, GWL_STYLE, WS_VISIBLE | WS_POPUP);
+			SetWindowPos(hwnd, HWND_TOP, 0, 0, w, h, 0);
+			ShowWindow(hwnd, SW_SHOW);
+		}
+		else
+		{
+			SetWindowLongPtr(hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+			SetWindowPos(hwnd, HWND_TOP,
+				windowed_position.left,
+				windowed_position.top,
+				windowed_position.right - windowed_position.left,
+				windowed_position.bottom - windowed_position.top, 0);
+			ShowWindow(hwnd, SW_SHOW);
+		}
 	}
-	else
-	{
-		SetWindowLongPtr(hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
-		SetWindowPos(hwnd, HWND_TOP,
-			windowed_position.left,
-			windowed_position.top,
-			windowed_position.right - windowed_position.left,
-			windowed_position.bottom - windowed_position.top, 0);
-		ShowWindow(hwnd, SW_SHOW);
-	}
+
+	// toggle resizable
+	// TODO: ...
 }
 
 void Win32_Platform::get_size(int* width, int* height)

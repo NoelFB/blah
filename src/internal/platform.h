@@ -35,6 +35,9 @@ namespace Blah
 		// Called to present the window contents
 		virtual void present() = 0;
 
+		// Called when the App sets flags
+		virtual void set_app_flags(u32 flags) = 0;
+
 		// Gets the Application Window Title in UTF-8
 		virtual const char* get_title() = 0;
 
@@ -49,9 +52,6 @@ namespace Blah
 		
 		// Gets whether the Window has focus
 		virtual bool get_focused() = 0;
-
-		// Sets the Window Fullscreen if enabled is not 0
-		virtual void set_fullscreen(bool enabled) = 0;
 
 		// Gets the Application Window Size, in Screen Coordinates
 		virtual void get_size(int* width, int* height) = 0;

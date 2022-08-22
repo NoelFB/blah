@@ -89,12 +89,12 @@ namespace Blah
 		void update(InputState& state) override;
 		void sleep(int milliseconds) override;
 		void present() override;
+		void set_app_flags(u32 flags) override;
 		const char* get_title() override;
 		void set_title(const char* title) override;
 		void get_position(int* x, int* y) override;
 		void set_position(int x, int y) override;
 		bool get_focused() override;
-		void set_fullscreen(bool enabled) override;
 		void get_size(int* width, int* height) override;
 		void set_size(int width, int height) override;
 		void get_draw_size(int* width, int* height) override;
@@ -158,7 +158,7 @@ bool SDL2_Platform::init(const Config& config)
 		return false;
 	}
 
-	int flags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE;
+	int flags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN;
 
 	// enable OpenGL
 	if (config.renderer_type == RendererType::OpenGL)
@@ -192,22 +192,12 @@ bool SDL2_Platform::init(const Config& config)
 		return false;
 	}
 
-	// set window properties
-	SDL_SetWindowResizable(window, SDL_TRUE);
-	SDL_SetWindowMinimumSize(window, 256, 256);
-
 	return true;
 }
 
 void SDL2_Platform::ready()
 {
-#ifndef __EMSCRIPTEN__
-	// enable V-Sync
-	// TODO:
-	// This should be a toggle or controllable in some way
-	if (App::renderer().type == RendererType::OpenGL)
-		SDL_GL_SetSwapInterval(1);
-#endif
+	
 }
 
 void SDL2_Platform::shutdown()
@@ -446,9 +436,7 @@ void SDL2_Platform::sleep(int milliseconds)
 void SDL2_Platform::present()
 {
 	if (App::renderer().type == RendererType::OpenGL)
-	{
 		SDL_GL_SwapWindow(window);
-	}
 
 	// display the window
 	// this avoids a short black screen on macoS
@@ -457,6 +445,21 @@ void SDL2_Platform::present()
 		SDL_ShowWindow(window);
 		displayed = true;
 	}
+}
+
+void SDL2_Platform::set_app_flags(u32 flags)
+{
+	// Toggle Fullscreen
+	SDL_SetWindowFullscreen(window, ((flags & Flags::Fullscreen) != 0) ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+
+	// Toggle Resizable
+	SDL_SetWindowResizable(window, ((flags & Flags::Resizable) != 0) ? SDL_TRUE : SDL_FALSE);
+
+	// Toggle V-Sync for OpenGL
+#ifndef __EMSCRIPTEN__
+	if (App::renderer().type == RendererType::OpenGL)
+		SDL_GL_SetSwapInterval(((flags & Flags::VSync) != 0) ? 1 : 0);
+#endif
 }
 
 const char* SDL2_Platform::get_title()
@@ -483,14 +486,6 @@ bool SDL2_Platform::get_focused()
 {
 	auto flags = SDL_GetWindowFlags(window);
 	return (flags & SDL_WINDOW_INPUT_FOCUS) != 0 && (flags & SDL_WINDOW_MINIMIZED) == 0;
-}
-
-void SDL2_Platform::set_fullscreen(bool enabled)
-{
-	if (enabled)
-		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-	else
-		SDL_SetWindowFullscreen(window, 0);
 }
 
 void SDL2_Platform::get_size(int* width, int* height)

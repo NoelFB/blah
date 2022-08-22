@@ -11,6 +11,15 @@ namespace Blah
 	// Application Logging Functions
 	using AppLogFn = Func<void, const char*, Log::Category>;
 
+	// Application flags
+	namespace Flags
+	{
+		constexpr u32 FixedTimestep = 1 << 0;
+		constexpr u32 VSync = 1 << 1;
+		constexpr u32 Fullscreen = 1 << 2;
+		constexpr u32 Resizable = 1 << 3;
+	}
+
 	// Application Configuration
 	struct Config
 	{
@@ -34,9 +43,12 @@ namespace Blah
 		// defaults to 5.
 		int max_updates = 5;
 
-		// target framerate.
+		// target framerate when running with Fixed Timestep
 		// defaults to 60.
 		int target_framerate = 60;
+
+		// default starting flags
+		u32 flags = Flags::VSync | Flags::Resizable | Flags::FixedTimestep;
 
 		// Callback on application startup
 		AppEventFn on_startup = nullptr;
@@ -113,9 +125,23 @@ namespace Blah
 		// If the window is currently focused or has mouse input
 		bool focused();
 
-		// Toggles fullscreen if supported on the platform.
-		// Otherwise this function does nothing.
-		void fullscreen(bool enabled);
+		// Toggles a specific flag
+		void set_flag(u32 flag, bool enabled);
+
+		// Gets whether a specific flag is enabled
+		bool get_flag(u32 flag);
+
+		// Toggles the fullscreen flag
+		inline void set_fullscreen(bool enabled) { set_flag(Flags::Fullscreen, enabled); }
+
+		// Toggles the V-Sync flag
+		inline void set_vsync(bool enabled) { set_flag(Flags::VSync, enabled); }
+
+		// Toggles the resizable flag
+		inline void set_resizable(bool enabled) { set_flag(Flags::Resizable, enabled); }
+
+		// Toggles whether to update with Fixed Timestep
+		inline void set_fixedtimestep(bool enabled) { set_flag(Flags::FixedTimestep, enabled); }
 
 		// Retrieves the Renderer Information
 		const RendererInfo& renderer();

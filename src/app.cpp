@@ -28,6 +28,7 @@ namespace
 	bool       app_is_exiting = false;
 	u64        app_time_last;
 	u64        app_time_accumulator = 0;
+	u32        app_flags = 0;
 	TargetRef  app_backbuffer;
 
 	void get_drawable_size(int* w, int* h)
@@ -90,6 +91,7 @@ bool App::run(const Config* c)
 	// default values
 	app_is_running = true;
 	app_is_exiting = false;
+	app_flags = app_config.flags;
 	app_backbuffer = TargetRef(new BackBuffer());
 
 	// initialize the system
@@ -128,6 +130,10 @@ bool App::run(const Config* c)
 		}
 	}
 
+	// apply default flags
+	Internal::platform->set_app_flags(app_flags);
+	Internal::renderer->set_app_flags(app_flags);
+
 	// input + poll the platform once
 	Input::Internal::init();
 	Input::Internal::step_state();
@@ -164,14 +170,26 @@ bool App::is_running()
 
 void App::Internal::iterate()
 {
-	// update at a fixed timerate
-	// TODO: allow a non-fixed step update?
+	static const auto step = []()
+	{
+		Input::Internal::step_state();
+		platform->update(Input::state);
+		Input::Internal::update_bindings();
+		renderer->update();
+		if (app_config.on_update != nullptr)
+			app_config.on_update();
+	};
+
+	bool is_fixed_timestep = get_flag(Flags::FixedTimestep);
+
+	// Update in Fixed Timestep
+	if (is_fixed_timestep)
 	{
 		u64 time_target = (u64)((1.0 / app_config.target_framerate) * Time::ticks_per_second);
-		u64 time_curr = App::Internal::platform->ticks();
-		u64 time_diff = time_curr - app_time_last;
-		app_time_last = time_curr;
-		app_time_accumulator += time_diff;
+		u64 ticks_curr = App::Internal::platform->ticks();
+		u64 ticks_diff = ticks_curr - app_time_last;
+		app_time_last = ticks_curr;
+		app_time_accumulator += ticks_diff;
 
 		// do not let us run too fast
 		while (app_time_accumulator < time_target)
@@ -179,10 +197,10 @@ void App::Internal::iterate()
 			int milliseconds = (int)(time_target - app_time_accumulator) / (Time::ticks_per_second / 1000);
 			App::Internal::platform->sleep(milliseconds);
 
-			time_curr = App::Internal::platform->ticks();
-			time_diff = time_curr - app_time_last;
-			app_time_last = time_curr;
-			app_time_accumulator += time_diff;
+			ticks_curr = App::Internal::platform->ticks();
+			ticks_diff = ticks_curr - app_time_last;
+			app_time_last = ticks_curr;
+			app_time_accumulator += ticks_diff;
 		}
 
 		// Do not allow us to fall behind too many updates
@@ -212,23 +230,39 @@ void App::Internal::iterate()
 			Time::previous_seconds = Time::seconds;
 			Time::seconds += Time::delta;
 
-			Input::Internal::step_state();
-			platform->update(Input::state);
-			Input::Internal::update_bindings();
-			renderer->update();
+			step();
+		}
+	}
+	// Update with Variable Timestep
+	else
+	{
+		u64 ticks_curr = App::Internal::platform->ticks();
+		u64 ticks_diff = ticks_curr - app_time_last;
+		app_time_last = ticks_curr;
+		app_time_accumulator += ticks_diff;
 
-			if (app_config.on_update != nullptr)
-				app_config.on_update();
+		Time::delta = ticks_diff / (float)Time::ticks_per_second;
+
+		if (Time::pause_timer > 0)
+		{
+			Time::pause_timer -= Time::delta;
+		}
+		else
+		{
+			Time::previous_ticks = Time::ticks;
+			Time::ticks += ticks_diff;
+			Time::previous_seconds = Time::seconds;
+			Time::seconds += Time::delta;
+
+			step();
 		}
 	}
 
-	// render
+	// Draw Frame
 	{
 		renderer->before_render();
-
 		if (app_config.on_render != nullptr)
 			app_config.on_render();
-
 		renderer->after_render();
 		platform->present();
 	}
@@ -353,10 +387,28 @@ bool App::focused()
 	return Internal::platform->get_focused();
 }
 
-void App::fullscreen(bool enabled)
+void App::set_flag(u32 flag, bool enabled)
 {
 	BLAH_ASSERT_RUNNING();
-	Internal::platform->set_fullscreen(enabled);
+
+	u32 was = app_flags;
+
+	if (enabled)
+		app_flags |= flag;
+	else
+		app_flags &= ~flag;
+
+	if (was != app_flags)
+	{
+		Internal::platform->set_app_flags(app_flags);
+		Internal::renderer->set_app_flags(app_flags);
+	}
+}
+
+bool App::get_flag(u32 flag)
+{
+	BLAH_ASSERT_RUNNING();
+	return ((app_flags & flag) == flag);
 }
 
 const RendererInfo& App::renderer()

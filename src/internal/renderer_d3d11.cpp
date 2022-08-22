@@ -932,7 +932,8 @@ namespace Blah
 
 	void Renderer_D3D11::after_render()
 	{
-		auto hr = swap_chain->Present(1, 0);
+		auto vsync = App::get_flag(Flags::VSync);
+		auto hr = swap_chain->Present(vsync ? 1 : 0, 0);
 		BLAH_ASSERT(SUCCEEDED(hr), "Failed to Present swap chain");
 	}
 
