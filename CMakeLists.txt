@@ -6,25 +6,25 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(blah
-	src/app.cpp
-	src/filesystem.cpp
-	src/common.cpp
-	src/time.cpp
-	src/input.cpp
-	src/stream.cpp
-	src/graphics.cpp
-	src/containers/str.cpp
-	src/drawing/batch.cpp
-	src/drawing/spritefont.cpp
-	src/drawing/subtexture.cpp
-	src/images/aseprite.cpp
-	src/images/font.cpp
-	src/images/image.cpp
-	src/images/packer.cpp
-	src/internal/renderer_opengl.cpp
-	src/internal/renderer_d3d11.cpp
-	src/internal/platform_sdl2.cpp
-	src/internal/platform_win32.cpp
+	src/blah_app.cpp
+	src/blah_filesystem.cpp
+	src/blah_common.cpp
+	src/blah_time.cpp
+	src/blah_input.cpp
+	src/blah_stream.cpp
+	src/blah_graphics.cpp
+	src/blah_string.cpp
+	src/blah_batch.cpp
+	src/blah_spritefont.cpp
+	src/blah_subtexture.cpp
+	src/blah_aseprite.cpp
+	src/blah_font.cpp
+	src/blah_image.cpp
+	src/blah_packer.cpp
+	src/internal/blah_renderer_opengl.cpp
+	src/internal/blah_renderer_d3d11.cpp
+	src/internal/blah_platform_sdl2.cpp
+	src/internal/blah_platform_win32.cpp
 )
 
 target_include_directories(blah
