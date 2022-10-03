@@ -4,19 +4,22 @@ using namespace Blah;
 
 namespace
 {
-	char blah_to_lower(char c)
+	constexpr char blah_to_lower(char c)
 	{
 		if (c >= 'A' && c <= 'Z') return c - 'A' + 'a';
 		return c;
 	}
 
-	int blah_strlen(const char* cstr)
+	constexpr int blah_strlen(const char* cstr)
 	{
 		int len = 0;
 		if (cstr)
 			while (*(cstr + len) != '\0' && len < INT32_MAX) len++;
 		return len;
 	}
+
+	constexpr bool blah_compare_ignore_case(char a, char b) { return blah_to_lower(a) == blah_to_lower(b); };
+	constexpr bool blah_compare_with_case(char a, char b) { return a == b; };
 }
 
 void BaseString::assign(const char* cstr, const char* cstr_end)
@@ -144,24 +147,13 @@ bool BaseString::starts_with(const char* cstr, bool ignore_case) const
 		return length() == 0;
 
 	const char* ptr = s_ptr();
+	auto compare = (ignore_case ? &blah_compare_ignore_case : &blah_compare_with_case);
 
-	if (ignore_case)
+	while (*cstr != '\0')
 	{
-		while (*cstr != '\0')
-		{
-			if (blah_to_lower(*cstr) != blah_to_lower(*ptr))
-				return false;
-			cstr++; ptr++;
-		}
-	}
-	else
-	{
-		while (*cstr != '\0')
-		{
-			if (*cstr != *ptr)
-				return false;
-			cstr++; ptr++;
-		}
+		if (!(*compare)(*cstr, *ptr))
+			return false;
+		cstr++; ptr++;
 	}
 
 	return true;
@@ -177,24 +169,13 @@ bool BaseString::ends_with(const char* cstr, bool ignore_case) const
 		return false;
 
 	const char* ptr = s_ptr() + length() - len;
+	auto compare = (ignore_case ? &blah_compare_ignore_case : &blah_compare_with_case);
 
-	if (ignore_case)
+	while (*cstr != '\0')
 	{
-		while (*cstr != '\0')
-		{
-			if (blah_to_lower(*cstr) != blah_to_lower(*ptr))
-				return false;
-			cstr++; ptr++;
-		}
-	}
-	else
-	{
-		while (*cstr != '\0')
-		{
-			if (*cstr != *ptr)
-				return false;
-			cstr++; ptr++;
-		}
+		if (!(*compare)(*cstr, *ptr))
+			return false;
+		cstr++; ptr++;
 	}
 
 	return true;
@@ -210,40 +191,24 @@ bool BaseString::contains(const char* cstr, bool ignore_case) const
 		return false;
 
 	const char* ptr = s_ptr();
-	const char* end = s_ptr() + len;
+	const char* end = s_ptr() + length() - len;
+	auto compare = (ignore_case ? &blah_compare_ignore_case : &blah_compare_with_case);
 
 	while (ptr < end)
 	{
-		const char* at = ptr;
-		bool match = true;
+		const char* a = ptr;
+		const char* b = cstr;
 
-		if (ignore_case)
+		while (*b != '\0')
 		{
-			while (*cstr != '\0')
-			{
-				if (blah_to_lower(*cstr) != blah_to_lower(*at))
-				{
-					match = false;
-					break;
-				}
-				cstr++; at++;
-			}
-		}
-		else
-		{
-			while (*cstr != '\0')
-			{
-				if (*cstr != *at)
-				{
-					match = false;
-					break;
-				}
-				cstr++; at++;
-			}
+			if (!(*compare)(*a, *b))
+				goto NEXT;
+			a++; b++;
 		}
 
-		if (match)
-			return true;
+		return true;
+	NEXT:
+		ptr++;
 	}
 
 	return false;
@@ -282,17 +247,9 @@ int BaseString::last_index_of(char ch) const
 bool BaseString::equals(const char* other, bool ignore_case) const
 {
 	const char* a = s_ptr(); const char* b = other;
-
-	if (ignore_case)
-	{
-		while (blah_to_lower(*a) == blah_to_lower(*b) && *a != '\0') { a++; b++; }
-		return blah_to_lower(*a) == blah_to_lower(*b);
-	}
-	else
-	{
-		while (*a == *b && *a != '\0') { a++; b++; }
-		return *a == *b;
-	}
+	auto compare = (ignore_case ? &blah_compare_ignore_case : &blah_compare_with_case);
+	while ((*compare)(*a, *b) && *a != '\0') { a++; b++; }
+	return (*compare)(*a, *b);
 }
 
 namespace
