@@ -192,6 +192,7 @@ namespace Blah
 		constexpr Line<T> bottom_line() const;
 
 		constexpr bool contains(const Vec2<T>& pt) const;
+		constexpr bool contains(const Rect& rect) const;
 		constexpr bool overlaps(const Rect& rect) const;
 		constexpr Rect overlap_rect(const Rect& other) const;
 		constexpr bool intersects(const Line<T>& line) const;
@@ -718,6 +719,10 @@ namespace Blah
 	template<class T>
 	constexpr bool Rect<T>::contains(const Vec2<T>& pt) const {
 		return pt.x >= x && pt.x < x + w && pt.y >= y && pt.y < y + h;
+	}
+	template<class T>
+	constexpr bool Rect<T>::contains(const Rect& rect) const {
+		return rect.x >= x && rect.x + rect.w < x + w && rect.y >= y && rect.y + rect.h < y + h;
 	}
 
 	template<class T>
