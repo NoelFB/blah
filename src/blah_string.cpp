@@ -191,7 +191,7 @@ bool BaseString::contains(const char* cstr, bool ignore_case) const
 		return false;
 
 	const char* ptr = s_ptr();
-	const char* end = s_ptr() + length() - len;
+	const char* end = s_ptr() + length() - len + 1;
 	auto compare = (ignore_case ? &blah_compare_ignore_case : &blah_compare_with_case);
 
 	while (ptr < end)
