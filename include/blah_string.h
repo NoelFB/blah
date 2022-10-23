@@ -17,13 +17,13 @@ namespace Blah
 
 		char& operator[](int index)
 		{
-			BLAH_ASSERT(index >= 0 && index < length(), "Index out of range");
+			BLAH_ASSERT(index >= 0 && index < length() + 1, "Index out of range");
 			return s_ptr()[index];
 		}
 
 		const char& operator[](int index) const
 		{
-			BLAH_ASSERT(index >= 0 && index < length(), "Index out of range");
+			BLAH_ASSERT(index >= 0 && index < length() + 1, "Index out of range");
 			return s_ptr()[index];
 		}
 

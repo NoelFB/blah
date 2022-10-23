@@ -1,5 +1,6 @@
 #include <blah_stream.h>
 #include <blah_string.h>
+#include <string.h> // for memcpy
 
 using namespace Blah;
 

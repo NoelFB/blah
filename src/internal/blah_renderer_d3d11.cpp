@@ -1650,7 +1650,7 @@ Blah::Renderer* Blah::Renderer::try_make_d3d11()
 
 #else // BLAH_RENDERER_D3D11
 
-#include "renderer.h"
+#include "blah_renderer.h"
 Blah::Renderer* Blah::Renderer::try_make_d3d11()
 {
 	return nullptr;

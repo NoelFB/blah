@@ -1,6 +1,7 @@
 #include <blah_graphics.h>
 #include <blah_stream.h>
 #include "internal/blah_internal.h"
+#include <string.h> // for strcmp
 
 using namespace Blah;
 

@@ -1,5 +1,6 @@
 #include <blah_common.h>
 #include <blah_app.h>
+#include <stdio.h> // for vsnprintf
 
 using namespace Blah;
 

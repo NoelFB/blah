@@ -5,6 +5,7 @@
 #include <stddef.h>    // for std::size_t
 #include <stdlib.h>    // for abort
 #include <stdarg.h>    // for string format methods
+#include <stdio.h>     // for vsnprintf
 #include <math.h>      // for standard lib math functions used in blah_calc.h
 
 // Numeric Types
