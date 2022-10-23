@@ -583,6 +583,14 @@ ButtonBinding& ButtonBinding::set_controller(int index)
 	return *this;
 }
 
+void ButtonBinding::zero_out()
+{
+	m_down = false;
+	m_pressed = false;
+	m_released = false;
+	m_value = 0.0f;
+}
+
 void ButtonBinding::clear()
 {
 	keys.clear();

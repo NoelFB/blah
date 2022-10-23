@@ -554,6 +554,9 @@ namespace Blah
 		// assigns all the bindings to the specific controller
 		ButtonBinding& set_controller(int index);
 
+		// clears values (except for last input timestamps)
+		void zero_out();
+
 		// removes all bindings
 		void clear();
 
@@ -642,6 +645,9 @@ namespace Blah
 		// assigns all the bindings to the specific controller
 		AxisBinding& set_controller(int index);
 
+		// clears values (except for last input timestamps)
+		void zero_out() { negative.zero_out(); positive.zero_out(); }
+
 		// Clears all Bindings
 		void clear();
 	};
@@ -711,6 +717,9 @@ namespace Blah
 
 		// assigns all the bindings to the specific controller
 		StickBinding& set_controller(int index);
+
+		// clears values (except for last input timestamps)
+		void zero_out() { x.zero_out(); y.zero_out(); }
 
 		// Clears all the bindings
 		void clear();
