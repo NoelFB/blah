@@ -40,7 +40,7 @@ void Packer::add_entry(u64 id, int w, int h, const Color* pixels, const Recti& s
 
 	// TOP:
 	for (int y = source.y; y < source.y + source.h; y++)
-		for (int x = source.x, s = y * w; x < source.x + source.w; x++, s++)
+		for (int x = source.x, s = x + y * w; x < source.x + source.w; x++, s++)
 			if (pixels[s].a > 0)
 			{
 				top = y;
