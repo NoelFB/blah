@@ -226,7 +226,6 @@ typedef char             GLchar;
 
 // OpenGL Functions
 #define GL_FUNCTIONS \
-	GL_FUNC(DebugMessageCallback, void, DEBUGPROC callback, const void* userParam) \
 	GL_FUNC(GetString, const GLubyte*, GLenum name) \
 	GL_FUNC(Flush, void, void) \
 	GL_FUNC(Enable, void, GLenum mode) \
@@ -330,6 +329,10 @@ typedef char             GLchar;
 	GL_FUNC(UniformMatrix4x3fv, void, GLint location, GLint count, GLboolean transpose, const GLfloat* value) \
 	GL_FUNC(PixelStorei, void, GLenum pname, GLint param)
 
+// OpenGL Functions only on OpenGL >= 4.3
+#define GL_FUNCTIONS_4_3 \
+	GL_FUNC(DebugMessageCallback, void, DEBUGPROC callback, const void* userParam)
+
 // Debug Function Delegate
 typedef void (APIENTRY* DEBUGPROC)(GLenum source,
 	GLenum type,
@@ -398,6 +401,9 @@ namespace Blah
 			// GL function pointers
 			#define GL_FUNC(name, ret, ...) typedef ret (*name ## Func) (__VA_ARGS__); name ## Func name;
 			GL_FUNCTIONS
+			#ifndef __APPLE__
+			GL_FUNCTIONS_4_3
+			#endif
 			#undef GL_FUNC
 		} gl;
 
@@ -426,7 +432,8 @@ namespace Blah
 		MeshRef create_mesh() override;
 	};
 
-	// debug callback
+	// debug callback, only on OpenGL >= 4.3
+	#ifndef __APPLE__
 	void APIENTRY gl_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 	{
 		// these are basically never useful
@@ -465,6 +472,7 @@ namespace Blah
 		else
 			Log::info("GL (%s) %s", typeName, message);
 	}
+	#endif
 
 	// assign attributes
 	GLuint gl_mesh_assign_attributes(GLuint buffer, GLenum buffer_type, const VertexFormat& format, GLint divisor)
@@ -1189,13 +1197,15 @@ namespace Blah
 		GL_FUNCTIONS
 		#undef GL_FUNC
 
-		// bind debug message callback
+		// bind debug message callback, only on OpenGL >= 4.3
+		#ifndef __APPLE__
 		if (gl.DebugMessageCallback != nullptr)
 		{
 			gl.Enable(GL_DEBUG_OUTPUT);
 			gl.Enable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 			gl.DebugMessageCallback(gl_message_callback, nullptr);
 		}
+		#endif
 
 		// get opengl info
 		gl.GetIntegerv(0x8CDF, &max_color_attachments);
