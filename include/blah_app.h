@@ -47,6 +47,9 @@ namespace Blah
 		// defaults to 60.
 		int target_framerate = 60;
 
+		// The expected freqeuncy of audio files and how quickly to play audio.
+		int audio_frequency_in_Hz = 44100;
+
 		// default starting flags
 		u32 flags = Flags::VSync | Flags::Resizable | Flags::FixedTimestep;
 
