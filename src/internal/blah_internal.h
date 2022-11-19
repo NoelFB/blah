@@ -36,4 +36,16 @@ namespace Blah
 			void shutdown();
 		}
 	}
+
+	namespace Internal
+	{
+		extern bool audio_is_init;
+
+		// Pass in NULL for `os_handle`, except for the DirectSound backend this should be hwnd.
+		// play_frequency_in_Hz depends on your audio file, 44100 seems to be fine.
+		// buffered_samples is clamped to be at least 1024.
+		bool audio_init(void* os_handle, unsigned play_frequency_in_Hz, int buffered_samples);
+		void audio_shutdown();
+		void audio_update();
+	}
 }

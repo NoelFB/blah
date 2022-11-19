@@ -1,6 +1,7 @@
 #pragma once
 #include "blah_app.h"
 #include "blah_aseprite.h"
+#include "blah_audio.h"
 #include "blah_batch.h"
 #include "blah_calc.h"
 #include "blah_color.h"

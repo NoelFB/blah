@@ -20,6 +20,9 @@ Platform* App::Internal::platform = nullptr;
 // Internal Renderer Pointer
 Renderer* App::Internal::renderer = nullptr;
 
+// Internal Audio bool
+bool Internal::audio_is_init = false;
+
 namespace
 {
 	// Global App State
@@ -109,6 +112,17 @@ bool App::run(const Config* c)
 			Log::error("Failed to initialize Platform module");
 			App::Internal::shutdown();
 			return false;
+		}
+	}
+
+	// initialize audio
+	{
+		if (!Blah::Internal::audio_is_init) {
+			int more_on_emscripten = 1;
+			#ifdef __EMSCRIPTEN__
+			more_on_emscripten = 4;
+			#endif
+			Blah::Internal::audio_is_init = Blah::Internal::audio_init(NULL, c->audio_frequency_in_Hz, 1024 * more_on_emscripten);
 		}
 	}
 
@@ -266,6 +280,9 @@ void App::Internal::iterate()
 		renderer->after_render();
 		platform->present();
 	}
+
+	// Update audio
+	Blah::Internal::audio_update();
 }
 
 void App::Internal::shutdown()
@@ -285,6 +302,9 @@ void App::Internal::shutdown()
 	if (platform)
 		delete platform;
 	platform = nullptr;
+
+	Blah::Internal::audio_shutdown();
+	Blah::Internal::audio_is_init = false;
 
 	// clear static App state
 	app_config = Config();

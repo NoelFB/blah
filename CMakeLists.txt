@@ -21,6 +21,7 @@ add_library(blah
 	src/blah_font.cpp
 	src/blah_image.cpp
 	src/blah_packer.cpp
+	src/blah_audio.cpp
 	src/internal/blah_renderer_opengl.cpp
 	src/internal/blah_renderer_d3d11.cpp
 	src/internal/blah_platform_sdl2.cpp
