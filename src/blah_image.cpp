@@ -256,7 +256,7 @@ bool Image::save_jpg(Stream& stream, int quality) const
 
 void Image::get_pixels(Color* dest, const Point& dest_pos, const Point& dest_size, Recti source_rect) const
 {
-	// can't be outside of the source image
+	// can't be outside the source image
 	if (source_rect.x < 0) source_rect.x = 0;
 	if (source_rect.y < 0) source_rect.y = 0;
 	if (source_rect.x + source_rect.w > width) source_rect.w = width - source_rect.x;

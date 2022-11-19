@@ -439,7 +439,7 @@ void SDL2_Platform::present()
 		SDL_GL_SwapWindow(window);
 
 	// display the window
-	// this avoids a short black screen on macoS
+	// this avoids a short black screen on macOS
 	if (!displayed)
 	{
 		SDL_ShowWindow(window);

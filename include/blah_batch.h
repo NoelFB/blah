@@ -9,7 +9,6 @@
 
 namespace Blah
 {
-
 	// A 2D sprite batcher, used for drawing shapes and textures
 	class Batch
 	{

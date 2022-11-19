@@ -63,7 +63,7 @@ namespace Blah
 		AppEventFn on_render = nullptr;
 
 		// Callback when the user has requested the application close.
-		// For example, pressing the Close button, ALT+F4, etc
+		// For example, pressing the Close button, ALT+F4, etc.
 		// By default this calls `App::exit()`
 		AppEventFn on_exit_request = nullptr;
 

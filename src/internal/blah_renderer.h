@@ -36,7 +36,7 @@ namespace Blah
 		virtual void set_app_flags(u32 flags) { }
 
 		// Optional implementation to get the drawable backbuffer size in pixels.
-		// Not all implementations will use this so it can be up to the Platform.
+		// Not all implementations will use this, so it can be up to the Platform.
 		virtual bool get_draw_size(int* w, int* h) { return false; }
 
 		// Performs a draw call
