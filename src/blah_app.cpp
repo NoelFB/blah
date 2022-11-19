@@ -21,7 +21,7 @@ Platform* App::Internal::platform = nullptr;
 Renderer* App::Internal::renderer = nullptr;
 
 // Internal Audio bool
-bool Audio::Internal::is_init = false;
+bool Internal::audio_is_init = false;
 
 namespace
 {
@@ -117,12 +117,12 @@ bool App::run(const Config* c)
 
 	// initialize audio
 	{
-		if (!Audio::Internal::is_init) {
+		if (!Blah::Internal::audio_is_init) {
 			int more_on_emscripten = 1;
 			#ifdef __EMSCRIPTEN__
 			more_on_emscripten = 4;
 			#endif
-			Audio::Internal::is_init = Audio::Internal::init(NULL, c->audio_frequency_in_Hz, 1024 * more_on_emscripten);
+			Blah::Internal::audio_is_init = Blah::Internal::audio_init(NULL, c->audio_frequency_in_Hz, 1024 * more_on_emscripten);
 		}
 	}
 
@@ -280,6 +280,9 @@ void App::Internal::iterate()
 		renderer->after_render();
 		platform->present();
 	}
+
+	// Update audio
+	Blah::Internal::audio_update();
 }
 
 void App::Internal::shutdown()
@@ -300,8 +303,8 @@ void App::Internal::shutdown()
 		delete platform;
 	platform = nullptr;
 
-	Audio::Internal::shutdown();
-	Audio::Internal::is_init = false;
+	Blah::Internal::audio_shutdown();
+	Blah::Internal::audio_is_init = false;
 
 	// clear static App state
 	app_config = Config();

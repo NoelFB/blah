@@ -1,4 +1,5 @@
 #include "blah_audio.h"
+#include "blah_time.h"
 
 #define STB_VORBIS_HEADER_ONLY
 #include "third_party/stb_vorbis.c"
@@ -11,7 +12,7 @@ namespace Blah
 {
 	namespace Internal
 	{
-		bool init(void* os_handle, unsigned play_frequency_in_Hz, int buffered_samples)
+		bool audio_init(void* os_handle, unsigned play_frequency_in_Hz, int buffered_samples)
 		{
 			cs_error_t err = cs_init(os_handle, play_frequency_in_Hz, buffered_samples, NULL);
 			if (err != CUTE_SOUND_ERROR_NONE) {
@@ -20,11 +21,17 @@ namespace Blah
 			} else {
 				return true;
 			}
+			cs_spawn_mix_thread();
 		}
 
-		void shutdown()
+		void audio_shutdown()
 		{
 			cs_shutdown();
+		}
+
+		void audio_update()
+		{
+			cs_update(Time::delta);
 		}
 	}
 
@@ -74,7 +81,7 @@ namespace Blah
 
 		// load wav file from memory using cute_sound.h
 		cs_error_t err;
-		void* audio = cs_read_mem_wav((void*)buffer.data(), (size_t)buffer.size(), &err);
+		void* audio = cs_read_mem_wav((void*)buffer.data(), stream.length(), &err);
 		if (!audio) {
 			Log::error(cs_error_as_string(err));
 			return AudioRef();
@@ -98,7 +105,7 @@ namespace Blah
 
 		// load ogg file from memory using cute_sound.h
 		cs_error_t err;
-		void* audio = cs_read_mem_ogg((void*)buffer.data(), (size_t)buffer.size(), &err);
+		void* audio = cs_read_mem_ogg((void*)buffer.data(), stream.length(), &err);
 		if (!audio) {
 			Log::error(cs_error_as_string(err));
 			return AudioRef();
