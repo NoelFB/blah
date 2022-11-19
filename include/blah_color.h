@@ -135,7 +135,7 @@ namespace Blah
 			return Vec4f(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 		}
 
-		// Convers the Color to a u32
+		// Converts the Color to a u32
 		constexpr u32 to_rgba() const
 		{
 			return
@@ -145,7 +145,7 @@ namespace Blah
 				(u32)a;
 		}
 
-		// Convers the Color to a u32
+		// Converts the Color to a u32
 		constexpr u32 to_rgb() const
 		{
 			return
@@ -154,7 +154,7 @@ namespace Blah
 				(u32)b;
 		}
 
-		// Returns a RGBA Color representation of the integer value
+		// Returns an RGBA Color representation of the integer value
 		static constexpr Color from_rgba(u32 value)
 		{
 			return
@@ -166,7 +166,7 @@ namespace Blah
 			};
 		}
 
-		// Returns a RGB Color representation of the integer value, with Alpha = 255
+		// Returns an RGB Color representation of the integer value, with Alpha = 255
 		static constexpr Color from_rgb(u32 value)
 		{
 			return
@@ -191,7 +191,7 @@ namespace Blah
 			);
 		}
 
-		// Mutliplties the Color
+		// Multiples the Color
 		constexpr Color operator*(float multiply) const
 		{
 			return Color(

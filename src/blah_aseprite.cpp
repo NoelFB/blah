@@ -53,12 +53,12 @@ void Aseprite::parse(Stream& stream)
 		stream.read_u16(Endian::Little);		// Speed (deprecated)
 		stream.read_u32(Endian::Little);		// Should be 0
 		stream.read_u32(Endian::Little);		// Should be 0
-		stream.read_u8(Endian::Little);		// Palette entry
-		stream.seek(stream.position() + 3);			// Ignore these bytes
+		stream.read_u8(Endian::Little);			// Palette entry
+		stream.seek(stream.position() + 3);		// Ignore these bytes
 		stream.read_u16(Endian::Little);		// Number of colors (0 means 256 for old sprites)
-		stream.read_i8(Endian::Little);		// Pixel width
-		stream.read_i8(Endian::Little);		// Pixel height
-		stream.seek(stream.position() + 92);		// For Future
+		stream.read_i8(Endian::Little);			// Pixel width
+		stream.read_i8(Endian::Little);			// Pixel height
+		stream.seek(stream.position() + 92);	// For Future
 	}
 
 	frames.resize(frame_count);

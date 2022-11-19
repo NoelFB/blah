@@ -65,7 +65,7 @@ namespace Blah
 		// Gets the Desktop Content Scale. Gui should be scaled by this value
 		virtual float get_content_scale() = 0;
 
-		// Returns the absoluate path to the directory that the application was started from
+		// Returns the absolute path to the directory that the application was started from
 		virtual const char* app_path() = 0;
 
 		// Returns the absolute path to the user directory where save data and settings should be stored

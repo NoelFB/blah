@@ -785,7 +785,7 @@ namespace Blah
 		flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-		// Create D3D device & context & swap cahin
+		// Create D3D device & context & swap chain
 		D3D_FEATURE_LEVEL feature_level;
 		HRESULT hr = D3D11CreateDeviceAndSwapChain(
 			NULL,
@@ -1625,7 +1625,7 @@ namespace Blah
 		case Compare::LessOrEqual: desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; break;
 		case Compare::Greater: desc.DepthFunc = D3D11_COMPARISON_GREATER; break;
 		case Compare::NotEqual: desc.DepthFunc = D3D11_COMPARISON_NOT_EQUAL; break;
-		case Compare::GreatorOrEqual: desc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL; break;
+		case Compare::GreaterOrEqual: desc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL; break;
 		}
 
 		ID3D11DepthStencilState* result;

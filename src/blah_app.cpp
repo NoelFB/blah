@@ -14,7 +14,7 @@ using namespace Blah;
 
 #define BLAH_ASSERT_RUNNING() BLAH_ASSERT(app_is_running, "The App is not running (call App::run)")
 
-// Interal Platform Pointer
+// Internal Platform Pointer
 Platform* App::Internal::platform = nullptr;
 
 // Internal Renderer Pointer

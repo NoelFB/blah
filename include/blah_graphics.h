@@ -52,7 +52,7 @@ namespace Blah
 		LessOrEqual,
 		Greater,
 		NotEqual,
-		GreatorOrEqual
+		GreaterOrEqual
 	};
 
 	// Cull mode during a draw call
@@ -210,7 +210,7 @@ namespace Blah
 	enum class TextureFormat
 	{
 		None,         // Invalid Format
-		R,            // Single 8-bit channe;
+		R,            // Single 8-bit channel
 		RG,           // 2 8-bit channels
 		RGBA,         // 4 8-bit channels
 		DepthStencil, // Depth 24, Stencil 8
@@ -317,10 +317,10 @@ namespace Blah
 	// Supported Vertex Index formats
 	enum class IndexFormat
 	{
-		// Indices are 16 bit unsigned integers
+		// Indices are 16-bit unsigned integers
 		UInt16,
 
-		// Indices are 32 bit unsigned integers
+		// Indices are 32-bit unsigned integers
 		UInt32
 	};
 

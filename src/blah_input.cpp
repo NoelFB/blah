@@ -423,7 +423,6 @@ StickBindingRef Input::register_binding(const StickBinding& binding_data)
 	return result;
 }
 
-
 ButtonBinding::TriggerBind::TriggerBind(Axis axis)
 	: axis(axis)
 {

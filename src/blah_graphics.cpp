@@ -230,7 +230,6 @@ MeshRef Mesh::create()
 	return MeshRef();
 }
 
-
 namespace
 {
 	int blah_calc_uniform_size(const UniformInfo& uniform)

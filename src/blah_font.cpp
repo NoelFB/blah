@@ -160,7 +160,7 @@ bool Font::get_image(const Font::Character& ch, Color* pixels) const
 	if (ch.has_glyph)
 	{
 		// we actually use the image buffer as our temporary buffer, and fill the pixels out backwards after
-		// kinda weird but it works & saves creating more memory
+		// kinda weird, but it works & saves creating more memory
 		auto* src = (unsigned char*)pixels;
 		stbtt_MakeGlyphBitmap((stbtt_fontinfo*)m_font.get(), src, ch.width, ch.height, ch.width, ch.scale, ch.scale, ch.glyph);
 

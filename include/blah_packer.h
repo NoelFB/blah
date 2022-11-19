@@ -65,7 +65,7 @@ namespace Blah
 		int padding;
 
 		// generated textures. There can be more than one if the packer was
-		// unable to fit all of the provided subtextures into the max_size.
+		// unable to fit all the provided subtextures into the max_size.
 		Vector<Image> pages;
 
 		Packer();

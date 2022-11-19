@@ -1448,7 +1448,7 @@ namespace Blah
 				case Compare::Greater:
 					renderer->gl.DepthFunc(GL_GREATER);
 					break;
-				case Compare::GreatorOrEqual:
+				case Compare::GreaterOrEqual:
 					renderer->gl.DepthFunc(GL_GEQUAL);
 					break;
 				case Compare::Less:
