@@ -12,8 +12,8 @@ float Time::pause_timer = 0;
 
 u64 Time::get_ticks()
 {
-	if (App::Internal::platform)
-		return App::Internal::platform->ticks();
+	if (Internal::platform)
+		return Internal::platform->ticks();
 	return 0;
 }
 

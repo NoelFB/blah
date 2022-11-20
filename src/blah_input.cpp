@@ -24,7 +24,7 @@ InputState Blah::Input::last_state;
 float Blah::Input::repeat_delay = 0.35f;
 float Blah::Input::repeat_interval = 0.025f;
 
-void Input::Internal::init()
+void Internal::input_init()
 {
 	g_empty_controller.name = "Disconnected";
 	for (int i = 0; i < Input::max_controllers; i++)
@@ -37,12 +37,12 @@ void Input::Internal::init()
 	g_sticks = Vector<Ref<StickBinding>>();
 }
 
-void Input::Internal::shutdown()
+void Internal::input_shutdown()
 {
-	init();
+	input_init();
 }
 
-void Input::Internal::step_state()
+void Internal::input_step_state()
 {
 	// cycle states
 	Input::last_state = Input::state;
@@ -78,11 +78,11 @@ void Input::Internal::step_state()
 	}
 
 	// get clipboard
-	if (App::Internal::platform)
-		g_clipboard = App::Internal::platform->get_clipboard();
+	if (Internal::platform)
+		g_clipboard = Internal::platform->get_clipboard();
 }
 
-void Input::Internal::update_bindings()
+void Internal::input_step_bindings()
 {
 	for (int i = 0; i < g_buttons.size(); i++)
 	{
@@ -398,8 +398,8 @@ const String& Input::get_clipboard()
 void Input::set_clipboard(const String& text)
 {
 	g_clipboard = text;
-	if (App::Internal::platform)
-		App::Internal::platform->set_clipboard(text);
+	if (Internal::platform)
+		Internal::platform->set_clipboard(text);
 }
 
 ButtonBindingRef Input::register_binding(const ButtonBinding& binding_data)

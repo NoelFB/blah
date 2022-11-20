@@ -17,7 +17,7 @@
 #include <d3dcompiler.h>
 
 // shorthand to our internal state
-#define renderer ((Renderer_D3D11*)App::Internal::renderer)
+#define RENDERER ((Renderer_D3D11*)Internal::renderer)
 
 namespace Blah
 {
@@ -228,7 +228,7 @@ namespace Blah
 
 			m_dxgi_format = desc.Format;
 
-			auto hr = renderer->device->CreateTexture2D(&desc, NULL, &texture);
+			auto hr = RENDERER->device->CreateTexture2D(&desc, NULL, &texture);
 			if (!SUCCEEDED(hr))
 			{
 				if (texture)
@@ -239,7 +239,7 @@ namespace Blah
 
 			if (!is_depth_stencil)
 			{
-				hr = renderer->device->CreateShaderResourceView(texture, NULL, &view);
+				hr = RENDERER->device->CreateShaderResourceView(texture, NULL, &view);
 				if (!SUCCEEDED(hr))
 				{
 					texture->Release();
@@ -288,7 +288,7 @@ namespace Blah
 			box.back = 1;
 
 			// set data
-			renderer->context->UpdateSubresource(
+			RENDERER->context->UpdateSubresource(
 				texture,
 				0,
 				&box,
@@ -317,7 +317,7 @@ namespace Blah
 				desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 				desc.MiscFlags = 0;
 
-				hr = renderer->device->CreateTexture2D(&desc, NULL, &staging);
+				hr = RENDERER->device->CreateTexture2D(&desc, NULL, &staging);
 				if (!SUCCEEDED(hr))
 				{
 					BLAH_ASSERT(false, "Failed to create staging texture to get data");
@@ -334,7 +334,7 @@ namespace Blah
 			box.back = 1;
 
 			// copy data to staging texture
-			renderer->context->CopySubresourceRegion(
+			RENDERER->context->CopySubresourceRegion(
 				staging, 0,
 				0, 0, 0,
 				texture, 0,
@@ -342,7 +342,7 @@ namespace Blah
 
 			// get data
 			D3D11_MAPPED_SUBRESOURCE map;
-			hr = renderer->context->Map(staging, 0, D3D11_MAP_READ, 0, &map);
+			hr = RENDERER->context->Map(staging, 0, D3D11_MAP_READ, 0, &map);
 
 			if (!SUCCEEDED(hr))
 			{
@@ -355,7 +355,7 @@ namespace Blah
 			for (int y = 0; y < m_height; y++)
 				memcpy(data + y * bytes_per_row, (unsigned char*)map.pData + map.RowPitch * y, bytes_per_row);
 
-			renderer->context->Unmap(staging, 0);
+			RENDERER->context->Unmap(staging, 0);
 		}
 
 		bool is_framebuffer() const override
@@ -384,12 +384,12 @@ namespace Blah
 
 				if (attachments[i] == TextureFormat::DepthStencil)
 				{
-					renderer->device->CreateDepthStencilView(tex->texture, nullptr, &depth_view);
+					RENDERER->device->CreateDepthStencilView(tex->texture, nullptr, &depth_view);
 				}
 				else
 				{
 					ID3D11RenderTargetView* view = nullptr;
-					renderer->device->CreateRenderTargetView(tex->texture, nullptr, &view);
+					RENDERER->device->CreateRenderTargetView(tex->texture, nullptr, &view);
 					color_views.push_back(view);
 				}
 			}
@@ -423,7 +423,7 @@ namespace Blah
 			if (((int)mask & (int)ClearMask::Color) == (int)ClearMask::Color)
 			{
 				for (int i = 0; i < color_views.size(); i++)
-					renderer->context->ClearRenderTargetView(color_views[i], col);
+					RENDERER->context->ClearRenderTargetView(color_views[i], col);
 			}
 
 			if (depth_view)
@@ -435,7 +435,7 @@ namespace Blah
 					flags |= D3D11_CLEAR_STENCIL;
 
 				if (flags != 0)
-					renderer->context->ClearDepthStencilView(depth_view, flags, depth, stencil);
+					RENDERER->context->ClearDepthStencilView(depth_view, flags, depth, stencil);
 			}
 		}
 	};
@@ -510,7 +510,7 @@ namespace Blah
 
 			// create vertex shader
 			{
-				hr = renderer->device->CreateVertexShader(
+				hr = RENDERER->device->CreateVertexShader(
 					vertex_blob->GetBufferPointer(),
 					vertex_blob->GetBufferSize(),
 					NULL,
@@ -522,7 +522,7 @@ namespace Blah
 
 			// create fragment shader
 			{
-				hr = renderer->device->CreatePixelShader(
+				hr = RENDERER->device->CreatePixelShader(
 					fragment_blob->GetBufferPointer(),
 					fragment_blob->GetBufferSize(),
 					NULL,
@@ -675,7 +675,7 @@ namespace Blah
 					data.pSysMem = indices;
 
 					// create
-					auto hr = renderer->device->CreateBuffer(&desc, &data, &index_buffer);
+					auto hr = RENDERER->device->CreateBuffer(&desc, &data, &index_buffer);
 					BLAH_ASSERT(SUCCEEDED(hr), "Failed to update Index Data");
 				}
 			}
@@ -683,13 +683,13 @@ namespace Blah
 			{
 				D3D11_MAPPED_SUBRESOURCE map;
 
-				auto hr = renderer->context->Map(index_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
+				auto hr = RENDERER->context->Map(index_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
 				BLAH_ASSERT(SUCCEEDED(hr), "Failed to update Index Data");
 
 				if (SUCCEEDED(hr))
 				{
 					memcpy(map.pData, indices, index_stride * count);
-					renderer->context->Unmap(index_buffer, 0);
+					RENDERER->context->Unmap(index_buffer, 0);
 				}
 			}
 		}
@@ -723,7 +723,7 @@ namespace Blah
 					data.pSysMem = vertices;
 
 					// create
-					auto hr = renderer->device->CreateBuffer(&desc, &data, &vertex_buffer);
+					auto hr = RENDERER->device->CreateBuffer(&desc, &data, &vertex_buffer);
 					BLAH_ASSERT(SUCCEEDED(hr), "Failed to update Vertex Data");
 				}
 			}
@@ -731,13 +731,13 @@ namespace Blah
 			else if (vertices)
 			{
 				D3D11_MAPPED_SUBRESOURCE map;
-				auto hr = renderer->context->Map(vertex_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
+				auto hr = RENDERER->context->Map(vertex_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
 				BLAH_ASSERT(SUCCEEDED(hr), "Failed to update Vertex Data");
 
 				if (SUCCEEDED(hr))
 				{
 					memcpy(map.pData, vertices, vertex_format.stride * count);
-					renderer->context->Unmap(vertex_buffer, 0);
+					RENDERER->context->Unmap(vertex_buffer, 0);
 				}
 			}
 		}
@@ -776,7 +776,7 @@ namespace Blah
 		desc.SampleDesc.Quality = 0;
 		desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		desc.BufferCount = 1;
-		desc.OutputWindow = (HWND)App::Internal::platform->d3d11_get_hwnd();
+		desc.OutputWindow = (HWND)Internal::platform->d3d11_get_hwnd();
 		desc.Windowed = true;
 
 		// Creation Flags
@@ -1258,7 +1258,7 @@ namespace Blah
 				buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 				ID3D11Buffer* buffer;
-				renderer->device->CreateBuffer(&buffer_desc, nullptr, &buffer);
+				RENDERER->device->CreateBuffer(&buffer_desc, nullptr, &buffer);
 				append_buffers_to.push_back(buffer);
 			}
 
@@ -1366,9 +1366,9 @@ namespace Blah
 			if (buffers[i])
 			{
 				D3D11_MAPPED_SUBRESOURCE map;
-				renderer->context->Map(buffers[i], 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
+				RENDERER->context->Map(buffers[i], 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
 				memcpy(map.pData, values[i].begin(), values[i].size() * sizeof(float));
-				renderer->context->Unmap(buffers[i], 0);
+				RENDERER->context->Unmap(buffers[i], 0);
 			}
 		}
 	}
@@ -1502,7 +1502,7 @@ namespace Blah
 			desc.RenderTarget[i] = desc.RenderTarget[0];
 
 		ID3D11BlendState* blend_state = nullptr;
-		auto hr = renderer->device->CreateBlendState(&desc, &blend_state);
+		auto hr = RENDERER->device->CreateBlendState(&desc, &blend_state);
 
 		if (SUCCEEDED(hr))
 		{
@@ -1550,7 +1550,7 @@ namespace Blah
 		}
 
 		ID3D11SamplerState* result;
-		auto hr = renderer->device->CreateSamplerState(&desc, &result);
+		auto hr = RENDERER->device->CreateSamplerState(&desc, &result);
 
 		if (SUCCEEDED(hr))
 		{
@@ -1590,7 +1590,7 @@ namespace Blah
 		desc.AntialiasedLineEnable = false;
 
 		ID3D11RasterizerState* result;
-		auto hr = renderer->device->CreateRasterizerState(&desc, &result);
+		auto hr = RENDERER->device->CreateRasterizerState(&desc, &result);
 
 		if (SUCCEEDED(hr))
 		{
@@ -1629,7 +1629,7 @@ namespace Blah
 		}
 
 		ID3D11DepthStencilState* result;
-		auto hr = renderer->device->CreateDepthStencilState(&desc, &result);
+		auto hr = RENDERER->device->CreateDepthStencilState(&desc, &result);
 
 		if (SUCCEEDED(hr))
 		{
@@ -1650,7 +1650,7 @@ Blah::Renderer* Blah::Renderer::try_make_d3d11()
 
 #else // BLAH_RENDERER_D3D11
 
-#include "blah_renderer.h"
+#include "blah_RENDERER.h"
 Blah::Renderer* Blah::Renderer::try_make_d3d11()
 {
 	return nullptr;

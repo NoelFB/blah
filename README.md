@@ -51,5 +51,4 @@ int main()
 #### notes
  - There's no Shader abstraction, so you need to swap between GLSL/HLSL depending on the Renderer.
  - Only floatN/mat3x2/mat4x4 uniforms are supported.
- - There's no Audio API or backend implementation yet.
  - No threaded rendering so it will explode if you try that.

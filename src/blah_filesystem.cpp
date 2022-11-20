@@ -8,8 +8,8 @@ FileRef File::open(const FilePath& path, FileMode mode)
 	BLAH_ASSERT_PLATFORM();
 
 	FileRef ref;
-	if (App::Internal::platform)
-		ref = App::Internal::platform->file_open(path.cstr(), mode);
+	if (Internal::platform)
+		ref = Internal::platform->file_open(path.cstr(), mode);
 	if (ref)
 		ref->m_mode = mode;
 	return ref;
@@ -18,16 +18,16 @@ FileRef File::open(const FilePath& path, FileMode mode)
 bool File::exists(const FilePath& path)
 {
 	BLAH_ASSERT_PLATFORM();
-	if (App::Internal::platform)
-		return App::Internal::platform->file_exists(path.cstr());
+	if (Internal::platform)
+		return Internal::platform->file_exists(path.cstr());
 	return false;
 }
 
 bool File::destroy(const FilePath& path)
 {
 	BLAH_ASSERT_PLATFORM();
-	if (App::Internal::platform)
-		return App::Internal::platform->file_delete(path.cstr());
+	if (Internal::platform)
+		return Internal::platform->file_delete(path.cstr());
 	return false;
 }
 
@@ -39,24 +39,24 @@ FileMode File::mode() const
 bool Directory::create(const FilePath& path)
 {
 	BLAH_ASSERT_PLATFORM();
-	if (App::Internal::platform)
-		return App::Internal::platform->dir_create(path.cstr());
+	if (Internal::platform)
+		return Internal::platform->dir_create(path.cstr());
 	return false;
 }
 
 bool Directory::exists(const FilePath& path)
 {
 	BLAH_ASSERT_PLATFORM();
-	if (App::Internal::platform)
-		return App::Internal::platform->dir_exists(path.cstr());
+	if (Internal::platform)
+		return Internal::platform->dir_exists(path.cstr());
 	return false;
 }
 
 bool Directory::destroy(const FilePath& path)
 {
 	BLAH_ASSERT_PLATFORM();
-	if (App::Internal::platform)
-		return App::Internal::platform->dir_delete(path.cstr());
+	if (Internal::platform)
+		return Internal::platform->dir_delete(path.cstr());
 	return false;
 }
 
@@ -66,9 +66,9 @@ Vector<FilePath> Directory::enumerate(const FilePath& path, bool recursive)
 
 	Vector<FilePath> list;
 
-	if (App::Internal::platform)
+	if (Internal::platform)
 	{
-		App::Internal::platform->dir_enumerate(list, path.cstr(), recursive);
+		Internal::platform->dir_enumerate(list, path.cstr(), recursive);
 		for (auto& it : list)
 		{
 			for (int n = 0; n < it.length(); n ++)
@@ -82,8 +82,8 @@ Vector<FilePath> Directory::enumerate(const FilePath& path, bool recursive)
 void Directory::explore(const FilePath& path)
 {
 	BLAH_ASSERT_PLATFORM();
-	if (App::Internal::platform)
-		App::Internal::platform->dir_explore(path);
+	if (Internal::platform)
+		Internal::platform->dir_explore(path);
 }
 
 FilePath Path::get_file_name(const FilePath& path)

@@ -15,10 +15,10 @@ using namespace Blah;
 #define BLAH_ASSERT_RUNNING() BLAH_ASSERT(app_is_running, "The App is not running (call App::run)")
 
 // Internal Platform Pointer
-Platform* App::Internal::platform = nullptr;
+Platform* Internal::platform = nullptr;
 
 // Internal Renderer Pointer
-Renderer* App::Internal::renderer = nullptr;
+Renderer* Internal::renderer = nullptr;
 
 // Internal Audio bool
 bool Internal::audio_is_init = false;
@@ -37,11 +37,11 @@ namespace
 	void get_drawable_size(int* w, int* h)
 	{
 		// Some renderer implementations might return their own size
-		if (App::Internal::renderer->get_draw_size(w, h))
+		if (Internal::renderer->get_draw_size(w, h))
 			return;
 
 		// otherwise fallback to the platform size
-		App::Internal::platform->get_draw_size(w, h);
+		Internal::platform->get_draw_size(w, h);
 	}
 
 	// A dummy Target that represents the Back Buffer.
@@ -57,8 +57,8 @@ namespace
 		void clear(Color color, float depth, u8 stencil, ClearMask mask) override
 		{
 			BLAH_ASSERT_RENDERER();
-			if (App::Internal::renderer)
-				App::Internal::renderer->clear_backbuffer(color, depth, stencil, mask);
+			if (Internal::renderer)
+				Internal::renderer->clear_backbuffer(color, depth, stencil, mask);
 		}
 	};
 }
@@ -87,7 +87,7 @@ bool App::run(const Config* c)
 
 	if (app_is_running || c == nullptr || c->width <= 0 || c->height <= 0 || c->max_updates <= 0 || c->target_framerate <= 0)
 	{
-		App::Internal::shutdown();
+		Internal::app_shutdown();
 		return false;
 	}
 
@@ -103,14 +103,14 @@ bool App::run(const Config* c)
 		if (!Internal::platform)
 		{
 			Log::error("Failed to create Platform module");
-			App::Internal::shutdown();
+			Internal::app_shutdown();
 			return false;
 		}
 
 		if (!Internal::platform->init(app_config))
 		{
 			Log::error("Failed to initialize Platform module");
-			App::Internal::shutdown();
+			Internal::app_shutdown();
 			return false;
 		}
 	}
@@ -132,14 +132,14 @@ bool App::run(const Config* c)
 		if (Internal::renderer == nullptr)
 		{
 			Log::error("Renderer module was not found");
-			App::Internal::shutdown();
+			Internal::app_shutdown();
 			return false;
 		}
 
 		if (!Internal::renderer->init())
 		{
 			Log::error("Failed to initialize Renderer module");
-			App::Internal::shutdown();
+			Internal::app_shutdown();
 			return false;
 		}
 	}
@@ -149,8 +149,8 @@ bool App::run(const Config* c)
 	Internal::renderer->set_app_flags(app_flags);
 
 	// input + poll the platform once
-	Input::Internal::init();
-	Input::Internal::step_state();
+	Internal::input_init();
+	Internal::input_step_state();
 	Internal::platform->update(Input::state);
 
 	// startup
@@ -164,16 +164,16 @@ bool App::run(const Config* c)
 
 	// Begin main loop
 #ifdef __EMSCRIPTEN__
-	emscripten_set_main_loop(App::Internal::iterate, 0, 1);
+	emscripten_set_main_loop(Internal::iterate, 0, 1);
 #else
 	while (!app_is_exiting)
-		App::Internal::iterate();
+		Internal::app_step();
 #endif
 
 	// shutdown
 	if (app_config.on_shutdown != nullptr)
 		app_config.on_shutdown();
-	App::Internal::shutdown();
+	Internal::app_shutdown();
 	return true;
 }
 
@@ -182,25 +182,25 @@ bool App::is_running()
 	return app_is_running;
 }
 
-void App::Internal::iterate()
+void Internal::app_step()
 {
 	static const auto step = []()
 	{
-		Input::Internal::step_state();
+		Internal::input_step_state();
 		platform->update(Input::state);
-		Input::Internal::update_bindings();
+		Internal::input_step_bindings();
 		renderer->update();
 		if (app_config.on_update != nullptr)
 			app_config.on_update();
 	};
 
-	bool is_fixed_timestep = get_flag(Flags::FixedTimestep);
+	bool is_fixed_timestep = App::get_flag(Flags::FixedTimestep);
 
 	// Update in Fixed Timestep
 	if (is_fixed_timestep)
 	{
 		u64 time_target = (u64)((1.0 / app_config.target_framerate) * Time::ticks_per_second);
-		u64 ticks_curr = App::Internal::platform->ticks();
+		u64 ticks_curr = Internal::platform->ticks();
 		u64 ticks_diff = ticks_curr - app_time_last;
 		app_time_last = ticks_curr;
 		app_time_accumulator += ticks_diff;
@@ -209,9 +209,9 @@ void App::Internal::iterate()
 		while (app_time_accumulator < time_target)
 		{
 			int milliseconds = (int)(time_target - app_time_accumulator) / (Time::ticks_per_second / 1000);
-			App::Internal::platform->sleep(milliseconds);
+			Internal::platform->sleep(milliseconds);
 
-			ticks_curr = App::Internal::platform->ticks();
+			ticks_curr = Internal::platform->ticks();
 			ticks_diff = ticks_curr - app_time_last;
 			app_time_last = ticks_curr;
 			app_time_accumulator += ticks_diff;
@@ -250,7 +250,7 @@ void App::Internal::iterate()
 	// Update with Variable Timestep
 	else
 	{
-		u64 ticks_curr = App::Internal::platform->ticks();
+		u64 ticks_curr = Internal::platform->ticks();
 		u64 ticks_diff = ticks_curr - app_time_last;
 		app_time_last = ticks_curr;
 		app_time_accumulator += ticks_diff;
@@ -285,9 +285,9 @@ void App::Internal::iterate()
 	Blah::Internal::audio_update();
 }
 
-void App::Internal::shutdown()
+void Internal::app_shutdown()
 {
-	Input::Internal::shutdown();
+	Internal::input_shutdown();
 
 	if (renderer)
 		renderer->shutdown();
@@ -449,5 +449,5 @@ const TargetRef& App::backbuffer()
 void System::open_url(const char* url)
 {
 	BLAH_ASSERT_RUNNING();
-	App::Internal::platform->open_url(url);
+	Internal::platform->open_url(url);
 }

@@ -282,7 +282,7 @@ void Batch::render(const TargetRef& target, const Mat4x4f& matrix)
 		if (!m_default_material)
 		{
 			BLAH_ASSERT_RENDERER();
-			m_default_material = Material::create(App::Internal::renderer->default_batcher_shader);
+			m_default_material = Material::create(Internal::renderer->default_batcher_shader);
 		}
 	}
 

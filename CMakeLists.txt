@@ -18,6 +18,7 @@ add_library(blah
 	src/blah_spritefont.cpp
 	src/blah_subtexture.cpp
 	src/blah_aseprite.cpp
+	src/blah_audio.cpp
 	src/blah_font.cpp
 	src/blah_image.cpp
 	src/blah_packer.cpp
