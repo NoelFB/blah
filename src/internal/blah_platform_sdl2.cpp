@@ -71,67 +71,18 @@ namespace Blah
 		size_t write(const void* buffer, size_t length) override { return SDL_RWwrite(handle, buffer, sizeof(char), length); }
 	};
 
-	struct SDL2_Platform : public Platform
-	{
-		SDL_Window* window = nullptr;
-		SDL_Joystick* joysticks[Input::max_controllers];
-		SDL_GameController* gamepads[Input::max_controllers];
-		char* base_path_value = nullptr;
-		char* user_path_value = nullptr;
-		char* clipboard_text = nullptr;
-		bool displayed = false;
-
-		SDL2_Platform();
-		bool init(const Config& config) override;
-		void ready() override;
-		void shutdown() override;
-		u64 ticks() override;
-		void update(InputState& state) override;
-		void sleep(int milliseconds) override;
-		void present() override;
-		void set_app_flags(u32 flags) override;
-		const char* get_title() override;
-		void set_title(const char* title) override;
-		void get_position(int* x, int* y) override;
-		void set_position(int x, int y) override;
-		bool get_focused() override;
-		void get_size(int* width, int* height) override;
-		void set_size(int width, int height) override;
-		void get_draw_size(int* width, int* height) override;
-		float get_content_scale() override;
-		const char* app_path() override;
-		const char* user_path() override;
-		FileRef file_open(const char* path, FileMode mode) override;
-		bool file_exists(const char* path) override;
-		bool file_delete(const char* path) override;
-		bool dir_create(const char* path) override;
-		bool dir_exists(const char* path) override;
-		bool dir_delete(const char* path) override;
-		void dir_enumerate(Vector<FilePath>& list, const char* path, bool recursive) override;
-		void dir_explore(const char* path) override;
-		void set_clipboard(const char* text) override;
-		const char* get_clipboard() override;
-		void open_url(const char* url) override;
-		void* gl_get_func(const char* name) override;
-		void* gl_context_create() override;
-		void gl_context_make_current(void* context) override;
-		void gl_context_destroy(void* context) override;
-		void* d3d11_get_hwnd() override;
-	};
+	SDL_Window* sdl2_window = nullptr;
+	SDL_Joystick* sdl2_joysticks[Input::max_controllers];
+	SDL_GameController* sdl2_gamepads[Input::max_controllers];
+	char* sdl2_base_path_value = nullptr;
+	char* sdl2_user_path_value = nullptr;
+	char* sdl2_clipboard_text = nullptr;
+	bool sdl2_displayed = false;
 }
 
 using namespace Blah;
 
-SDL2_Platform::SDL2_Platform()
-{
-	for (int i = 0; i < Input::max_controllers; i++)
-	{
-		joysticks[i] = nullptr;
-		gamepads[i] = nullptr;
-	}
-}
-
-bool SDL2_Platform::init(const Config& config)
+bool Platform::init(const Config& config)
 {
 	// TODO:
 	// control this via some kind of config flag
@@ -185,54 +136,60 @@ bool SDL2_Platform::init(const Config& config)
 	}
 
 	// create the window
-	window = SDL_CreateWindow(config.name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, config.width, config.height, flags);
-	if (window == nullptr)
+	sdl2_window = SDL_CreateWindow(config.name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, config.width, config.height, flags);
+	if (sdl2_window == nullptr)
 	{
 		Log::error("Failed to create a Window");
 		return false;
 	}
 
+	for (int i = 0; i < Input::max_controllers; i++)
+	{
+		sdl2_joysticks[i] = nullptr;
+		sdl2_gamepads[i] = nullptr;
+	}
+
 	return true;
 }
 
-void SDL2_Platform::ready()
+void Platform::ready()
 {
 	
 }
 
-void SDL2_Platform::shutdown()
+void Platform::shutdown()
 {
-	if (window != nullptr)
-		SDL_DestroyWindow(window);
-	window = nullptr;
-	displayed = false;
+	if (sdl2_window != nullptr)
+		SDL_DestroyWindow(sdl2_window);
+	sdl2_window = nullptr;
+	sdl2_displayed = false;
 
-	if (base_path_value != nullptr)
-		SDL_free(base_path_value);
+	if (sdl2_base_path_value != nullptr)
+		SDL_free(sdl2_base_path_value);
 
-	if (user_path_value != nullptr)
-		SDL_free(user_path_value);
+	if (sdl2_user_path_value != nullptr)
+		SDL_free(sdl2_user_path_value);
 
-	if (clipboard_text != nullptr)
-		SDL_free(clipboard_text);
+	if (sdl2_clipboard_text != nullptr)
+		SDL_free(sdl2_clipboard_text);
 
 	SDL_Quit();
 }
 
-u64 SDL2_Platform::ticks()
+u64 Platform::ticks()
 {
 	auto counter = SDL_GetPerformanceCounter();
 	auto per_second = (double)SDL_GetPerformanceFrequency();
 	return (u64)(counter * (Time::ticks_per_second / per_second));
 }
 
-void SDL2_Platform::update(InputState& state)
+void Platform::update(InputState& state)
 {
 	// update the mouse every frame
 	{
 		int win_x, win_y, x, y;
 
-		SDL_GetWindowPosition(window, &win_x, &win_y);
+		SDL_GetWindowPosition(sdl2_window, &win_x, &win_y);
 		SDL_GetGlobalMouseState(&x, &y);
 
 		state.mouse.on_move(
@@ -301,7 +258,7 @@ void SDL2_Platform::update(InputState& state)
 
 			if (SDL_IsGameController(index) == SDL_FALSE && index >= 0 && index < Input::max_controllers)
 			{
-				auto ptr = joysticks[index] = SDL_JoystickOpen(index);
+				auto ptr = sdl2_joysticks[index] = SDL_JoystickOpen(index);
 				auto name = SDL_JoystickName(ptr);
 				auto button_count = SDL_JoystickNumButtons(ptr);
 				auto axis_count = SDL_JoystickNumAxes(ptr);
@@ -314,19 +271,19 @@ void SDL2_Platform::update(InputState& state)
 		}
 		else if (event.type == SDL_JOYDEVICEREMOVED)
 		{
-			auto index = blah_sdl_find_joystick_index(joysticks, event.jdevice.which);
+			auto index = blah_sdl_find_joystick_index(sdl2_joysticks, event.jdevice.which);
 			if (index >= 0)
 			{
 				if (SDL_IsGameController(index) == SDL_FALSE)
 				{
 					state.controllers[index].on_disconnect();
-					SDL_JoystickClose(joysticks[index]);
+					SDL_JoystickClose(sdl2_joysticks[index]);
 				}
 			}
 		}
 		else if (event.type == SDL_JOYBUTTONDOWN)
 		{
-			auto index = blah_sdl_find_joystick_index(joysticks, event.jdevice.which);
+			auto index = blah_sdl_find_joystick_index(sdl2_joysticks, event.jdevice.which);
 			if (index >= 0)
 			{
 				if (SDL_IsGameController(index) == SDL_FALSE)
@@ -335,7 +292,7 @@ void SDL2_Platform::update(InputState& state)
 		}
 		else if (event.type == SDL_JOYBUTTONUP)
 		{
-			auto index = blah_sdl_find_joystick_index(joysticks, event.jdevice.which);
+			auto index = blah_sdl_find_joystick_index(sdl2_joysticks, event.jdevice.which);
 			if (index >= 0)
 			{
 				if (SDL_IsGameController(index) == SDL_FALSE)
@@ -344,7 +301,7 @@ void SDL2_Platform::update(InputState& state)
 		}
 		else if (event.type == SDL_JOYAXISMOTION)
 		{
-			auto index = blah_sdl_find_joystick_index(joysticks, event.jdevice.which);
+			auto index = blah_sdl_find_joystick_index(sdl2_joysticks, event.jdevice.which);
 			if (index >= 0)
 			{
 				if (SDL_IsGameController(index) == SDL_FALSE)
@@ -364,7 +321,7 @@ void SDL2_Platform::update(InputState& state)
 			auto index = event.cdevice.which;
 			if (index >= 0 && index < Input::max_controllers)
 			{
-				auto ptr = gamepads[index] = SDL_GameControllerOpen(index);
+				auto ptr = sdl2_gamepads[index] = SDL_GameControllerOpen(index);
 				auto name = SDL_GameControllerName(ptr);
 				auto vendor = SDL_GameControllerGetVendor(ptr);
 				auto product = SDL_GameControllerGetProduct(ptr);
@@ -375,16 +332,16 @@ void SDL2_Platform::update(InputState& state)
 		}
 		else if (event.type == SDL_CONTROLLERDEVICEREMOVED)
 		{
-			auto index = blah_sdl_find_gamepad_index(gamepads, event.cdevice.which);
+			auto index = blah_sdl_find_gamepad_index(sdl2_gamepads, event.cdevice.which);
 			if (index >= 0)
 			{
 				state.controllers[index].on_disconnect();
-				SDL_GameControllerClose(gamepads[index]);
+				SDL_GameControllerClose(sdl2_gamepads[index]);
 			}
 		}
 		else if (event.type == SDL_CONTROLLERBUTTONDOWN)
 		{
-			auto index = blah_sdl_find_gamepad_index(gamepads, event.cdevice.which);
+			auto index = blah_sdl_find_gamepad_index(sdl2_gamepads, event.cdevice.which);
 			if (index >= 0)
 			{
 				Button button = Button::None;
@@ -396,7 +353,7 @@ void SDL2_Platform::update(InputState& state)
 		}
 		else if (event.type == SDL_CONTROLLERBUTTONUP)
 		{
-			auto index = blah_sdl_find_gamepad_index(gamepads, event.cdevice.which);
+			auto index = blah_sdl_find_gamepad_index(sdl2_gamepads, event.cdevice.which);
 			if (index >= 0)
 			{
 				Button button = Button::None;
@@ -408,7 +365,7 @@ void SDL2_Platform::update(InputState& state)
 		}
 		else if (event.type == SDL_CONTROLLERAXISMOTION)
 		{
-			auto index = blah_sdl_find_gamepad_index(gamepads, event.cdevice.which);
+			auto index = blah_sdl_find_gamepad_index(sdl2_gamepads, event.cdevice.which);
 			if (index >= 0)
 			{
 				Axis axis = Axis::None;
@@ -427,33 +384,33 @@ void SDL2_Platform::update(InputState& state)
 	}
 }
 
-void SDL2_Platform::sleep(int milliseconds)
+void Platform::sleep(int milliseconds)
 {
 	if (milliseconds >= 0)
 		SDL_Delay((u32)milliseconds);
 }
 
-void SDL2_Platform::present()
+void Platform::present()
 {
 	if (App::renderer().type == RendererType::OpenGL)
-		SDL_GL_SwapWindow(window);
+		SDL_GL_SwapWindow(sdl2_window);
 
 	// display the window
 	// this avoids a short black screen on macOS
-	if (!displayed)
+	if (!sdl2_displayed)
 	{
-		SDL_ShowWindow(window);
-		displayed = true;
+		SDL_ShowWindow(sdl2_window);
+		sdl2_displayed = true;
 	}
 }
 
-void SDL2_Platform::set_app_flags(u32 flags)
+void Platform::set_app_flags(u32 flags)
 {
 	// Toggle Fullscreen
-	SDL_SetWindowFullscreen(window, ((flags & Flags::Fullscreen) != 0) ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+	SDL_SetWindowFullscreen(sdl2_window, ((flags & Flags::Fullscreen) != 0) ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 
 	// Toggle Resizable
-	SDL_SetWindowResizable(window, ((flags & Flags::Resizable) != 0) ? SDL_TRUE : SDL_FALSE);
+	SDL_SetWindowResizable(sdl2_window, ((flags & Flags::Resizable) != 0) ? SDL_TRUE : SDL_FALSE);
 
 	// Toggle V-Sync for OpenGL
 #ifndef __EMSCRIPTEN__
@@ -462,57 +419,57 @@ void SDL2_Platform::set_app_flags(u32 flags)
 #endif
 }
 
-const char* SDL2_Platform::get_title()
+const char* Platform::get_title()
 {
-	return SDL_GetWindowTitle(window);
+	return SDL_GetWindowTitle(sdl2_window);
 }
 
-void SDL2_Platform::set_title(const char* title)
+void Platform::set_title(const char* title)
 {
-	SDL_SetWindowTitle(window, title);
+	SDL_SetWindowTitle(sdl2_window, title);
 }
 
-void SDL2_Platform::get_position(int* x, int* y)
+void Platform::get_position(int* x, int* y)
 {
-	SDL_GetWindowPosition(window, x, y);
+	SDL_GetWindowPosition(sdl2_window, x, y);
 }
 
-void SDL2_Platform::set_position(int x, int y)
+void Platform::set_position(int x, int y)
 {
-	SDL_SetWindowPosition(window, x, y);
+	SDL_SetWindowPosition(sdl2_window, x, y);
 }
 
-bool SDL2_Platform::get_focused()
+bool Platform::get_focused()
 {
-	auto flags = SDL_GetWindowFlags(window);
+	auto flags = SDL_GetWindowFlags(sdl2_window);
 	return (flags & SDL_WINDOW_INPUT_FOCUS) != 0 && (flags & SDL_WINDOW_MINIMIZED) == 0;
 }
 
-void SDL2_Platform::get_size(int* width, int* height)
+void Platform::get_size(int* width, int* height)
 {
-	SDL_GetWindowSize(window, width, height);
+	SDL_GetWindowSize(sdl2_window, width, height);
 }
 
-void SDL2_Platform::set_size(int width, int height)
+void Platform::set_size(int width, int height)
 {
-	SDL_SetWindowSize(window, width, height);
+	SDL_SetWindowSize(sdl2_window, width, height);
 }
 
-void SDL2_Platform::get_draw_size(int* width, int* height)
+void Platform::get_draw_size(int* width, int* height)
 {
 	switch (App::renderer().type)
 	{
 	case RendererType::OpenGL:
-		SDL_GL_GetDrawableSize(window, width, height);
+		SDL_GL_GetDrawableSize(sdl2_window, width, height);
 		break;
 	case RendererType::None:
 	case RendererType::D3D11:
-		SDL_GetWindowSize(window, width, height);
+		SDL_GetWindowSize(sdl2_window, width, height);
 		break;
 	}
 }
 
-float SDL2_Platform::get_content_scale()
+float Platform::get_content_scale()
 {
 	// TODO:
 	// This is incorrect! but for some reason the scale
@@ -525,7 +482,7 @@ float SDL2_Platform::get_content_scale()
 	// is there a way to get this value properly? My Windows & Linux PC's both seem to thing 96 is correct
 	const float hidpi_res = 96;
 
-	int index = SDL_GetWindowDisplayIndex(window);
+	int index = SDL_GetWindowDisplayIndex(sdl2_window);
 	if (index < 0)
 	{
 		Log::error(SDL_GetError());
@@ -542,25 +499,25 @@ float SDL2_Platform::get_content_scale()
 	return (ddpi / hidpi_res);
 }
 
-const char* SDL2_Platform::app_path()
+const char* Platform::app_path()
 {
-	if (base_path_value == nullptr)
-		base_path_value = SDL_GetBasePath();
-	return base_path_value;
+	if (sdl2_base_path_value == nullptr)
+		sdl2_base_path_value = SDL_GetBasePath();
+	return sdl2_base_path_value;
 }
 
-const char* SDL2_Platform::user_path()
+const char* Platform::user_path()
 {
-	if (user_path_value == nullptr)
+	if (sdl2_user_path_value == nullptr)
 	{
 		auto& config = App::config();
-		user_path_value = SDL_GetPrefPath(nullptr, config.name);
+		sdl2_user_path_value = SDL_GetPrefPath(nullptr, config.name);
 	}
 
-	return user_path_value;
+	return sdl2_user_path_value;
 }
 
-FileRef SDL2_Platform::file_open(const char* path, FileMode mode)
+FileRef Platform::file_open(const char* path, FileMode mode)
 {
 	const char* sdl_mode = "";
 
@@ -587,32 +544,32 @@ FileRef SDL2_Platform::file_open(const char* path, FileMode mode)
 	return FileRef(new SDL2_File(ptr));
 }
 
-bool SDL2_Platform::file_exists(const char* path)
+bool Platform::file_exists(const char* path)
 {
 	return std::filesystem::is_regular_file(path);
 }
 
-bool SDL2_Platform::file_delete(const char* path)
+bool Platform::file_delete(const char* path)
 {
 	return std::filesystem::remove(path);
 }
 
-bool SDL2_Platform::dir_create(const char* path)
+bool Platform::dir_create(const char* path)
 {
 	return std::filesystem::create_directories(path);
 }
 
-bool SDL2_Platform::dir_exists(const char* path)
+bool Platform::dir_exists(const char* path)
 {
 	return std::filesystem::is_directory(path);
 }
 
-bool SDL2_Platform::dir_delete(const char* path)
+bool Platform::dir_delete(const char* path)
 {
 	return std::filesystem::remove_all(path) > 0;
 }
 
-void SDL2_Platform::dir_enumerate(Vector<FilePath>& list, const char* path, bool recursive)
+void Platform::dir_enumerate(Vector<FilePath>& list, const char* path, bool recursive)
 {
 	if (std::filesystem::is_directory(path))
 	{
@@ -629,7 +586,7 @@ void SDL2_Platform::dir_enumerate(Vector<FilePath>& list, const char* path, bool
 	}
 }
 
-void SDL2_Platform::dir_explore(const char* path)
+void Platform::dir_explore(const char* path)
 {
 #if _WIN32
 
@@ -646,64 +603,59 @@ void SDL2_Platform::dir_explore(const char* path)
 #endif
 }
 
-void SDL2_Platform::set_clipboard(const char* text)
+void Platform::set_clipboard(const char* text)
 {
 	SDL_SetClipboardText(text);
 }
 
-const char* SDL2_Platform::get_clipboard()
+const char* Platform::get_clipboard()
 {
 	// free previous clipboard text
-	if (clipboard_text != nullptr)
-		SDL_free(clipboard_text);
+	if (sdl2_clipboard_text != nullptr)
+		SDL_free(sdl2_clipboard_text);
 
-	clipboard_text = SDL_GetClipboardText();
-	return clipboard_text;
+	sdl2_clipboard_text = SDL_GetClipboardText();
+	return sdl2_clipboard_text;
 }
 
-void* SDL2_Platform::gl_get_func(const char* name)
+void* Platform::gl_get_func(const char* name)
 {
 	return SDL_GL_GetProcAddress(name);
 }
 
-void* SDL2_Platform::gl_context_create()
+void* Platform::gl_context_create()
 {
-	void* pointer = SDL_GL_CreateContext(window);
+	void* pointer = SDL_GL_CreateContext(sdl2_window);
 	if (pointer == nullptr)
 		Log::error("SDL_GL_CreateContext failed: %s", SDL_GetError());
 	return pointer;
 }
 
-void SDL2_Platform::gl_context_make_current(void* context)
+void Platform::gl_context_make_current(void* context)
 {
-	SDL_GL_MakeCurrent(window, context);
+	SDL_GL_MakeCurrent(sdl2_window, context);
 }
 
-void SDL2_Platform::gl_context_destroy(void* context)
+void Platform::gl_context_destroy(void* context)
 {
 	SDL_GL_DeleteContext(context);
 }
 
-void* SDL2_Platform::d3d11_get_hwnd()
+void* Platform::d3d11_get_hwnd()
 {
 #if _WIN32
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
-	SDL_GetWindowWMInfo(window, &info);
+	SDL_GetWindowWMInfo(sdl2_window, &info);
 	return info.info.win.window;
 #else
 	return nullptr;
 #endif
 }
 
-void SDL2_Platform::open_url(const char* url)
+void Platform::open_url(const char* url)
 {
 	SDL_OpenURL(url);
-}
-
-Platform* Platform::try_make_platform(const Config& config)
-{
-	return new SDL2_Platform();
 }
 
 #endif // BLAH_PLATFORM_SDL2

@@ -48,89 +48,50 @@ namespace Blah
 		size_t write(const void* buffer, size_t length) override;
 	};
 
-	struct Win32_Platform : public Platform
+	// Main State
+	HWND         win32_hwnd;
+	FilePath     win32_working_directory;
+	FilePath     win32_user_directory;
+	Duration     win32_start_time;
+	RECT         win32_windowed_position;
+	bool         win32_fullscreen = false;
+	InputState*  win32_input_state = nullptr;
+	String       win32_clipboard;
+
+	// XInput
+	struct
 	{
-		// Main State
-		HWND         hwnd;
-		FilePath     working_directory;
-		FilePath     user_directory;
-		Duration     start_time;
-		RECT         windowed_position;
-		bool         fullscreen = false;
-		InputState*  input_state = nullptr;
-		String       clipboard;
+		HMODULE dll;
+		XInputGetCapabilities_fn get_capabilities;
+		XInputGetState_fn get_state;
+	} win32_xinput;
 
-		// XInput
-		struct
-		{
-			HMODULE dll;
-			XInputGetCapabilities_fn get_capabilities;
-			XInputGetState_fn get_state;
-		} xinput;
+	struct Joystick
+	{
+		bool connected = false;
+		bool accounted = false;
+		GUID dinstance = GUID_NULL;
+		DWORD xindex = 0;
+	} win32_joysticks[Input::max_controllers];
 
-		struct Joystick
-		{
-			bool connected = false;
-			bool accounted = false;
-			GUID dinstance = GUID_NULL;
-			DWORD xindex = 0;
-		} joysticks[Input::max_controllers];
-
-		// OpenGL Methods
-		// These are only loaded if built using the OpenGL Backend
-		struct
-		{
-			HMODULE dll;
-			wglGetProcAddress_fn get_proc_address;
-			wglCreateContext_fn create_context;
-			wglDeleteContext_fn delete_context;
-			wglMakeCurrent_fn make_current;
-		} gl;
-
-		bool init(const Config& config) override;
-		void ready() override;
-		void shutdown() override;
-		u64 ticks() override;
-		void update(InputState& state) override;
-		void sleep(int milliseconds) override;
-		void present() override;
-		const char* get_title() override;
-		void set_title(const char* title) override;
-		void get_position(int* x, int* y) override;
-		void set_position(int x, int y) override;
-		bool get_focused() override;
-		void set_app_flags(u32 flags) override;
-		void get_size(int* width, int* height) override;
-		void set_size(int width, int height) override;
-		void get_draw_size(int* width, int* height) override;
-		float get_content_scale() override;
-		const char* app_path() override;
-		const char* user_path() override;
-		FileRef file_open(const char* path, FileMode mode) override;
-		bool file_exists(const char* path) override;
-		bool file_delete(const char* path) override;
-		bool dir_create(const char* path) override;
-		bool dir_exists(const char* path) override;
-		bool dir_delete(const char* path) override;
-		void dir_enumerate(Vector<FilePath>& list, const char* path, bool recursive) override;
-		void dir_explore(const char* path) override;
-		void set_clipboard(const char* text) override;
-		const char* get_clipboard() override;
-		void open_url(const char* url) override;
-		void* gl_get_func(const char* name) override;
-		void* gl_context_create() override;
-		void gl_context_make_current(void* context) override;
-		void gl_context_destroy(void* context) override;
-		void* d3d11_get_hwnd() override;
-
-		void detect_joysticks();
-	};
+	// OpenGL Methods
+	// These are only loaded if built using the OpenGL Backend
+	struct
+	{
+		HMODULE dll;
+		wglGetProcAddress_fn get_proc_address;
+		wglCreateContext_fn create_context;
+		wglDeleteContext_fn delete_context;
+		wglMakeCurrent_fn make_current;
+	} win32_gl;
 
 	// Main Windows Procedure callback
-	LRESULT CALLBACK win32_window_procedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	LRESULT CALLBACK win32_window_procedure(HWND win32_hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	// Converts Windows scancode to Blah key
 	Key win32_scancode_to_key(WPARAM wParam, LPARAM lParam);
+
+	void win32_detect_joysticks();
 }
 
 using namespace Blah;
@@ -194,7 +155,7 @@ size_t Win32File::read(void* buffer, size_t length)
 			to_read = (DWORD)(length - read);
 
 		DWORD moved = 0;
-		if (ReadFile(m_handle, (char *)buffer + read, to_read, &moved, NULL))
+		if (ReadFile(m_handle, (char*)buffer + read, to_read, &moved, NULL))
 			read += moved;
 
 		if (moved < to_read)
@@ -217,7 +178,7 @@ size_t Win32File::write(const void* buffer, size_t length)
 			to_write = (DWORD)(length - written);
 
 		DWORD moved = 0;
-		if (WriteFile(m_handle, (char *)buffer + written, to_write, &moved, NULL))
+		if (WriteFile(m_handle, (char*)buffer + written, to_write, &moved, NULL))
 			written += moved;
 
 		if (moved < to_write)
@@ -227,7 +188,7 @@ size_t Win32File::write(const void* buffer, size_t length)
 	return written;
 }
 
-bool Win32_Platform::init(const Config& config)
+bool Platform::init(const Config& config)
 {
 	// Required to call this for Windows
 	SetProcessDPIAware();
@@ -252,10 +213,10 @@ bool Win32_Platform::init(const Config& config)
 	RegisterClass(&wc);
 
 	// Create the Window Instance
-	hwnd = CreateWindow("BLAH WINDOW", config.name, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, 640, 480, NULL, NULL, hInstance, NULL);
+	win32_hwnd = CreateWindow("BLAH WINDOW", config.name, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, 640, 480, NULL, NULL, hInstance, NULL);
 
 	// Failed to create the Window
-	if (hwnd == NULL)
+	if (win32_hwnd == NULL)
 	{
 		Log::error("Window Creation Failed");
 		return false;
@@ -273,18 +234,18 @@ bool Win32_Platform::init(const Config& config)
 	if (config.renderer_type == RendererType::OpenGL)
 	{
 		// Load the DLL
-		gl.dll = LoadLibraryA("opengl32.dll");
-		if (gl.dll == NULL)
+		win32_gl.dll = LoadLibraryA("opengl32.dll");
+		if (win32_gl.dll == NULL)
 		{
 			Log::error("OpenGL Instantiation Failed - unable to fine opengl32.dll");
 			return false;
 		}
 
 		// Get the Windows GL functions we need
-		gl.get_proc_address = (wglGetProcAddress_fn)GetProcAddress(gl.dll, "wglGetProcAddress");
-		gl.create_context = (wglCreateContext_fn)GetProcAddress(gl.dll, "wglCreateContext");
-		gl.delete_context = (wglDeleteContext_fn)GetProcAddress(gl.dll, "wglDeleteContext");
-		gl.make_current = (wglMakeCurrent_fn)GetProcAddress(gl.dll, "wglMakeCurrent");
+		win32_gl.get_proc_address = (wglGetProcAddress_fn)GetProcAddress(win32_gl.dll, "wglGetProcAddress");
+		win32_gl.create_context = (wglCreateContext_fn)GetProcAddress(win32_gl.dll, "wglCreateContext");
+		win32_gl.delete_context = (wglDeleteContext_fn)GetProcAddress(win32_gl.dll, "wglDeleteContext");
+		win32_gl.make_current = (wglMakeCurrent_fn)GetProcAddress(win32_gl.dll, "wglMakeCurrent");
 
 		// TODO:
 		// Allow the user to apply (some of) these values before instantiation.
@@ -312,7 +273,7 @@ bool Win32_Platform::init(const Config& config)
 			0, 0, 0                // layer masks ignored  
 		};
 
-		HDC hdc = GetDC(hwnd);
+		HDC hdc = GetDC(win32_hwnd);
 
 		// get the best available match of pixel format for the device context   
 		int pixel_format = ChoosePixelFormat(hdc, &pfd);
@@ -327,17 +288,17 @@ bool Win32_Platform::init(const Config& config)
 
 		for (int i = 0; dlls[i]; i++)
 		{
-			xinput.dll = LoadLibraryA(dlls[i]);
+			win32_xinput.dll = LoadLibraryA(dlls[i]);
 
-			if (xinput.dll)
+			if (win32_xinput.dll)
 			{
-				xinput.get_capabilities = (XInputGetCapabilities_fn)GetProcAddress(xinput.dll, "XInputGetCapabilities");
-				xinput.get_state = (XInputGetState_fn)GetProcAddress(xinput.dll, "XInputGetState");
+				win32_xinput.get_capabilities = (XInputGetCapabilities_fn)GetProcAddress(win32_xinput.dll, "XInputGetCapabilities");
+				win32_xinput.get_state = (XInputGetState_fn)GetProcAddress(win32_xinput.dll, "XInputGetState");
 				break;
 			}
 		}
 
-		if (!xinput.dll)
+		if (!win32_xinput.dll)
 			Log::warn("Failed to find XInput dll; No Controller Support");
 	}
 
@@ -349,10 +310,10 @@ bool Win32_Platform::init(const Config& config)
 		auto normalized = Path::normalize(buffer);
 		auto end = normalized.last_index_of('/');;
 		if (end >= 0)
-			working_directory = FilePath(normalized.begin(), normalized.begin() + end);
+			win32_working_directory = FilePath(normalized.begin(), normalized.begin() + end);
 		else
-			working_directory = normalized;
-		working_directory.append("/");
+			win32_working_directory = normalized;
+		win32_working_directory.append("/");
 	}
 
 	// Get Application User Directory
@@ -366,56 +327,56 @@ bool Win32_Platform::init(const Config& config)
 			FilePath result;
 			result.append((u16*)path, (u16*)end);
 
-			user_directory = Path::join(Path::normalize(result), config.name) + "/";
+			win32_user_directory = Path::join(Path::normalize(result), config.name) + "/";
 		}
 		CoTaskMemFree(path);
 	}
 
 	// Reset our game timer
-	start_time = std::chrono::system_clock::now().time_since_epoch();
+	win32_start_time = std::chrono::system_clock::now().time_since_epoch();
 
-	// Not currently fullscreen
-	fullscreen = false;
+	// Not currently win32_fullscreen
+	win32_fullscreen = false;
 
 	// Finished Platform Setup
 	return true;
 }
 
-void Win32_Platform::ready()
+void Platform::ready()
 {
 	// Display the game window
-	ShowWindow(hwnd, SW_SHOW);
+	ShowWindow(win32_hwnd, SW_SHOW);
 }
 
-void Win32_Platform::shutdown()
+void Platform::shutdown()
 {
-	if (xinput.dll)
-		FreeLibrary(xinput.dll);
+	if (win32_xinput.dll)
+		FreeLibrary(win32_xinput.dll);
 
-	if (gl.dll)
-		FreeLibrary(gl.dll);
+	if (win32_gl.dll)
+		FreeLibrary(win32_gl.dll);
 
-	DestroyWindow(hwnd);
+	DestroyWindow(win32_hwnd);
 }
 
-u64 Win32_Platform::ticks()
+u64 Platform::ticks()
 {
 	// Todo:
 	// This should account for whatever Time::ticks_per_second is set to
 
 	auto now = std::chrono::system_clock::now().time_since_epoch();
-	return std::chrono::duration_cast<std::chrono::microseconds>(now - start_time).count();
+	return std::chrono::duration_cast<std::chrono::microseconds>(now - win32_start_time).count();
 }
 
-void Win32_Platform::update(InputState& state)
+void Platform::update(InputState& state)
 {
 	// store reference to input state
-	bool first_update = input_state == nullptr;
-	input_state = &state;
+	bool first_update = win32_input_state == nullptr;
+	win32_input_state = &state;
 
 	// if this is the first update, poll joysticks that are already connected
 	if (first_update)
-		detect_joysticks();
+		win32_detect_joysticks();
 
 	// Catch & Dispatch Window Messages
 	MSG msg;
@@ -426,82 +387,82 @@ void Win32_Platform::update(InputState& state)
 	}
 }
 
-void Win32_Platform::sleep(int milliseconds)
+void Platform::sleep(int milliseconds)
 {
 	if (milliseconds > 0)
 		Sleep(milliseconds);
 }
 
-void Win32_Platform::present()
+void Platform::present()
 {
 	if (App::renderer().type == RendererType::OpenGL)
 	{
-		HDC hdc = GetDC(hwnd);
+		HDC hdc = GetDC(win32_hwnd);
 		SwapBuffers(hdc);
 	}
 }
 
-const char* Win32_Platform::get_title()
+const char* Platform::get_title()
 {
 	return nullptr;
 }
 
-void Win32_Platform::set_title(const char* title)
+void Platform::set_title(const char* title)
 {
-	SetWindowText(hwnd, title);
+	SetWindowText(win32_hwnd, title);
 }
 
-void Win32_Platform::get_position(int* x, int* y)
+void Platform::get_position(int* x, int* y)
 {
 	RECT rect;
-	if (GetWindowRect(hwnd, &rect))
+	if (GetWindowRect(win32_hwnd, &rect))
 	{
 		*x = rect.left;
 		*y = rect.top;
 	}
 }
 
-void Win32_Platform::set_position(int x, int y)
+void Platform::set_position(int x, int y)
 {
 	int w, h;
 	get_size(&w, &h);
-	SetWindowPos(hwnd, NULL, x, y, w, h, 0);
+	SetWindowPos(win32_hwnd, NULL, x, y, w, h, 0);
 }
 
-bool Win32_Platform::get_focused()
+bool Platform::get_focused()
 {
 	Log::warn("App::focused not implemented for Win32 yet");
 	return true;
 }
 
-void Win32_Platform::set_app_flags(u32 flags)
+void Platform::set_app_flags(u32 flags)
 {
-	// toggle fullscreen
+	// toggle win32_fullscreen
 	{
 		bool enabled = (flags & Flags::Fullscreen) != 0;
-		if (fullscreen == enabled)
+		if (win32_fullscreen == enabled)
 			return;
-		fullscreen = enabled;
+		win32_fullscreen = enabled;
 
-		if (fullscreen)
+		if (win32_fullscreen)
 		{
-			GetWindowRect(hwnd, &windowed_position);
+			GetWindowRect(win32_hwnd, &win32_windowed_position);
 
 			int w = GetSystemMetrics(SM_CXSCREEN);
 			int h = GetSystemMetrics(SM_CYSCREEN);
-			SetWindowLongPtr(hwnd, GWL_STYLE, WS_VISIBLE | WS_POPUP);
-			SetWindowPos(hwnd, HWND_TOP, 0, 0, w, h, 0);
-			ShowWindow(hwnd, SW_SHOW);
+			SetWindowLongPtr(win32_hwnd, GWL_STYLE, WS_VISIBLE | WS_POPUP);
+			SetWindowPos(win32_hwnd, HWND_TOP, 0, 0, w, h, 0);
+			ShowWindow(win32_hwnd, SW_SHOW);
 		}
 		else
 		{
-			SetWindowLongPtr(hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
-			SetWindowPos(hwnd, HWND_TOP,
-				windowed_position.left,
-				windowed_position.top,
-				windowed_position.right - windowed_position.left,
-				windowed_position.bottom - windowed_position.top, 0);
-			ShowWindow(hwnd, SW_SHOW);
+			SetWindowLongPtr(win32_hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+			SetWindowPos(win32_hwnd, HWND_TOP,
+				win32_windowed_position.left,
+				win32_windowed_position.top,
+				win32_windowed_position.right - win32_windowed_position.left,
+				win32_windowed_position.bottom - win32_windowed_position.top, 0);
+			ShowWindow(win32_hwnd, SW_SHOW);
 		}
 	}
 
@@ -509,88 +470,88 @@ void Win32_Platform::set_app_flags(u32 flags)
 	// TODO: ...
 }
 
-void Win32_Platform::get_size(int* width, int* height)
+void Platform::get_size(int* width, int* height)
 {
 	RECT rect;
-	if (GetClientRect(hwnd, &rect))
+	if (GetClientRect(win32_hwnd, &rect))
 	{
 		*width = rect.right - rect.left;
 		*height = rect.bottom - rect.top;
 	}
 }
 
-void Win32_Platform::set_size(int width, int height)
+void Platform::set_size(int width, int height)
 {
 	RECT client_rect;
 	RECT border_rect;
 
-	GetClientRect(hwnd, &client_rect);
-	GetWindowRect(hwnd, &border_rect);
+	GetClientRect(win32_hwnd, &client_rect);
+	GetWindowRect(win32_hwnd, &border_rect);
 
 	int border_width = (border_rect.right - border_rect.left) - (client_rect.right - client_rect.left);
 	int border_height = (border_rect.bottom - border_rect.top) - (client_rect.bottom - client_rect.top);
 
-	SetWindowPos(hwnd, NULL, border_rect.left, border_rect.top, width + border_width, height + border_height, 0);
+	SetWindowPos(win32_hwnd, NULL, border_rect.left, border_rect.top, width + border_width, height + border_height, 0);
 }
 
-void Win32_Platform::get_draw_size(int* width, int* height)
+void Platform::get_draw_size(int* width, int* height)
 {
 	RECT rect;
-	if (GetClientRect(hwnd, &rect))
+	if (GetClientRect(win32_hwnd, &rect))
 	{
 		*width = rect.right - rect.left;
 		*height = rect.bottom - rect.top;
 	}
 }
 
-float Win32_Platform::get_content_scale()
+float Platform::get_content_scale()
 {
 	// base value of Windows DPI
 	// as seen here: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdpiforwindow
 	constexpr float base_raw_value = 96.0f;
 
-	UINT raw_value = GetDpiForWindow(hwnd);
+	UINT raw_value = GetDpiForWindow(win32_hwnd);
 
 	return (raw_value / base_raw_value);
 }
 
-const char* Win32_Platform::app_path()
+const char* Platform::app_path()
 {
-	return working_directory.cstr();
+	return win32_working_directory.cstr();
 }
 
-const char* Win32_Platform::user_path()
+const char* Platform::user_path()
 {
-	return user_directory.cstr();
+	return win32_user_directory.cstr();
 }
 
-bool Win32_Platform::file_exists(const char* path)
+bool Platform::file_exists(const char* path)
 {
 	return std::filesystem::is_regular_file(path);
 }
 
-bool Win32_Platform::file_delete(const char* path)
+bool Platform::file_delete(const char* path)
 {
 	return std::filesystem::remove(path);
 }
 
-bool Win32_Platform::dir_create(const char* path)
+bool Platform::dir_create(const char* path)
 {
 	std::error_code error;
 	return std::filesystem::create_directories(path, error);
 }
 
-bool Win32_Platform::dir_exists(const char* path)
+bool Platform::dir_exists(const char* path)
 {
 	return std::filesystem::is_directory(path);
 }
 
-bool Win32_Platform::dir_delete(const char* path)
+bool Platform::dir_delete(const char* path)
 {
 	return std::filesystem::remove_all(path) > 0;
 }
 
-void Win32_Platform::dir_enumerate(Vector<FilePath>& list, const char* path, bool recursive)
+void Platform::dir_enumerate(Vector<FilePath>& list, const char* path, bool recursive)
 {
 	if (std::filesystem::is_directory(path))
 	{
@@ -607,12 +568,12 @@ void Win32_Platform::dir_enumerate(Vector<FilePath>& list, const char* path, boo
 	}
 }
 
-void Win32_Platform::dir_explore(const char* path)
+void Platform::dir_explore(const char* path)
 {
 	ShellExecute(NULL, "open", path, NULL, NULL, SW_SHOWDEFAULT);
 }
 
-FileRef Win32_Platform::file_open(const char* path, FileMode mode)
+FileRef Platform::file_open(const char* path, FileMode mode)
 {
 	int access = 0;
 	int creation = 0;
@@ -645,52 +606,52 @@ FileRef Win32_Platform::file_open(const char* path, FileMode mode)
 	return FileRef(new Win32File(result));
 }
 
-void* Win32_Platform::gl_get_func(const char* name)
+void* Platform::gl_get_func(const char* name)
 {
 	// this check is taken from https://www.khronos.org/opengl/wiki/Load_OpenGL_Functions
 	// wglGetProcAddress doesn't always return valid pointers for some specific methods?
 
-	void* p = (void*)gl.get_proc_address(name);
+	void* p = (void*)win32_gl.get_proc_address(name);
 	if ((p == 0) ||
 		(p == (void*)0x1) ||
 		(p == (void*)0x2) ||
 		(p == (void*)0x3) ||
 		(p == (void*)-1))
 	{
-		p = (void*)GetProcAddress(gl.dll, name);
+		p = (void*)GetProcAddress(win32_gl.dll, name);
 	}
 
 	return p;
 }
 
-void* Win32_Platform::gl_context_create()
+void* Platform::gl_context_create()
 {
-	HDC hdc = GetDC(hwnd);
-	return gl.create_context(hdc);
+	HDC hdc = GetDC(win32_hwnd);
+	return win32_gl.create_context(hdc);
 }
 
-void Win32_Platform::gl_context_make_current(void* context)
+void Platform::gl_context_make_current(void* context)
 {
 	if (context != nullptr)
 	{
-		HDC hdc = GetDC(hwnd);
-		gl.make_current(hdc, (HGLRC)context);
+		HDC hdc = GetDC(win32_hwnd);
+		win32_gl.make_current(hdc, (HGLRC)context);
 	}
 	else
-		gl.make_current(NULL, NULL);
+		win32_gl.make_current(NULL, NULL);
 }
 
-void Win32_Platform::gl_context_destroy(void* context)
+void Platform::gl_context_destroy(void* context)
 {
-	gl.delete_context((HGLRC)context);
+	win32_gl.delete_context((HGLRC)context);
 }
 
-void* Win32_Platform::d3d11_get_hwnd()
+void* Platform::d3d11_get_hwnd()
 {
-	return hwnd;
+	return win32_hwnd;
 }
 
-void Win32_Platform::set_clipboard(const char* text)
+void Platform::set_clipboard(const char* text)
 {
 	auto len = strlen(text);
 	if (auto glob = GlobalAlloc(GMEM_MOVEABLE, len))
@@ -711,7 +672,7 @@ void Win32_Platform::set_clipboard(const char* text)
 	}
 }
 
-const char* Win32_Platform::get_clipboard()
+const char* Platform::get_clipboard()
 {
 	if (OpenClipboard(nullptr))
 	{
@@ -720,44 +681,42 @@ const char* Win32_Platform::get_clipboard()
 		{
 			auto text = static_cast<const char*>(GlobalLock(data));
 			if (text)
-				clipboard = text;
+				win32_clipboard = text;
 			GlobalUnlock(data);
 		}
 		CloseClipboard();
 	}
 
-	return clipboard.cstr();
+	return win32_clipboard.cstr();
 }
 
-void Win32_Platform::open_url(const char* url)
+void Platform::open_url(const char* url)
 {
 	auto cmd = String("start ") + url;
 	system(cmd.cstr());
 }
 
-void Win32_Platform::detect_joysticks()
+void win32_detect_joysticks()
 {
-	auto platform = ((Win32_Platform*)Internal::platform);
-
 	// mark all joysticks as unnacounted for
 	for (int i = 0; i < Input::max_controllers; i++)
-		platform->joysticks[i].accounted = false;
+		win32_joysticks[i].accounted = false;
 
 	// check for xinput controllers
-	if (platform->xinput.dll)
+	if (win32_xinput.dll)
 	{
 		for (DWORD index = 0; index < XUSER_MAX_COUNT; index++)
 		{
 			// can't get capabilities; not connected
 			XINPUT_CAPABILITIES xic;
-			if (platform->xinput.get_capabilities(index, 0, &xic) != ERROR_SUCCESS)
+			if (win32_xinput.get_capabilities(index, 0, &xic) != ERROR_SUCCESS)
 				continue;
 
 			// already connected
 			bool already_connected = false;
 			for (int i = 0; i < Input::max_controllers; i++)
 			{
-				auto& it = platform->joysticks[i];
+				auto& it = win32_joysticks[i];
 				if (it.connected && it.dinstance == GUID_NULL && it.xindex == index)
 				{
 					it.accounted = true;
@@ -772,7 +731,7 @@ void Win32_Platform::detect_joysticks()
 			// find an empty slot and mark connected
 			for (int i = 0; i < Input::max_controllers; i++)
 			{
-				auto& it = platform->joysticks[i];
+				auto& it = win32_joysticks[i];
 				if (!it.connected)
 				{
 					it.connected = it.accounted = true;
@@ -783,7 +742,7 @@ void Win32_Platform::detect_joysticks()
 
 					// TODO:
 					// Get Product Info & Proper Name
-					platform->input_state->controllers[i].on_connect("Xbox Controller", true, 15, 6, 0, 0, 0);
+					win32_input_state->controllers[i].on_connect("Xbox Controller", true, 15, 6, 0, 0, 0);
 
 					break;
 				}
@@ -794,21 +753,18 @@ void Win32_Platform::detect_joysticks()
 	// call disconnect on joysticks that aren't accounted for
 	for (int i = 0; i < Input::max_controllers; i++)
 	{
-		auto& it = platform->joysticks[i];
+		auto& it = win32_joysticks[i];
 		if (it.connected && !it.accounted)
 		{
 			Log::info("Disconnected [%i]", i);
-			platform->input_state->controllers[i].on_disconnect();
-			it = Win32_Platform::Joystick();
+			win32_input_state->controllers[i].on_disconnect();
+			it = Joystick();
 		}
 	}
 }
 
-LRESULT CALLBACK Blah::win32_window_procedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Blah::win32_window_procedure(HWND win32_hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	auto platform = ((Win32_Platform*)Internal::platform);
-	auto input_state = platform->input_state;
-
 	switch (msg)
 	{
 	case WM_CLOSE:
@@ -829,41 +785,41 @@ LRESULT CALLBACK Blah::win32_window_procedure(HWND hwnd, UINT msg, WPARAM wParam
 		// DBT_DEVNODES_CHANGED = 0x0007
 		// https://docs.microsoft.com/en-us/windows/win32/devio/wm-devicechange
 		if (wParam == 0x0007)
-			platform->detect_joysticks();
+			win32_detect_joysticks();
 		return 0;
 	}
 
 	// Mouse Input
 	case WM_LBUTTONDOWN:
-		input_state->mouse.on_press(MouseButton::Left);
+		win32_input_state->mouse.on_press(MouseButton::Left);
 		return 0;
 
 	case WM_LBUTTONUP:
-		input_state->mouse.on_release(MouseButton::Left);
+		win32_input_state->mouse.on_release(MouseButton::Left);
 		return 0;
 
 	case WM_RBUTTONDOWN:
-		input_state->mouse.on_press(MouseButton::Right);
+		win32_input_state->mouse.on_press(MouseButton::Right);
 		return 0;
 
 	case WM_RBUTTONUP:
-		input_state->mouse.on_release(MouseButton::Right);
+		win32_input_state->mouse.on_release(MouseButton::Right);
 		return 0;
 
 	case WM_MBUTTONDOWN:
-		input_state->mouse.on_press(MouseButton::Middle);
+		win32_input_state->mouse.on_press(MouseButton::Middle);
 		return 0;
 
 	case WM_MBUTTONUP:
-		input_state->mouse.on_release(MouseButton::Middle);
+		win32_input_state->mouse.on_release(MouseButton::Middle);
 		return 0;
 
 	case WM_MOUSEMOVE:
-		input_state->mouse.on_move(Vec2f((float)((u16)lParam), (float)(lParam >> 16)), Vec2f::zero);
+		win32_input_state->mouse.on_move(Vec2f((float)((u16)lParam), (float)(lParam >> 16)), Vec2f::zero);
 		return 0;
 
 	case WM_MOUSEWHEEL:
-		input_state->mouse.wheel = Point(0, GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA);
+		win32_input_state->mouse.wheel = Point(0, GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA);
 		return 0;
 
 		// Text Input
@@ -875,7 +831,7 @@ LRESULT CALLBACK Blah::win32_window_procedure(HWND hwnd, UINT msg, WPARAM wParam
 		String result;
 		result.append((u32)wParam);
 		if (result.length() > 0)
-			input_state->keyboard.text += result.cstr();
+			win32_input_state->keyboard.text += result.cstr();
 		return 0;
 	}
 
@@ -888,7 +844,7 @@ LRESULT CALLBACK Blah::win32_window_procedure(HWND hwnd, UINT msg, WPARAM wParam
 		{
 			auto key = Blah::win32_scancode_to_key(wParam, lParam);
 			if (key != Key::Unknown)
-				input_state->keyboard.on_press(key);
+				win32_input_state->keyboard.on_press(key);
 		}
 		return 0;
 	}
@@ -898,12 +854,12 @@ LRESULT CALLBACK Blah::win32_window_procedure(HWND hwnd, UINT msg, WPARAM wParam
 	{
 		auto key = Blah::win32_scancode_to_key(wParam, lParam);
 		if (key != Key::Unknown)
-			input_state->keyboard.on_release(key);
+			win32_input_state->keyboard.on_release(key);
 		return 0;
 	}
 	}
 
-	return DefWindowProc(hwnd, msg, wParam, lParam);
+	return DefWindowProc(win32_hwnd, msg, wParam, lParam);
 }
 
 Blah::Key Blah::win32_scancode_to_key(WPARAM wParam, LPARAM lParam)
@@ -1084,11 +1040,6 @@ Blah::Key Blah::win32_scancode_to_key(WPARAM wParam, LPARAM lParam)
 	}
 
 	return Key::Unknown;
-}
-
-Platform* Platform::try_make_platform(const Config& config)
-{
-	return new Win32_Platform();
 }
 
 #endif // BLAH_PLATFORM_WIN32

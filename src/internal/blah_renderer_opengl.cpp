@@ -340,7 +340,7 @@ typedef void (APIENTRY* DEBUGPROC)(GLenum source,
 	const void* userParam);
 
 // shorthand to our internal state
-#define RENDERER ((Renderer_OpenGL*)Internal::renderer)
+#define RENDERER ((Renderer_OpenGL*)Internal::app_renderer())
 
 namespace Blah
 {
@@ -1176,16 +1176,16 @@ namespace Blah
 	bool Renderer_OpenGL::init()
 	{
 		// create gl context
-		context = Internal::platform->gl_context_create();
+		context = Platform::gl_context_create();
 		if (context == nullptr)
 		{
 			Log::error("Failed to create OpenGL Context");
 			return false;
 		}
-		Internal::platform->gl_context_make_current(context);
+		Platform::gl_context_make_current(context);
 
 		// bind opengl functions
-		#define GL_FUNC(name, ...) gl.name = (Renderer_OpenGL::Bindings::name ## Func)(Internal::platform->gl_get_func("gl" #name));
+		#define GL_FUNC(name, ...) gl.name = (Renderer_OpenGL::Bindings::name ## Func)(Platform::gl_get_func("gl" #name));
 		GL_FUNCTIONS
 		#undef GL_FUNC
 
@@ -1229,7 +1229,7 @@ namespace Blah
 
 	void Renderer_OpenGL::shutdown()
 	{
-		Internal::platform->gl_context_destroy(context);
+		Platform::gl_context_destroy(context);
 		context = nullptr;
 	}
 
@@ -1546,33 +1546,33 @@ namespace Blah
 
 	void Renderer_OpenGL::clear_backbuffer(Color color, float depth, u8 stencil, ClearMask mask)
 	{
-			RENDERER->gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
-			RENDERER->gl.Disable(GL_SCISSOR_TEST);
+		RENDERER->gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
+		RENDERER->gl.Disable(GL_SCISSOR_TEST);
 
-			int clear = 0;
+		int clear = 0;
 
-			if (((int)mask & (int)ClearMask::Color) == (int)ClearMask::Color)
-			{
-				clear |= GL_COLOR_BUFFER_BIT;
-				RENDERER->gl.ColorMask(true, true, true, true);
-				RENDERER->gl.ClearColor(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
-			}
+		if (((int)mask & (int)ClearMask::Color) == (int)ClearMask::Color)
+		{
+			clear |= GL_COLOR_BUFFER_BIT;
+			RENDERER->gl.ColorMask(true, true, true, true);
+			RENDERER->gl.ClearColor(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
+		}
 			
-			if (((int)mask & (int)ClearMask::Depth) == (int)ClearMask::Depth)
-			{
-				clear |= GL_DEPTH_BUFFER_BIT;
-				if (RENDERER->gl.ClearDepth)
-					RENDERER->gl.ClearDepth(depth);
-			}
+		if (((int)mask & (int)ClearMask::Depth) == (int)ClearMask::Depth)
+		{
+			clear |= GL_DEPTH_BUFFER_BIT;
+			if (RENDERER->gl.ClearDepth)
+				RENDERER->gl.ClearDepth(depth);
+		}
 
-			if (((int)mask & (int)ClearMask::Stencil) == (int)ClearMask::Stencil)
-			{
-				clear |= GL_STENCIL_BUFFER_BIT;
-				if (RENDERER->gl.ClearStencil)
-					RENDERER->gl.ClearStencil(stencil);
-			}
+		if (((int)mask & (int)ClearMask::Stencil) == (int)ClearMask::Stencil)
+		{
+			clear |= GL_STENCIL_BUFFER_BIT;
+			if (RENDERER->gl.ClearStencil)
+				RENDERER->gl.ClearStencil(stencil);
+		}
 
-			RENDERER->gl.Clear(clear);
+		RENDERER->gl.Clear(clear);
 	}
 }
 

@@ -18,7 +18,7 @@ namespace Blah
 	{
 		bool audio_init(unsigned play_frequency_in_Hz, int buffered_samples)
 		{
-			cs_error_t err = cs_init(Internal::platform->d3d11_get_hwnd(), play_frequency_in_Hz, buffered_samples, NULL);
+			cs_error_t err = cs_init(Platform::d3d11_get_hwnd(), play_frequency_in_Hz, buffered_samples, NULL);
 			if (err != CUTE_SOUND_ERROR_NONE) {
 				Log::error(cs_error_as_string(err));
 				return false;

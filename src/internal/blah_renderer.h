@@ -9,10 +9,10 @@ namespace Blah
 	{
 	public:
 
-		// Renderer Info
+		// Renderer Info, should be assigned during init
 		RendererInfo info;
 
-		// Default Shader for the Batcher
+		// Default Shader for the Batcher, should be created in init
 		ShaderRef default_batcher_shader;
 
 		virtual ~Renderer() = default;

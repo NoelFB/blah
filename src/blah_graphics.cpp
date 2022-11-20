@@ -88,8 +88,8 @@ ShaderRef Shader::create(const ShaderData& data)
 
 	ShaderRef shader;
 
-	if (Internal::renderer)
-		shader = Internal::renderer->create_shader(&data);
+	if (auto renderer = Internal::app_renderer())
+		shader = renderer->create_shader(&data);
 
 	// validate the shader
 	if (shader)
@@ -130,9 +130,9 @@ TextureRef Texture::create(int width, int height, TextureFormat format, unsigned
 	BLAH_ASSERT(width > 0 && height > 0, "Texture width and height must be larger than 0");
 	BLAH_ASSERT((int)format > (int)TextureFormat::None && (int)format < (int)TextureFormat::Count, "Invalid texture format");
 
-	if (Internal::renderer)
+	if (auto renderer = Internal::app_renderer())
 	{
-		auto tex = Internal::renderer->create_texture(width, height, format);
+		auto tex = renderer->create_texture(width, height, format);
 
 		if (tex && data != nullptr)
 			tex->set_data(data);
@@ -194,8 +194,8 @@ TargetRef Target::create(int width, int height, const AttachmentFormats& texture
 	BLAH_ASSERT(depth_count <= 1, "Target can only have 1 Depth/Stencil Texture");
 	BLAH_ASSERT(color_count <= Attachments::capacity - 1, "Exceeded maximum Color texture count");
 
-	if (Internal::renderer)
-		return Internal::renderer->create_target(width, height, textures.data(), textures.size());
+	if (auto renderer = Internal::app_renderer())
+		return renderer->create_target(width, height, textures.data(), textures.size());
 
 	return TargetRef();
 }
@@ -224,8 +224,8 @@ MeshRef Mesh::create()
 {
 	BLAH_ASSERT_RENDERER();
 
-	if (Internal::renderer)
-		return Internal::renderer->create_mesh();
+	if (auto renderer = Internal::app_renderer())
+		return renderer->create_mesh();
 
 	return MeshRef();
 }
@@ -623,7 +623,7 @@ void DrawCall::perform()
 	BLAH_ASSERT(material->shader(), "Trying to draw with an invalid Shader");
 	BLAH_ASSERT(mesh, "Trying to draw with an invalid Mesh");
 
-	if (!Internal::renderer)
+	if (!Internal::app_renderer())
 		return;
 
 	// copy call
@@ -685,5 +685,5 @@ void DrawCall::perform()
 		pass.scissor = pass.scissor.overlap_rect(Rectf(0, 0, draw_size.x, draw_size.y));
 
 	// perform render
-	Internal::renderer->render(pass);
+	Internal::app_renderer()->render(pass);
 }

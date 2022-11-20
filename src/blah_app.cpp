@@ -12,14 +12,6 @@
 
 using namespace Blah;
 
-#define BLAH_ASSERT_RUNNING() BLAH_ASSERT(app_is_running, "The App is not running (call App::run)")
-
-// Internal Platform Pointer
-Platform* Internal::platform = nullptr;
-
-// Internal Renderer Pointer
-Renderer* Internal::renderer = nullptr;
-
 // Internal Audio bool
 bool Internal::audio_is_init = false;
 
@@ -33,15 +25,16 @@ namespace
 	u64        app_time_accumulator = 0;
 	u32        app_flags = 0;
 	TargetRef  app_backbuffer;
+	Renderer*  app_renderer_api;
 
 	void get_drawable_size(int* w, int* h)
 	{
 		// Some renderer implementations might return their own size
-		if (Internal::renderer->get_draw_size(w, h))
+		if (app_renderer_api->get_draw_size(w, h))
 			return;
 
 		// otherwise fallback to the platform size
-		Internal::platform->get_draw_size(w, h);
+		Platform::get_draw_size(w, h);
 	}
 
 	// A dummy Target that represents the Back Buffer.
@@ -57,8 +50,8 @@ namespace
 		void clear(Color color, float depth, u8 stencil, ClearMask mask) override
 		{
 			BLAH_ASSERT_RENDERER();
-			if (Internal::renderer)
-				Internal::renderer->clear_backbuffer(color, depth, stencil, mask);
+			if (app_renderer_api)
+				app_renderer_api->clear_backbuffer(color, depth, stencil, mask);
 		}
 	};
 }
@@ -99,15 +92,7 @@ bool App::run(const Config* c)
 
 	// initialize the system
 	{
-		Internal::platform = Platform::try_make_platform(app_config);
-		if (!Internal::platform)
-		{
-			Log::error("Failed to create Platform module");
-			Internal::app_shutdown();
-			return false;
-		}
-
-		if (!Internal::platform->init(app_config))
+		if (!Platform::init(app_config))
 		{
 			Log::error("Failed to initialize Platform module");
 			Internal::app_shutdown();
@@ -117,26 +102,26 @@ bool App::run(const Config* c)
 
 	// initialize audio
 	{
-		if (!Blah::Internal::audio_is_init) {
+		if (!Internal::audio_is_init) {
 			int more_on_emscripten = 1;
-			#ifdef __EMSCRIPTEN__
+#ifdef __EMSCRIPTEN__
 			more_on_emscripten = 4;
-			#endif
-			Blah::Internal::audio_is_init = Blah::Internal::audio_init(c->audio_frequency_in_Hz, 1024 * more_on_emscripten);
+#endif
+			Internal::audio_is_init = Internal::audio_init(c->audio_frequency_in_Hz, 1024 * more_on_emscripten);
 		}
 	}
 
 	// initialize graphics
 	{
-		Internal::renderer = Renderer::try_make_renderer(app_config.renderer_type);
-		if (Internal::renderer == nullptr)
+		app_renderer_api = Renderer::try_make_renderer(app_config.renderer_type);
+		if (app_renderer_api == nullptr)
 		{
 			Log::error("Renderer module was not found");
 			Internal::app_shutdown();
 			return false;
 		}
 
-		if (!Internal::renderer->init())
+		if (!app_renderer_api->init())
 		{
 			Log::error("Failed to initialize Renderer module");
 			Internal::app_shutdown();
@@ -145,22 +130,22 @@ bool App::run(const Config* c)
 	}
 
 	// apply default flags
-	Internal::platform->set_app_flags(app_flags);
-	Internal::renderer->set_app_flags(app_flags);
+	Platform::set_app_flags(app_flags);
+	app_renderer_api->set_app_flags(app_flags);
 
 	// input + poll the platform once
 	Internal::input_init();
 	Internal::input_step_state();
-	Internal::platform->update(Input::state);
+	Platform::update(Input::state);
 
 	// startup
 	if (app_config.on_startup != nullptr)
 		app_config.on_startup();
-	app_time_last = Internal::platform->ticks();
+	app_time_last = Platform::ticks();
 	app_time_accumulator = 0;
 
 	// display window
-	Internal::platform->ready();
+	Platform::ready();
 
 	// Begin main loop
 #ifdef __EMSCRIPTEN__
@@ -187,9 +172,9 @@ void Internal::app_step()
 	static const auto step = []()
 	{
 		Internal::input_step_state();
-		platform->update(Input::state);
+		Platform::update(Input::state);
 		Internal::input_step_bindings();
-		renderer->update();
+		app_renderer_api->update();
 		if (app_config.on_update != nullptr)
 			app_config.on_update();
 	};
@@ -200,7 +185,7 @@ void Internal::app_step()
 	if (is_fixed_timestep)
 	{
 		u64 time_target = (u64)((1.0 / app_config.target_framerate) * Time::ticks_per_second);
-		u64 ticks_curr = Internal::platform->ticks();
+		u64 ticks_curr = Platform::ticks();
 		u64 ticks_diff = ticks_curr - app_time_last;
 		app_time_last = ticks_curr;
 		app_time_accumulator += ticks_diff;
@@ -209,9 +194,9 @@ void Internal::app_step()
 		while (app_time_accumulator < time_target)
 		{
 			int milliseconds = (int)(time_target - app_time_accumulator) / (Time::ticks_per_second / 1000);
-			Internal::platform->sleep(milliseconds);
+			Platform::sleep(milliseconds);
 
-			ticks_curr = Internal::platform->ticks();
+			ticks_curr = Platform::ticks();
 			ticks_diff = ticks_curr - app_time_last;
 			app_time_last = ticks_curr;
 			app_time_accumulator += ticks_diff;
@@ -250,7 +235,7 @@ void Internal::app_step()
 	// Update with Variable Timestep
 	else
 	{
-		u64 ticks_curr = Internal::platform->ticks();
+		u64 ticks_curr = Platform::ticks();
 		u64 ticks_diff = ticks_curr - app_time_last;
 		app_time_last = ticks_curr;
 		app_time_accumulator += ticks_diff;
@@ -274,37 +259,36 @@ void Internal::app_step()
 
 	// Draw Frame
 	{
-		renderer->before_render();
+		app_renderer_api->before_render();
 		if (app_config.on_render != nullptr)
 			app_config.on_render();
-		renderer->after_render();
-		platform->present();
+		app_renderer_api->after_render();
+		Platform::present();
 	}
 
 	// Update audio
-	Blah::Internal::audio_update();
+	if (Internal::audio_is_init)
+		Blah::Internal::audio_update();
 }
 
 void Internal::app_shutdown()
 {
 	Internal::input_shutdown();
 
-	if (renderer)
-		renderer->shutdown();
+	if (app_renderer_api)
+	{
+		app_renderer_api->shutdown();
+		delete app_renderer_api;
+	}
+	app_renderer_api = nullptr;
 
-	if (platform)
-		platform->shutdown();
+	if (Internal::audio_is_init)
+	{
+		Internal::audio_shutdown();
+		Internal::audio_is_init = false;
+	}
 
-	if (renderer)
-		delete renderer;
-	renderer = nullptr;
-
-	if (platform)
-		delete platform;
-	platform = nullptr;
-
-	Blah::Internal::audio_shutdown();
-	Blah::Internal::audio_is_init = false;
+	Platform::shutdown();
 
 	// clear static App state
 	app_config = Config();
@@ -320,6 +304,12 @@ void Internal::app_shutdown()
 	Time::previous_ticks = 0;
 	Time::previous_seconds = 0;
 	Time::delta = 0;
+}
+
+Renderer* Internal::app_renderer()
+{
+	BLAH_ASSERT_RUNNING();
+	return app_renderer_api;
 }
 
 void App::exit()
@@ -338,59 +328,59 @@ const Config& App::config()
 const char* App::path()
 {
 	BLAH_ASSERT_RUNNING();
-	return Internal::platform->app_path();
+	return Platform::app_path();
 }
 
 const char* App::user_path()
 {
 	BLAH_ASSERT_RUNNING();
-	return Internal::platform->user_path();
+	return Platform::user_path();
 }
 
 const char* App::get_title()
 {
 	BLAH_ASSERT_RUNNING();
-	return Internal::platform->get_title();
+	return Platform::get_title();
 }
 
 void App::set_title(const char* title)
 {
 	BLAH_ASSERT_RUNNING();
-	Internal::platform->set_title(title);
+	Platform::set_title(title);
 }
 
 Point App::get_position()
 {
 	BLAH_ASSERT_RUNNING();
 	Point result;
-	Internal::platform->get_position(&result.x, &result.y);
+	Platform::get_position(&result.x, &result.y);
 	return result;
 }
 
 void App::set_position(Point point)
 {
 	BLAH_ASSERT_RUNNING();
-	Internal::platform->set_position(point.x, point.y);
+	Platform::set_position(point.x, point.y);
 }
 
 Point App::get_size()
 {
 	BLAH_ASSERT_RUNNING();
 	Point result;
-	Internal::platform->get_size(&result.x, &result.y);
+	Platform::get_size(&result.x, &result.y);
 	return result;
 }
 
 void App::set_size(Point point)
 {
 	BLAH_ASSERT_RUNNING();
-	Internal::platform->set_size(point.x, point.y);
+	Platform::set_size(point.x, point.y);
 }
 
 Point App::get_backbuffer_size()
 {
 	BLAH_ASSERT_RUNNING();
-	if (Internal::renderer)
+	if (app_renderer_api)
 		return Point(app_backbuffer->width(), app_backbuffer->height());
 	return Point(0, 0);
 }
@@ -398,13 +388,13 @@ Point App::get_backbuffer_size()
 float App::content_scale()
 {
 	BLAH_ASSERT_RUNNING();
-	return Internal::platform->get_content_scale();
+	return Platform::get_content_scale();
 }
 
 bool App::focused()
 {
 	BLAH_ASSERT_RUNNING();
-	return Internal::platform->get_focused();
+	return Platform::get_focused();
 }
 
 void App::set_flag(u32 flag, bool enabled)
@@ -420,10 +410,9 @@ void App::set_flag(u32 flag, bool enabled)
 
 	if (was != app_flags)
 	{
-		if (Internal::platform)
-			Internal::platform->set_app_flags(app_flags);
-		if (Internal::renderer)
-			Internal::renderer->set_app_flags(app_flags);
+		Platform::set_app_flags(app_flags);
+		if (app_renderer_api)
+			app_renderer_api->set_app_flags(app_flags);
 	}
 }
 
@@ -437,7 +426,7 @@ const RendererInfo& App::renderer()
 {
 	BLAH_ASSERT_RUNNING();
 	BLAH_ASSERT_RENDERER();
-	return Internal::renderer->info;
+	return app_renderer_api->info;
 }
 
 const TargetRef& App::backbuffer()
@@ -449,5 +438,5 @@ const TargetRef& App::backbuffer()
 void System::open_url(const char* url)
 {
 	BLAH_ASSERT_RUNNING();
-	Internal::platform->open_url(url);
+	Platform::open_url(url);
 }

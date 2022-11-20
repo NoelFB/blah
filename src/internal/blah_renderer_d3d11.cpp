@@ -17,7 +17,7 @@
 #include <d3dcompiler.h>
 
 // shorthand to our internal state
-#define RENDERER ((Renderer_D3D11*)Internal::renderer)
+#define RENDERER ((Renderer_D3D11*)Internal::app_renderer())
 
 namespace Blah
 {
@@ -776,7 +776,7 @@ namespace Blah
 		desc.SampleDesc.Quality = 0;
 		desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		desc.BufferCount = 1;
-		desc.OutputWindow = (HWND)Internal::platform->d3d11_get_hwnd();
+		desc.OutputWindow = (HWND)Platform::d3d11_get_hwnd();
 		desc.Windowed = true;
 
 		// Creation Flags

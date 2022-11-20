@@ -78,8 +78,7 @@ void Internal::input_step_state()
 	}
 
 	// get clipboard
-	if (Internal::platform)
-		g_clipboard = Internal::platform->get_clipboard();
+	g_clipboard = Platform::get_clipboard();
 }
 
 void Internal::input_step_bindings()
@@ -397,9 +396,9 @@ const String& Input::get_clipboard()
 
 void Input::set_clipboard(const String& text)
 {
+	BLAH_ASSERT_RUNNING();
 	g_clipboard = text;
-	if (Internal::platform)
-		Internal::platform->set_clipboard(text);
+	Platform::set_clipboard(text);
 }
 
 ButtonBindingRef Input::register_binding(const ButtonBinding& binding_data)
