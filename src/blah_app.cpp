@@ -122,7 +122,7 @@ bool App::run(const Config* c)
 			#ifdef __EMSCRIPTEN__
 			more_on_emscripten = 4;
 			#endif
-			Blah::Internal::audio_is_init = Blah::Internal::audio_init(NULL, c->audio_frequency_in_Hz, 1024 * more_on_emscripten);
+			Blah::Internal::audio_is_init = Blah::Internal::audio_init(c->audio_frequency_in_Hz, 1024 * more_on_emscripten);
 		}
 	}
 

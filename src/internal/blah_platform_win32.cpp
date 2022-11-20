@@ -364,7 +364,7 @@ bool Win32_Platform::init(const Config& config)
 			while (*end != 0) end++;
 
 			FilePath result;
-			result.append_utf16((u16*)path, (u16*)end);
+			result.append((u16*)path, (u16*)end);
 
 			user_directory = Path::join(Path::normalize(result), config.name) + "/";
 		}
@@ -737,7 +737,7 @@ void Win32_Platform::open_url(const char* url)
 
 void Win32_Platform::detect_joysticks()
 {
-	auto platform = ((Win32_Platform*)App::Internal::platform);
+	auto platform = ((Win32_Platform*)Internal::platform);
 
 	// mark all joysticks as unnacounted for
 	for (int i = 0; i < Input::max_controllers; i++)
@@ -806,7 +806,7 @@ void Win32_Platform::detect_joysticks()
 
 LRESULT CALLBACK Blah::win32_window_procedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	auto platform = ((Win32_Platform*)App::Internal::platform);
+	auto platform = ((Win32_Platform*)Internal::platform);
 	auto input_state = platform->input_state;
 
 	switch (msg)

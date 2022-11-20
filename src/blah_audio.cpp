@@ -1,27 +1,34 @@
 #include "blah_audio.h"
 #include "blah_time.h"
+#include "internal/blah_internal.h"
 
 #define STB_VORBIS_HEADER_ONLY
 #include "third_party/stb_vorbis.c"
 
-#define CUTE_SOUND_IMPLEMENTATION
+#ifdef BLAH_PLATFORM_SDL2
 #define CUTE_SOUND_FORCE_SDL
+#endif
+
+#define CUTE_SOUND_IMPLEMENTATION
 #include "third_party/cute_sound.h"
 
 namespace Blah
 {
 	namespace Internal
 	{
-		bool audio_init(void* os_handle, unsigned play_frequency_in_Hz, int buffered_samples)
+		bool audio_init(unsigned play_frequency_in_Hz, int buffered_samples)
 		{
-			cs_error_t err = cs_init(os_handle, play_frequency_in_Hz, buffered_samples, NULL);
+			cs_error_t err = cs_init(Internal::platform->d3d11_get_hwnd(), play_frequency_in_Hz, buffered_samples, NULL);
 			if (err != CUTE_SOUND_ERROR_NONE) {
 				Log::error(cs_error_as_string(err));
 				return false;
 			} else {
 				return true;
 			}
+
+#ifndef BLAH_NO_THREADING
 			cs_spawn_mix_thread();
+#endif
 		}
 
 		void audio_shutdown()

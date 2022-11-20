@@ -45,6 +45,7 @@ if (WIN32)
 endif()
 option(BLAH_NO_FUNCTIONAL "Don't use std::function" OFF)
 option(BLAH_NO_SHARED_PTR "Don't use std::shared_ptr for Resources" OFF)
+option(BLAH_NO_THREADING "Don't use threading" OFF)
 
 # tracks which libraries we need to link, depends on Options above
 set(LIBS "")
@@ -108,5 +109,8 @@ if (BLAH_NO_FUNCTIONAL)
 endif()
 if (BLAH_NO_SHARED_PTR)
 	add_compile_definitions(BLAH_NO_SHARED_PTR)
+endif()
+if (BLAH_NO_THREADING)
+	add_compile_definitions(BLAH_NO_THREADING)
 endif()
 
