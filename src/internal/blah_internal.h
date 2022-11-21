@@ -9,8 +9,6 @@ namespace Blah
 {
 	namespace Internal
 	{
-		extern bool audio_is_init;
-
 		void app_step();
 		void app_shutdown();
 		Renderer* app_renderer();

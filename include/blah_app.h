@@ -18,6 +18,7 @@ namespace Blah
 		constexpr u32 VSync = 1 << 1;
 		constexpr u32 Fullscreen = 1 << 2;
 		constexpr u32 Resizable = 1 << 3;
+		constexpr u32 AudioEnabled = 1 << 4;
 	}
 
 	// Application Configuration
@@ -51,7 +52,7 @@ namespace Blah
 		int audio_frequency_in_Hz = 44100;
 
 		// default starting flags
-		u32 flags = Flags::VSync | Flags::Resizable | Flags::FixedTimestep;
+		u32 flags = Flags::VSync | Flags::Resizable | Flags::FixedTimestep | Flags::AudioEnabled;
 
 		// Callback on application startup
 		AppEventFn on_startup = nullptr;

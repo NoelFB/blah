@@ -12,15 +12,13 @@
 
 using namespace Blah;
 
-// Internal Audio bool
-bool Internal::audio_is_init = false;
-
 namespace
 {
 	// Global App State
 	Config     app_config;
 	bool       app_is_running = false;
 	bool       app_is_exiting = false;
+	bool       app_is_audio_running = false;
 	u64        app_time_last;
 	u64        app_time_accumulator = 0;
 	u32        app_flags = 0;
@@ -35,6 +33,23 @@ namespace
 
 		// otherwise fallback to the platform size
 		Platform::get_draw_size(w, h);
+	}
+
+	void set_audio_system(bool on)
+	{
+		if (on && !app_is_audio_running)
+		{
+			int more_on_emscripten = 1;
+#ifdef __EMSCRIPTEN__
+			more_on_emscripten = 4;
+#endif
+			app_is_audio_running = Internal::audio_init(app_config.audio_frequency_in_Hz, 1024 * more_on_emscripten);
+		}
+		else if (!on && app_is_audio_running)
+		{
+			Internal::audio_shutdown();
+			app_is_audio_running = false;
+		}
 	}
 
 	// A dummy Target that represents the Back Buffer.
@@ -101,15 +116,8 @@ bool App::run(const Config* c)
 	}
 
 	// initialize audio
-	{
-		if (!Internal::audio_is_init) {
-			int more_on_emscripten = 1;
-#ifdef __EMSCRIPTEN__
-			more_on_emscripten = 4;
-#endif
-			Internal::audio_is_init = Internal::audio_init(c->audio_frequency_in_Hz, 1024 * more_on_emscripten);
-		}
-	}
+	if (get_flag(Flags::AudioEnabled))
+		set_audio_system(true);
 
 	// initialize graphics
 	{
@@ -267,27 +275,21 @@ void Internal::app_step()
 	}
 
 	// Update audio
-	if (Internal::audio_is_init)
+	if (app_is_audio_running)
 		Blah::Internal::audio_update();
 }
 
 void Internal::app_shutdown()
 {
+	// shutdown systems
 	Internal::input_shutdown();
-
 	if (app_renderer_api)
 	{
 		app_renderer_api->shutdown();
 		delete app_renderer_api;
+		app_renderer_api = nullptr;
 	}
-	app_renderer_api = nullptr;
-
-	if (Internal::audio_is_init)
-	{
-		Internal::audio_shutdown();
-		Internal::audio_is_init = false;
-	}
-
+	set_audio_system(false);
 	Platform::shutdown();
 
 	// clear static App state
@@ -410,9 +412,13 @@ void App::set_flag(u32 flag, bool enabled)
 
 	if (was != app_flags)
 	{
+		// tell platform & renderer
 		Platform::set_app_flags(app_flags);
 		if (app_renderer_api)
 			app_renderer_api->set_app_flags(app_flags);
+
+		// potentially toggle audio system
+		set_audio_system(get_flag(Flags::AudioEnabled));
 	}
 }
 
