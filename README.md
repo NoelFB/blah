@@ -17,9 +17,10 @@ int main()
     config.name = "blah app";
     config.on_render = []()
     {
-        App::backbuffer()->clear(Color::black);
+        auto target = App::backbuffer();
+        target->clear(Color::black);
 
-        auto center = App::get_backbuffer_size() / 2;
+        auto center = Vec2f(target->width(), target->height()) / 2;
         auto rotation = Time::seconds * Calc::TAU;
         auto transform = Mat3x2f::create_transform(center, Vec2f::zero, Vec2f::one, rotation);
 
@@ -27,12 +28,11 @@ int main()
         batch.rect(Rectf(-32, -32, 64, 64), Color::red);
         batch.pop_matrix();
 
-        batch.render();
+        batch.render(target);
         batch.clear();
     };
 
-    App::run(&config);
-    return 0;
+    return App::run(&config);
 }
 
 ```
@@ -52,3 +52,4 @@ int main()
  - There's no Shader abstraction, so you need to swap between GLSL/HLSL depending on the Renderer.
  - Only floatN/mat3x2/mat4x4 uniforms are supported.
  - No threaded rendering so it will explode if you try that.
+
