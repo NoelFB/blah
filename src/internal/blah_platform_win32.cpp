@@ -224,7 +224,12 @@ bool Platform::init(const Config& config)
 
 	// Setup Window Size based on content scale
 	{
-		auto scale = get_content_scale();
+		// base value of Windows DPI
+		// as seen here: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdpiforwindow
+		constexpr float base_raw_value = 96.0f;
+
+		UINT raw_value = GetDpiForWindow(win32_hwnd);
+		float scale =  (raw_value / base_raw_value);
 		int sw = (int)(App::config().width * scale);
 		int sh = (int)(App::config().height * scale);
 		set_size(sw, sh);
@@ -503,18 +508,6 @@ void Platform::get_draw_size(int* width, int* height)
 		*height = rect.bottom - rect.top;
 	}
 }
-
-float Platform::get_content_scale()
-{
-	// base value of Windows DPI
-	// as seen here: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdpiforwindow
-	constexpr float base_raw_value = 96.0f;
-
-	UINT raw_value = GetDpiForWindow(win32_hwnd);
-
-	return (raw_value / base_raw_value);
-}
-
 const char* Platform::app_path()
 {
 	return win32_working_directory.cstr();

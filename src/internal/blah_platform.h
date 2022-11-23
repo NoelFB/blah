@@ -58,9 +58,6 @@ namespace Blah
 		// Gets the Application Window Drawing Size, in Pixels. This may differ from the Window Size on hi-dpi displays.
 		void get_draw_size(int* width, int* height);
 
-		// Gets the Desktop Content Scale. Gui should be scaled by this value
-		float get_content_scale();
-
 		// Returns the absolute path to the directory that the application was started from
 		const char* app_path();
 

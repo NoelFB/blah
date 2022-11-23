@@ -119,13 +119,6 @@ namespace Blah
 		// Sets the Window Size in Screen Coordinates
 		void set_size(Point point);
 
-		// Gets the size of the BackBuffer, in pixels
-		Point get_backbuffer_size();
-
-		// Gets the content scale based on the platform.
-		// macOS is usually 2.0, other platforms vary.
-		float content_scale();
-
 		// If the window is currently focused or has mouse input
 		bool focused();
 

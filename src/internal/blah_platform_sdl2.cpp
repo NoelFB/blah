@@ -457,46 +457,7 @@ void Platform::set_size(int width, int height)
 
 void Platform::get_draw_size(int* width, int* height)
 {
-	switch (App::renderer().type)
-	{
-	case RendererType::OpenGL:
-		SDL_GL_GetDrawableSize(sdl2_window, width, height);
-		break;
-	case RendererType::None:
-	case RendererType::D3D11:
-		SDL_GetWindowSize(sdl2_window, width, height);
-		break;
-	}
-}
-
-float Platform::get_content_scale()
-{
-	// TODO:
-	// This is incorrect! but for some reason the scale
-	// is HUGE if I use the Display DPI on macOS :/
-#if __APPLE__
-	return 2.0f;
-#endif
-
-	// TODO:
-	// is there a way to get this value properly? My Windows & Linux PC's both seem to thing 96 is correct
-	const float hidpi_res = 96;
-
-	int index = SDL_GetWindowDisplayIndex(sdl2_window);
-	if (index < 0)
-	{
-		Log::error(SDL_GetError());
-		return 1.0f;
-	}
-
-	float ddpi, x, y;
-	if (SDL_GetDisplayDPI(index, &ddpi, &x, &y) != 0)
-	{
-		Log::error(SDL_GetError());
-		return 1.0f;
-	}
-
-	return (ddpi / hidpi_res);
+	SDL_GetWindowSizeInPixels(sdl2_window, width, height);
 }
 
 const char* Platform::app_path()

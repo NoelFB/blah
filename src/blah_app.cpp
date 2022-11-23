@@ -310,7 +310,6 @@ void Internal::app_shutdown()
 
 Renderer* Internal::app_renderer()
 {
-	BLAH_ASSERT_RUNNING();
 	return app_renderer_api;
 }
 
@@ -377,20 +376,6 @@ void App::set_size(Point point)
 {
 	BLAH_ASSERT_RUNNING();
 	Platform::set_size(point.x, point.y);
-}
-
-Point App::get_backbuffer_size()
-{
-	BLAH_ASSERT_RUNNING();
-	if (app_renderer_api)
-		return Point(app_backbuffer->width(), app_backbuffer->height());
-	return Point(0, 0);
-}
-
-float App::content_scale()
-{
-	BLAH_ASSERT_RUNNING();
-	return Platform::get_content_scale();
 }
 
 bool App::focused()
