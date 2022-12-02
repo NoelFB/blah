@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: lukka/get-cmake@latest
       - uses: actions/checkout@master
-      - name: install dependancies
+      - name: build
         run: |
           mkdir build
           cd build 
@@ -26,12 +26,12 @@ jobs:
     steps:
       - uses: lukka/get-cmake@latest
       - uses: actions/checkout@master
-      - name: install dependancies
+      - name: build
         run: |
           mkdir build
           cd build 
           echo 'Building SDL2 platform'
-          cmake ../
+          cmake ../ -DBLAH_PLATFORM_WIN32=OFF -DBLAH_PLATFORM_SDL2=ON
           cmake --build .
           echo 'Building win32 platform'
           cmake ../ -DBLAH_PLATFORM_WIN32=ON -DBLAH_PLATFORM_SDL2=OFF
