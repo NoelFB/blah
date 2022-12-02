@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+
+  build-html5:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: lukka/get-cmake@latest
+      - uses: actions/checkout@master
+      - name: install dependancies
+        run: |
+          mkdir build
+          cd build 
+          cmake ../
+          cmake --build .
