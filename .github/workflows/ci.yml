@@ -6,7 +6,7 @@ on:
 
 jobs:
 
-  build-html5:
+  build-ubuntu:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -18,4 +18,21 @@ jobs:
           mkdir build
           cd build 
           cmake ../
+          cmake --build .
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: lukka/get-cmake@latest
+      - uses: actions/checkout@master
+      - name: install dependancies
+        run: |
+          mkdir build
+          cd build 
+          echo 'Building SDL2 platform'
+          cmake ../
+          cmake --build .
+          echo 'Building win32 platform'
+          cmake ../ -DBLAH_PLATFORM_WIN32=ON -DBLAH_PLATFORM_SDL2=OFF
           cmake --build .
