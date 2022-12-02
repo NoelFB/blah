@@ -689,7 +689,7 @@ void Platform::open_url(const char* url)
 	system(cmd.cstr());
 }
 
-void win32_detect_joysticks()
+void Blah::win32_detect_joysticks()
 {
 	// mark all joysticks as unnacounted for
 	for (int i = 0; i < Input::max_controllers; i++)
