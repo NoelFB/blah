@@ -140,6 +140,7 @@ namespace Blah
 				m_heap_buffer.erase(new_length, s_len() - new_length);
 			else
 				m_stack_buffer.erase(new_length, s_len() - new_length);
+			s_ptr()[new_length - 1] = '\0';
 		}
 
 		StackString trim() const
