@@ -20,30 +20,36 @@ namespace
 
 	constexpr bool blah_compare_ignore_case(char a, char b) { return blah_to_lower(a) == blah_to_lower(b); };
 	constexpr bool blah_compare_with_case(char a, char b) { return a == b; };
+
+	#define BLAH_ASSERT_INPUT_STRING(input) \
+		BLAH_ASSERT(!(input >= cstr() && input < cstr() + length()), "Assigning string to itself is bad news!")
 }
 
-void BaseString::assign(const char* cstr, const char* cstr_end)
+void BaseString::assign(const char* cstr_start, const char* cstr_end)
 {
+	BLAH_ASSERT_INPUT_STRING(cstr_start);
 	s_clear();
-	append(cstr, cstr_end);
+	append(cstr_start, cstr_end);
 }
 
-void BaseString::append(const char* cstr, const char* cstr_end)
+void BaseString::append(const char* cstr_start, const char* cstr_end)
 {
+	BLAH_ASSERT_INPUT_STRING(cstr_start);
+
 	// make sure values are valid
-	if (cstr == nullptr || *cstr == '\0')
+	if (cstr_start == nullptr || *cstr_start == '\0')
 		return;
 	if (cstr_end == nullptr)
-		cstr_end = cstr + blah_strlen(cstr);
+		cstr_end = cstr_start + blah_strlen(cstr_start);
 
 	// reserve (+1 for null-terminator)
 	auto len = length();
-	s_ensure(len + (cstr_end - cstr) + 1);
+	s_ensure(len + (cstr_end - cstr_start) + 1);
 
 	// copy value over to our buffer
 	char* dst = s_ptr() + len;
-	while (cstr < cstr_end)
-		*(dst++) = *(cstr++);
+	while (cstr_start < cstr_end)
+		*(dst++) = *(cstr_start++);
 }
 
 void BaseString::append(const u16* u16_cstr, const u16* u16_cstr_end, bool swap_endian)

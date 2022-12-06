@@ -105,31 +105,41 @@ namespace Blah
 			return *this;
 		}
 
-		StackString operator+(const BaseString& rhs)
-		{
-			StackString str(*this);
-			str += rhs;
-			return str;
-		}
-
-		StackString operator+(const char* rhs)
-		{
-			StackString str(*this);
-			str += rhs;
-			return str;
-		}
-		
-		StackString operator+(const char& rhs)
-		{
-			StackString str(*this);
-			str += rhs;
-			return str;
-		}
-
 		StackString substr(int start, int len = 0) const
 		{
 			if (len == 0) len = length() - start;
 			return StackString(cstr() + start, cstr() + start + len);
+		}
+
+		StackString replace(const StackString& term, const StackString& replacement) const
+		{
+			StackString result;
+			int term_length = term.length();
+			for (int i = 0, n = length() - term_length; i < n; i ++)
+			{
+				bool match = false;
+				for (int j = 0; j < term_length; j ++)
+					if (operator[](i) != term[j]) { match = true; break; }
+				if (match)
+				{
+					result.append(replacement);
+					i += term_length - 1;
+				}
+				else
+					result.append(operator[](i));
+			}
+			return result;
+		}
+
+		void set_length(int new_length)
+		{
+			new_length++;
+			if (s_len() < new_length)
+				append('\0', new_length - s_len());
+			else if (m_heap_buffer.size() > 0)
+				m_heap_buffer.erase(new_length, s_len() - new_length);
+			else
+				m_stack_buffer.erase(new_length, s_len() - new_length);
 		}
 
 		StackString trim() const
@@ -256,29 +266,36 @@ namespace Blah
 		StackVector<char, StackSize> m_stack_buffer;
 	};
 
-	template<size_t StackSize>
-	StackString<StackSize> operator+(const StackString<StackSize>& lhs, const BaseString& rhs)
+	template<size_t StackSizeLeft, size_t StackSizeRight>
+	StackString<StackSizeLeft> operator+(const StackString<StackSizeLeft>& lhs, const StackString<StackSizeRight>& rhs)
 	{
-		StackString str(lhs);
-		str += rhs;
-		return str;
+		StackString<StackSizeLeft> str(lhs); str.append(rhs); return str;
+	}
+
+	template<size_t StackSize>
+	StackString<StackSize> operator+(const char* lhs, const StackString<StackSize>& rhs)
+	{
+		StackString<StackSize> str(lhs); str.append(rhs); return str;
 	}
 
 	template<size_t StackSize>
 	StackString<StackSize> operator+(const StackString<StackSize>& lhs, const char* rhs)
 	{
-		StackString str(lhs);
-		str += rhs;
-		return str;
+		StackString<StackSize> str(lhs); str.append(rhs); return str;
 	}
-
+	
 	template<size_t StackSize>
 	StackString<StackSize> operator+(const StackString<StackSize>& lhs, const char& rhs)
 	{
-		StackString str(lhs);
-		str += rhs;
-		return str;
+		StackString<StackSize> str(lhs); str.append(rhs); return str;
 	}
+	
+	template<size_t StackSize>
+	StackString<StackSize> operator+(const char& lhs, const StackString<StackSize>& rhs)
+	{
+		StackString<StackSize> str(lhs); str.append(rhs); return str;
+	}
+
 
 	// Stores enough for an empty string on the stack, and afterwards allocates on the heap
 	using HeapString = StackString<1>;
