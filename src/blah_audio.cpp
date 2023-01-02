@@ -10,6 +10,7 @@
 #endif
 
 #define CUTE_SOUND_IMPLEMENTATION
+#define CUTE_SOUND_SCALAR_MODE
 #include "third_party/cute_sound.h"
 
 namespace Blah
