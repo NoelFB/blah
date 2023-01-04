@@ -157,7 +157,7 @@ bool App::run(const Config* c)
 
 	// Begin main loop
 #ifdef __EMSCRIPTEN__
-	emscripten_set_main_loop(Internal::iterate, 0, 1);
+	emscripten_set_main_loop(Internal::app_step, 0, 1);
 #else
 	while (!app_is_exiting)
 		Internal::app_step();
