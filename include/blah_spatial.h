@@ -727,7 +727,7 @@ namespace Blah
 
 	template<class T>
 	constexpr bool Rect<T>::overlaps(const Rect& rect) const {
-		return x + w >= rect.x && y + h >= rect.y && x < rect.x + rect.w && y < rect.y + rect.h;
+		return x + w > rect.x && y + h > rect.y && x < rect.x + rect.w && y < rect.y + rect.h;
 	}
 
 	template<class T>
