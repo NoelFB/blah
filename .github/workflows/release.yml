@@ -1,0 +1,40 @@
+name: Project build
+
+# github's push and pull_request events
+# will trigger this action to run
+on: [push, pull_request]
+
+jobs:
+  build:
+    # names the job as "Build (___)" where the blank
+    # is the name of the platform being built, e.g. "Build (Windows)"
+    name: "Build (${{ matrix.platform.name }})"
+
+    defaults:
+      run:
+        shell: bash
+
+    runs-on: ${{ matrix.platform.os }}
+    # causes a timeout if build step takes longer than 10 minutes
+    # (avg. time for all builds during testing was ~4 minutes)
+    timeout-minutes: 10
+    strategy:
+      # don't cancel other in-progress jobs if one fails
+      fail-fast: false
+      matrix:
+        platform:
+          - { name: "Windows", os: windows-latest }
+          - { name: "MacOS", os: macos-latest }
+          - { name: "Linux", os: ubuntu-20.04 }
+
+    steps:
+      # the only dependency required, allows workflow to access the commit
+      # and the runner to find our CMakeLists.txt file
+      - uses: actions/checkout@master
+
+      - name: Create binary directory
+        run: |
+          cmake -B build -DBLAH_PLATFORM_WIN32=OFF -DBLAH_PLATFORM_SDL2=ON
+      - name: Build project binary
+        run: |
+          cmake --build build --config Release
