@@ -3,8 +3,6 @@
 #include <blah_string.h>
 #include <blah_spatial.h>
 
-#define BLAH_HEX_VALUE(n) ((n >= '0' && n <= '9') ? (n - '0') : ((n >= 'A' && n <= 'F') ? (10 + n - 'A') : ((n >= 'a' && n <= 'f') ? (10 + n - 'a') : 0)))
-
 namespace Blah
 {
 	struct Color
@@ -63,6 +61,11 @@ namespace Blah
 		constexpr Color(const char* hex_string)
 			: r(0), g(0), b(0), a(255)
 		{
+			constexpr auto to_hex = [](char n) constexpr
+			{
+				return ((n >= '0' && n <= '9') ? (n - '0') : ((n >= 'A' && n <= 'F') ? (10 + n - 'A') : ((n >= 'a' && n <= 'f') ? (10 + n - 'a') : 0)));
+			};
+
 			if (*hex_string == '#')
 				hex_string += 1;
 			else if (*hex_string == '0' && (*(hex_string + 1) == 'x' || *(hex_string + 1) == 'X'))
@@ -74,13 +77,13 @@ namespace Blah
 
 			if (len >= 6)
 			{
-				r = (BLAH_HEX_VALUE(hex_string[0]) << 4) + BLAH_HEX_VALUE(hex_string[1]);
-				g = (BLAH_HEX_VALUE(hex_string[2]) << 4) + BLAH_HEX_VALUE(hex_string[3]);
-				b = (BLAH_HEX_VALUE(hex_string[4]) << 4) + BLAH_HEX_VALUE(hex_string[5]);
+				r = (to_hex(hex_string[0]) << 4) + to_hex(hex_string[1]);
+				g = (to_hex(hex_string[2]) << 4) + to_hex(hex_string[3]);
+				b = (to_hex(hex_string[4]) << 4) + to_hex(hex_string[5]);
 			}
 
 			if (len >= 8)
-				a = (BLAH_HEX_VALUE(hex_string[6]) << 4) + BLAH_HEX_VALUE(hex_string[7]);
+				a = (to_hex(hex_string[6]) << 4) + to_hex(hex_string[7]);
 		}
 
 		// Premultiplies the Color
@@ -244,5 +247,3 @@ namespace Blah
 	inline const Color Color::purple      = Color(255,   0, 255);
 	inline const Color Color::teal        = Color(  0, 255, 255);
 }
-
-#undef BLAH_HEX_VALUE
