@@ -2,7 +2,7 @@ name: Project build
 
 # github's push and pull_request events
 # will trigger this action to run
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
