@@ -1583,7 +1583,7 @@ Blah::Renderer* Blah::Renderer::try_make_opengl()
 
 #else // BLAH_RENDERER_OPENGL
 
-#include "renderer.h"
+#include "blah_renderer.h"
 Blah::Renderer* Blah::Renderer::try_make_opengl()
 {
 	return nullptr;
