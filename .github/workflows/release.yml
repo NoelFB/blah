@@ -34,7 +34,7 @@ jobs:
 
       - name: Create binary directory
         run: |
-          cmake -B build -DBLAH_PLATFORM_WIN32=OFF -DBLAH_PLATFORM_SDL2=ON
+          cmake -B build
       - name: Build project binary
         run: |
           cmake --build build --config Release

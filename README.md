@@ -39,10 +39,6 @@ int main()
 
 #### building
  - Requires C++17 and CMake 3.14+
- - A single **Platform** implementation must be enabled in CMake:
-	- [SDL2](https://github.com/NoelFB/blah/blob/master/src/internal/platform_sdl2.cpp) (Default) `BLAH_PLATFORM_SDL2`
-	- [WIN32](https://github.com/NoelFB/blah/blob/master/src/internal/platform_win32.cpp) (Unfinished) `BLAH_PLATFORM_WIN32`
-	- Additional platforms can be added by implementing the [Platform Backend](https://github.com/NoelFB/blah/blob/master/src/internal/platform.h)
  - At least one **Renderer** implementation must be enabled in CMake:
 	- [OpenGL](https://github.com/NoelFB/blah/blob/master/src/internal/renderer_gl.cpp) (Default on Linux/macOS) `BLAH_RENDERER_OPENGL`
 	- [D3D11](https://github.com/NoelFB/blah/blob/master/src/internal/renderer_d3d11.cpp) (Default on Windows) `BLAH_RENDERER_D3D11`
