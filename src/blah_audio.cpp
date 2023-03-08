@@ -5,9 +5,7 @@
 #define STB_VORBIS_HEADER_ONLY
 #include "third_party/stb_vorbis.c"
 
-#ifdef BLAH_PLATFORM_SDL2
 #define CUTE_SOUND_FORCE_SDL
-#endif
 
 #define CUTE_SOUND_IMPLEMENTATION
 #define CUTE_SOUND_SCALAR_MODE
