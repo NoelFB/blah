@@ -177,7 +177,7 @@ namespace Blah
 			while (new_capacity < cap)
 				new_capacity *= 2;
 
-			T* new_buffer = (T*)::operator new (sizeof(T) * new_capacity);
+			T* new_buffer = (T*)::operator new[] (sizeof(T) * new_capacity);
 
 			if constexpr (std::is_trivially_copyable<T>())
 			{
