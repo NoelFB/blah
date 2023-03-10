@@ -148,7 +148,7 @@ namespace Blah
 	{
 		clear();
 
-		::operator delete (m_buffer, sizeof(T) * m_capacity);
+		::operator delete[] (m_buffer);
 
 		m_capacity = 0;
 		m_buffer = nullptr;
@@ -196,7 +196,7 @@ namespace Blah
 				}
 			}
 
-			::operator delete (m_buffer, sizeof(T) * m_capacity);
+			::operator delete[] (m_buffer);
 
 			m_buffer = new_buffer;
 			m_capacity = new_capacity;
