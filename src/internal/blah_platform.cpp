@@ -557,7 +557,7 @@ void Platform::dir_explore(const char* path)
 
 #else
 
-	BLAH_ASSERT(false, "'dir_explore' not implemented");
+	system(String::fmt("open \"%s\"", path).cstr());
 
 #endif
 }
