@@ -586,7 +586,10 @@ void ButtonBinding::zero_out()
 	m_down = false;
 	m_pressed = false;
 	m_released = false;
-	m_value = 0.0f;
+	m_last_press_time = 0;
+	m_last_release_time = 0;
+	m_last_timestamp = 0;
+	m_value = 0;
 }
 
 void ButtonBinding::clear()
